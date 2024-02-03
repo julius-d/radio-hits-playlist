@@ -6,8 +6,6 @@ import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.specification.Playlist;
 import se.michaelthelin.spotify.model_objects.specification.PlaylistTrack;
-import se.michaelthelin.spotify.requests.data.playlists.GetPlaylistRequest;
-import se.michaelthelin.spotify.requests.data.playlists.ReorderPlaylistsItemsRequest;
 
 import java.io.IOException;
 
