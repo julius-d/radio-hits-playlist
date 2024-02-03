@@ -11,6 +11,10 @@ on:
 env:
   build-number: ${GITHUB_RUN_NUMBER}
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
