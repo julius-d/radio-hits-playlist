@@ -11,13 +11,11 @@ on:
 env:
   build-number: ${GITHUB_RUN_NUMBER}
 
-permissions: write-all
-
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
