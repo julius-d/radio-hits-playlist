@@ -11,9 +11,7 @@ on:
 env:
   build-number: ${GITHUB_RUN_NUMBER}
 
-permissions:
-  contents: write
-  packages: write
+permissions: write-all
 
 jobs:
   build:
