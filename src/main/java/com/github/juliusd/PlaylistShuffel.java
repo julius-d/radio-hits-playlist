@@ -11,37 +11,37 @@ import java.io.IOException;
 
 public class PlaylistShuffel {
 
-    public static void main(String[] args) throws IOException, ParseException, SpotifyWebApiException {
-        System.out.println("Start");
+  public static void main(String[] args) throws IOException, ParseException, SpotifyWebApiException {
+    System.out.println("Start");
 
-        SpotifyApi spotifyApi = new SpotifyApi.Builder()
-                .setAccessToken( System.getProperty("spotifyAccessToken"))
-                .setRefreshToken(System.getProperty("spotifyRefreshToken"))
-                .build();
+    SpotifyApi spotifyApi = new SpotifyApi.Builder()
+      .setAccessToken(System.getProperty("spotifyAccessToken"))
+      .setRefreshToken(System.getProperty("spotifyRefreshToken"))
+      .build();
 
-        String playlistId = "***REMOVED***";
-        var playlist = spotifyApi.getPlaylist(playlistId)
-                .market(CountryCode.DE)
-                .build().execute();
+    String playlistId = "***REMOVED***";
+    var playlist = spotifyApi.getPlaylist(playlistId)
+      .market(CountryCode.DE)
+      .build().execute();
 
-        printPlayList(playlist);
-        Integer totalAmountOfTracks = playlist.getTracks().getTotal();
-        moveFirst5TracksToTheEndOfThePlaylist(spotifyApi, playlistId, totalAmountOfTracks);
+    printPlayList(playlist);
+    Integer totalAmountOfTracks = playlist.getTracks().getTotal();
+    moveFirst5TracksToTheEndOfThePlaylist(spotifyApi, playlistId, totalAmountOfTracks);
 
 
-        System.out.println("Done");
+    System.out.println("Done");
+  }
+
+  private static void printPlayList(Playlist playlist) {
+    System.out.println("Playlist: " + playlist.getName());
+    for (PlaylistTrack track : playlist.getTracks().getItems()) {
+      System.out.println(track.getTrack().getName() + " " + track.getTrack().getId());
     }
+  }
 
-    private static void printPlayList(Playlist playlist) {
-        System.out.println("Playlist: "+ playlist.getName());
-        for (PlaylistTrack track : playlist.getTracks().getItems()) {
-            System.out.println(track.getTrack().getName()+" "+track.getTrack().getId());
-        }
-    }
-
-    private static void moveFirst5TracksToTheEndOfThePlaylist(SpotifyApi spotifyApi, String playlistId, Integer totalAmountOfTracks) throws IOException, SpotifyWebApiException, ParseException {
-        var reorderPlaylistsItemsRequest = spotifyApi.reorderPlaylistsItems(playlistId, 0, totalAmountOfTracks).range_length(5).build();
-        reorderPlaylistsItemsRequest.execute();
-    }
+  private static void moveFirst5TracksToTheEndOfThePlaylist(SpotifyApi spotifyApi, String playlistId, Integer totalAmountOfTracks) throws IOException, SpotifyWebApiException, ParseException {
+    var reorderPlaylistsItemsRequest = spotifyApi.reorderPlaylistsItems(playlistId, 0, totalAmountOfTracks).range_length(5).build();
+    reorderPlaylistsItemsRequest.execute();
+  }
 
 }
