@@ -16,19 +16,32 @@ public class PlaylistShuffel {
     System.out.println("Version: " + PlaylistShuffel.class.getPackage().getImplementationVersion());
 
     String spotifyAccessToken = System.getProperty("spotifyAccessToken");
-    if (spotifyAccessToken == null || spotifyAccessToken.isBlank()) {
-      throw new RuntimeException("spotifyAccessToken is needed");
-    }
 
     String spotifyRefreshToken = System.getProperty("spotifyRefreshToken");
     if (spotifyRefreshToken == null || spotifyRefreshToken.isBlank()) {
       throw new RuntimeException("spotifyRefreshToken is needed");
     }
 
+    String clientSecret = System.getProperty("spotifyClientSecret");
+    if (clientSecret == null || clientSecret.isBlank()) {
+      throw new RuntimeException("clientSecret is needed");
+    }
+
+    var clientId = "***REMOVED***";
+
     SpotifyApi spotifyApi = new SpotifyApi.Builder()
       .setAccessToken(spotifyAccessToken)
       .setRefreshToken(spotifyRefreshToken)
+      .setClientId(clientId)
+      .setClientSecret(clientSecret)
       .build();
+
+    var authorizationCodeRefreshRequest = spotifyApi.authorizationCodeRefresh().build();
+    var authorizationCodeCredentials = authorizationCodeRefreshRequest.execute();
+
+    spotifyApi.setAccessToken(authorizationCodeCredentials.getAccessToken());
+
+    System.out.println("New AccessToken expires in: " + authorizationCodeCredentials.getExpiresIn() + " seconds");
 
     String playlistId = "***REMOVED***";
     var playlist = spotifyApi.getPlaylist(playlistId)
