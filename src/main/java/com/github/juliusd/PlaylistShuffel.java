@@ -13,6 +13,7 @@ public class PlaylistShuffel {
 
   public static void main(String[] args) throws IOException, ParseException, SpotifyWebApiException {
     System.out.println("Start");
+    System.out.println("Version: " + PlaylistShuffel.class.getPackage().getImplementationVersion());
 
     SpotifyApi spotifyApi = new SpotifyApi.Builder()
       .setAccessToken(System.getProperty("spotifyAccessToken"))
