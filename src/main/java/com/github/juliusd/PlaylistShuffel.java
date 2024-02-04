@@ -15,9 +15,19 @@ public class PlaylistShuffel {
     System.out.println("Start");
     System.out.println("Version: " + PlaylistShuffel.class.getPackage().getImplementationVersion());
 
+    String spotifyAccessToken = System.getProperty("spotifyAccessToken");
+    if (spotifyAccessToken == null || spotifyAccessToken.isBlank()) {
+      throw new RuntimeException("spotifyAccessToken is needed");
+    }
+
+    String spotifyRefreshToken = System.getProperty("spotifyRefreshToken");
+    if (spotifyRefreshToken == null || spotifyRefreshToken.isBlank()) {
+      throw new RuntimeException("spotifyRefreshToken is needed");
+    }
+
     SpotifyApi spotifyApi = new SpotifyApi.Builder()
-      .setAccessToken(System.getProperty("spotifyAccessToken"))
-      .setRefreshToken(System.getProperty("spotifyRefreshToken"))
+      .setAccessToken(spotifyAccessToken)
+      .setRefreshToken(spotifyRefreshToken)
       .build();
 
     String playlistId = "***REMOVED***";
