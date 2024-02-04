@@ -39,6 +39,7 @@
           <archive>
             <manifest>
               <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <mainClass>com.github.juliusd.PlaylistShuffel</mainClass>
             </manifest>
           </archive>
         </configuration>
