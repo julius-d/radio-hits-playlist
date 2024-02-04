@@ -41,5 +41,5 @@ jobs:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         automatic_release_tag: "v${{ github.run_number }}"
         title: "Release v${{ github.run_number }}"
-        prerelease: true
+        prerelease: false
         files: staging/*.jar
