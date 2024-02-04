@@ -7,4 +7,5 @@ Download via https://github.com/julius-d/radio-hits-playlist/releases/latest/dow
 
 ```shell
 wget -P /tmp/  https://github.com/julius-d/radio-hits-playlist/releases/latest/download/radio-hits-playlist.jar
+java -jar -DspotifyRefreshToken=ABC -DspotifyClientSecret=123 /tmp/radio-hits-playlist.jar  
 ```
