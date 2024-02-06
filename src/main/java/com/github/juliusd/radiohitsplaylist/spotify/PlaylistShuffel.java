@@ -1,4 +1,4 @@
-package com.github.juliusd;
+package com.github.juliusd.radiohitsplaylist.spotify;
 
 import com.neovisionaries.i18n.CountryCode;
 import org.apache.hc.core5.http.ParseException;

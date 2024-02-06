@@ -1,4 +1,4 @@
-package com.github.juliusd;
+package com.github.juliusd.radiohitsplaylist.spotify;
 
 import org.apache.hc.core5.http.ParseException;
 import se.michaelthelin.spotify.SpotifyApi;
