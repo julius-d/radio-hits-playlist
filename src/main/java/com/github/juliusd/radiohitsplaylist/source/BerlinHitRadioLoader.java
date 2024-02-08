@@ -13,7 +13,7 @@ public class BerlinHitRadioLoader {
   }
 
   public List<Track> load() {
-    List<BerlinHitRadioTrackWrapper> berlinHitRadioTrackWrappers = berlinHitRadioClient.hitFinder(24);
+    List<BerlinHitRadioTrackWrapper> berlinHitRadioTrackWrappers = berlinHitRadioClient.hitFinder(48);
     return berlinHitRadioTrackWrappers.stream().map(BerlinHitRadioTrackWrapper::track).map(it -> new Track(it.title(), it.artist())).toList();
   }
 }
