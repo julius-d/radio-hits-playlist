@@ -44,8 +44,8 @@ public class Main {
     System.out.println("Refreshed " + streamName + " with " + tracks.size() + " tracks");
   }
 
-  private static void refreshFamilyPlaylistFromSource(FamilyRadioLoader berlinHitRadioLoader, SpotifyApi spotifyApi, String streamName, String playlistId, String descriptionPrefix) {
-    List<Track> tracks = berlinHitRadioLoader.load(streamName);
+  private static void refreshFamilyPlaylistFromSource(FamilyRadioLoader familyRadioLoader, SpotifyApi spotifyApi, String streamName, String playlistId, String descriptionPrefix) {
+    List<Track> tracks = familyRadioLoader.load(streamName);
     var playlistUpdater = new PlaylistUpdater(spotifyApi);
     playlistUpdater.update(tracks, playlistId, descriptionPrefix);
     System.out.println("Refreshed family radio " + streamName + " with " + tracks.size() + " tracks");
