@@ -1,6 +1,7 @@
 package com.github.juliusd.radiohitsplaylist;
 
 import com.github.juliusd.radiohitsplaylist.source.BerlinHitRadioClientConfiguration;
+import com.github.juliusd.radiohitsplaylist.source.BerlinHitRadioLoader;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistShuffel;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistUpdater;
 import org.apache.hc.core5.http.ParseException;
@@ -26,11 +27,18 @@ public class Main {
     playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist("***REMOVED***");
 
     var berlinHitRadioLoader = new BerlinHitRadioClientConfiguration().berlinHitRadioLoader();
-    List<Track> tracks = berlinHitRadioLoader.load();
-    var playlistUpdater = new PlaylistUpdater(spotifyApi);
-    playlistUpdater.update(tracks, "***REMOVED***");
+
+    refreshPlaylistFromSource(berlinHitRadioLoader, spotifyApi, "t40", "***REMOVED***", "Top Radio Hits aus Berlin - aktualisiert am ");
+    refreshPlaylistFromSource(berlinHitRadioLoader, spotifyApi, "air", "***REMOVED***", "Radio Hits aus Berlin - aktualisiert am ");
 
     System.out.println("Done");
+  }
+
+  private static void refreshPlaylistFromSource(BerlinHitRadioLoader berlinHitRadioLoader, SpotifyApi spotifyApi, String streamName, String playlistId, String descriptionPrefix) {
+    List<Track> tracks = berlinHitRadioLoader.load(streamName);
+    var playlistUpdater = new PlaylistUpdater(spotifyApi);
+    playlistUpdater.update(tracks, playlistId, descriptionPrefix);
+    System.out.println("Refreshed " + streamName + " with " + tracks.size() + " tracks");
   }
 
   private static SpotifyApi buildSpotifyApi() throws IOException, SpotifyWebApiException, ParseException {

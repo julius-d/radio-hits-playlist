@@ -21,18 +21,18 @@ public class PlaylistUpdater {
     this.spotifyApi = spotifyApi;
   }
 
-  public void update(List<Track> tracks, String playlistId) {
+  public void update(List<Track> tracks, String playlistId, String descriptionPrefix) {
     List<String> spotifyTrackUris = findSpotifyTrackIds(tracks);
     storeOnPlayList(spotifyTrackUris, playlistId);
-    updateDescription(playlistId);
+    updateDescription(playlistId, descriptionPrefix);
   }
 
-  private void updateDescription(String playlistId) {
+  private void updateDescription(String playlistId, String descriptionPrefix) {
     try {
       String today = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
       spotifyApi
         .changePlaylistsDetails(playlistId)
-        .description("Radio Hits  aus Berlin - aktualisiert am " + today)
+        .description(descriptionPrefix + today)
         .build().execute();
     } catch (IOException | SpotifyWebApiException | ParseException e) {
       throw new SpotifyException(e);

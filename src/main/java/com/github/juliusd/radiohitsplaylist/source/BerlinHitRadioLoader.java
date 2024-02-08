@@ -12,8 +12,8 @@ public class BerlinHitRadioLoader {
     this.berlinHitRadioClient = berlinHitRadioClient;
   }
 
-  public List<Track> load() {
-    List<BerlinHitRadioTrackWrapper> berlinHitRadioTrackWrappers = berlinHitRadioClient.hitFinder(48);
+  public List<Track> load(String streamName) {
+    List<BerlinHitRadioTrackWrapper> berlinHitRadioTrackWrappers = berlinHitRadioClient.hitFinder(streamName, 48);
     return berlinHitRadioTrackWrappers.stream().map(BerlinHitRadioTrackWrapper::track).map(it -> new Track(it.title(), it.artist())).toList();
   }
 }
