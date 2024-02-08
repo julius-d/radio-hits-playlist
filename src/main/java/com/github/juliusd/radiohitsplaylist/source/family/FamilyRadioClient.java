@@ -8,7 +8,6 @@ import java.util.List;
 
 interface FamilyRadioClient {
 
-  @RequestLine("GET /services/program-info/history/radioteddy/{streamName}/0/19/56?items={items}")
   @Headers({
     "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0",
     "Accept: application/json, text/plain, */*",
@@ -18,10 +17,12 @@ interface FamilyRadioClient {
     "Sec-Fetch-Mode: cors",
     "Sec-Fetch-Site: same-origin",
   })
+  @RequestLine("GET /services/program-info/history/radioteddy/{streamName}/{dayOffset}/{hour}/1?items={items}")
   List<FamilyTrackWrapper> hitFinder(
     @Param("streamName") String streamName,
-    @Param("items") int items);
-//GET
-//	https://www.radioteddy.de/services/program-info/history/radioteddy/teddy-live/0/17/19?items=48
+    @Param("dayOffset") int dayOffset,
+    @Param("hour") int hour,
+    @Param("items") int items
+  );
 }
 

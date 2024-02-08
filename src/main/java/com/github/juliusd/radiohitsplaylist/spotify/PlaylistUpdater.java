@@ -1,6 +1,9 @@
 package com.github.juliusd.radiohitsplaylist.spotify;
 
 import com.github.juliusd.radiohitsplaylist.Track;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.reflect.TypeToken;
 import com.neovisionaries.i18n.CountryCode;
 import org.apache.hc.core5.http.ParseException;
 import se.michaelthelin.spotify.SpotifyApi;
@@ -22,9 +25,18 @@ public class PlaylistUpdater {
   }
 
   public void update(List<Track> tracks, String playlistId, String descriptionPrefix) {
-    List<String> spotifyTrackUris = findSpotifyTrackIds(tracks);
+    var limitedTracks = limitTrack(tracks);
+    var spotifyTrackUris = findSpotifyTrackIds(limitedTracks);
     storeOnPlayList(spotifyTrackUris, playlistId);
     updateDescription(playlistId, descriptionPrefix);
+  }
+
+  /**
+   * A max of 100 tracks can be replaced with one call.
+   * See also <a href="https://developer.spotify.com/documentation/web-api/reference/reorder-or-replace-playlists-tracks">spotify API docu</a>
+   */
+  private List<Track> limitTrack(List<Track> tracks) {
+    return tracks.stream().limit(100).toList();
   }
 
   private void updateDescription(String playlistId, String descriptionPrefix) {
@@ -41,8 +53,10 @@ public class PlaylistUpdater {
 
   private void storeOnPlayList(List<String> spotifyTrackUris, String playlistId) {
     try {
-      spotifyApi
-        .replacePlaylistsItems(playlistId, spotifyTrackUris.toArray(String[]::new))
+      JsonArray uris = new Gson().toJsonTree(spotifyTrackUris, new TypeToken<List<String>>() {
+      }.getType()).getAsJsonArray();
+      String result = spotifyApi
+        .replacePlaylistsItems(playlistId, uris)
         .build()
         .execute();
     } catch (IOException | SpotifyWebApiException | ParseException e) {
@@ -60,7 +74,7 @@ public class PlaylistUpdater {
     String q1 = "artist:\"" + track.artist().replaceAll(" &", ",") + "\" track:\"" + track.title() + "\"";
     String q2 = track.title() + " " + track.artist() + " artist: " + track.artist() + " track: " + track.title();
     var song = execSearch(q1).or(() -> execSearch(q2));
-    System.out.println(track + " | " + q1 + "|" + q2 + "| " + song.map(it -> it.getHref()).orElse("-"));
+    // System.out.println(track + " | " + q1 + "|" + q2 + "| " + song.map(it -> it.getHref()).orElse("-"));
     return song
       .map(se.michaelthelin.spotify.model_objects.specification.Track::getUri);
   }

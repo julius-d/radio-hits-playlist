@@ -3,6 +3,7 @@ package com.github.juliusd.radiohitsplaylist.source.family;
 import com.github.juliusd.radiohitsplaylist.Track;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public class FamilyRadioLoader {
 
@@ -13,7 +14,10 @@ public class FamilyRadioLoader {
   }
 
   public List<Track> load(String streamName) {
-    List<FamilyTrackWrapper> familyTrackWrappers = familyRadioClient.hitFinder(streamName, 48);
-    return familyTrackWrappers.stream().map(FamilyTrackWrapper::track).map(it -> new Track(it.title(), it.artist())).toList();
+    return Stream.of(6, 9, 12, 15)
+      .flatMap(hour -> familyRadioClient.hitFinder(streamName, -1, hour, 48).stream())
+      .map(FamilyTrackWrapper::track).map(it -> new Track(it.title(), it.artist()))
+      .distinct()
+      .toList();
   }
 }
