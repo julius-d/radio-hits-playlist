@@ -1,7 +1,9 @@
 package com.github.juliusd.radiohitsplaylist;
 
-import com.github.juliusd.radiohitsplaylist.source.BerlinHitRadioClientConfiguration;
-import com.github.juliusd.radiohitsplaylist.source.BerlinHitRadioLoader;
+import com.github.juliusd.radiohitsplaylist.source.berlinhitradio.BerlinHitRadioClientConfiguration;
+import com.github.juliusd.radiohitsplaylist.source.berlinhitradio.BerlinHitRadioLoader;
+import com.github.juliusd.radiohitsplaylist.source.family.FamilyClientConfiguration;
+import com.github.juliusd.radiohitsplaylist.source.family.FamilyRadioLoader;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistShuffel;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistUpdater;
 import org.apache.hc.core5.http.ParseException;
@@ -17,17 +19,18 @@ public class Main {
     System.out.println("Start");
     System.out.println("Version: " + PlaylistShuffel.class.getPackage().getImplementationVersion());
 
-    SpotifyApi spotifyApi = buildSpotifyApi();
-
-
+    var spotifyApi = buildSpotifyApi();
     var playlistShuffel = new PlaylistShuffel(spotifyApi);
-
-    playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist("***REMOVED***");
-    playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist("***REMOVED***");
-    playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist("***REMOVED***");
-
     var berlinHitRadioLoader = new BerlinHitRadioClientConfiguration().berlinHitRadioLoader();
+    var familyRadioLoader = new FamilyClientConfiguration().familyRadioLoader();
 
+    playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist("***REMOVED***");
+    playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist("***REMOVED***");
+    playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist("***REMOVED***");
+
+
+    refreshFamilyPlaylistFromSource(familyRadioLoader, spotifyApi, "teddy-live", "***REMOVED***", "Familien Radio Hits für Groß und Klein - aktualisiert am ");
+    refreshFamilyPlaylistFromSource(familyRadioLoader, spotifyApi, "teddy-deutschpop", "***REMOVED***", "Deutsch-Pop Radio ohne Ende, für die ganze Familien - aktualisiert am ");
     refreshPlaylistFromSource(berlinHitRadioLoader, spotifyApi, "t40", "***REMOVED***", "Top Radio Hits aus Berlin - aktualisiert am ");
     refreshPlaylistFromSource(berlinHitRadioLoader, spotifyApi, "air", "***REMOVED***", "Radio Hits aus Berlin - aktualisiert am ");
 
@@ -39,6 +42,13 @@ public class Main {
     var playlistUpdater = new PlaylistUpdater(spotifyApi);
     playlistUpdater.update(tracks, playlistId, descriptionPrefix);
     System.out.println("Refreshed " + streamName + " with " + tracks.size() + " tracks");
+  }
+
+  private static void refreshFamilyPlaylistFromSource(FamilyRadioLoader berlinHitRadioLoader, SpotifyApi spotifyApi, String streamName, String playlistId, String descriptionPrefix) {
+    List<Track> tracks = berlinHitRadioLoader.load(streamName);
+    var playlistUpdater = new PlaylistUpdater(spotifyApi);
+    playlistUpdater.update(tracks, playlistId, descriptionPrefix);
+    System.out.println("Refreshed family radio " + streamName + " with " + tracks.size() + " tracks");
   }
 
   private static SpotifyApi buildSpotifyApi() throws IOException, SpotifyWebApiException, ParseException {

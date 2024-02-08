@@ -1,4 +1,4 @@
-package com.github.juliusd.radiohitsplaylist.source;
+package com.github.juliusd.radiohitsplaylist.source.berlinhitradio;
 
 import feign.Feign;
 import feign.Logger;

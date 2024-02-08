@@ -1,4 +1,4 @@
-package com.github.juliusd.radiohitsplaylist.source;
+package com.github.juliusd.radiohitsplaylist.source.berlinhitradio;
 
 import feign.Headers;
 import feign.Param;
@@ -18,7 +18,10 @@ interface BerlinHitRadioClient {
     "Sec-Fetch-Mode: cors",
     "Sec-Fetch-Site: same-origin",
   })
-  List<BerlinHitRadioTrackWrapper> hitFinder(@Param("streamName") String streamName, @Param("items") int items);
-
+  List<BerlinHitRadioTrackWrapper> hitFinder(
+    @Param("streamName") String streamName,
+    @Param("items") int items);
+//GET
+//	https://www.radioteddy.de/services/program-info/history/radioteddy/teddy-live/0/17/19?items=48
 }
 
