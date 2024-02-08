@@ -2,7 +2,7 @@ package com.github.juliusd.radiohitsplaylist;
 
 import com.github.juliusd.radiohitsplaylist.source.berlinhitradio.BerlinHitRadioClientConfiguration;
 import com.github.juliusd.radiohitsplaylist.source.berlinhitradio.BerlinHitRadioLoader;
-import com.github.juliusd.radiohitsplaylist.source.family.FamilyClientConfiguration;
+import com.github.juliusd.radiohitsplaylist.source.family.FamilyRadioClientConfiguration;
 import com.github.juliusd.radiohitsplaylist.source.family.FamilyRadioLoader;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistShuffel;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistUpdater;
@@ -22,7 +22,7 @@ public class Main {
     var spotifyApi = buildSpotifyApi();
     var playlistShuffel = new PlaylistShuffel(spotifyApi);
     var berlinHitRadioLoader = new BerlinHitRadioClientConfiguration().berlinHitRadioLoader();
-    var familyRadioLoader = new FamilyClientConfiguration().familyRadioLoader();
+    var familyRadioLoader = new FamilyRadioClientConfiguration().familyRadioLoader();
 
     playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist("***REMOVED***");
     playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist("***REMOVED***");

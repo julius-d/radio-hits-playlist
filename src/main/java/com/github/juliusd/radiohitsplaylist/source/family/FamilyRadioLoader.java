@@ -16,7 +16,7 @@ public class FamilyRadioLoader {
   public List<Track> load(String streamName) {
     return Stream.of(6, 9, 12, 15)
       .flatMap(hour -> familyRadioClient.hitFinder(streamName, -1, hour, 48).stream())
-      .map(FamilyTrackWrapper::track).map(it -> new Track(it.title(), it.artist()))
+      .map(FamilyRadioTrackWrapper::track).map(it -> new Track(it.title(), it.artist()))
       .distinct()
       .toList();
   }

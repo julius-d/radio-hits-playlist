@@ -5,7 +5,7 @@ import feign.Logger;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 
-public class FamilyClientConfiguration {
+public class FamilyRadioClientConfiguration {
 
   FamilyRadioClient berlinHitRadioClient() {
     return Feign.builder()

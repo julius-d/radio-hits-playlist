@@ -18,7 +18,7 @@ interface FamilyRadioClient {
     "Sec-Fetch-Site: same-origin",
   })
   @RequestLine("GET /services/program-info/history/radioteddy/{streamName}/{dayOffset}/{hour}/1?items={items}")
-  List<FamilyTrackWrapper> hitFinder(
+  List<FamilyRadioTrackWrapper> hitFinder(
     @Param("streamName") String streamName,
     @Param("dayOffset") int dayOffset,
     @Param("hour") int hour,
