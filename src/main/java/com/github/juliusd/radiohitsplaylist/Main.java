@@ -18,8 +18,8 @@ import java.util.List;
 public class Main {
 
   public static void main(String[] args) throws IOException, ParseException, SpotifyWebApiException {
-    System.out.println("Start");
-    System.out.println("Version: " + PlaylistShuffel.class.getPackage().getImplementationVersion());
+    log("Start");
+    log("Version: " + PlaylistShuffel.class.getPackage().getImplementationVersion());
 
     var configuration = new ConfigLoader().loadConfig(System.getProperty("configFilePath"));
 
@@ -38,21 +38,21 @@ public class Main {
     refreshPlaylistFromSource(berlinHitRadioLoader, spotifyApi, "t40", "***REMOVED***", "Top Radio Hits aus Berlin - aktualisiert am ");
     refreshPlaylistFromSource(berlinHitRadioLoader, spotifyApi, "air", "***REMOVED***", "Radio Hits aus Berlin - aktualisiert am ");
 
-    System.out.println("Done");
+    log("Done");
   }
 
   private static void refreshPlaylistFromSource(BerlinHitRadioLoader berlinHitRadioLoader, SpotifyApi spotifyApi, String streamName, String playlistId, String descriptionPrefix) {
     List<Track> tracks = berlinHitRadioLoader.load(streamName);
     var playlistUpdater = new PlaylistUpdater(spotifyApi);
     playlistUpdater.update(tracks, playlistId, descriptionPrefix);
-    System.out.println("Refreshed " + streamName + " with " + tracks.size() + " tracks");
+    log("Refreshed " + streamName + " with " + tracks.size() + " tracks");
   }
 
   private static void refreshFamilyPlaylistFromSource(FamilyRadioLoader familyRadioLoader, SpotifyApi spotifyApi, String streamName, String playlistId, String descriptionPrefix) {
     List<Track> tracks = familyRadioLoader.load(streamName);
     var playlistUpdater = new PlaylistUpdater(spotifyApi);
     playlistUpdater.update(tracks, playlistId, descriptionPrefix);
-    System.out.println("Refreshed family radio " + streamName);
+    log("Refreshed family radio " + streamName);
   }
 
   private static SpotifyApi buildSpotifyApi(Configuration configuration) throws IOException, SpotifyWebApiException, ParseException {
@@ -77,7 +77,11 @@ public class Main {
 
     spotifyApi.setAccessToken(authorizationCodeCredentials.getAccessToken());
 
-    System.out.println("New AccessToken expires in: " + authorizationCodeCredentials.getExpiresIn() + " seconds");
+    log("New AccessToken expires in: " + authorizationCodeCredentials.getExpiresIn() + " seconds");
     return spotifyApi;
+  }
+
+  private static void log(String message) {
+    System.out.println(message);
   }
 }
