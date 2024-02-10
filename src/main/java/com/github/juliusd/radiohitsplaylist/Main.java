@@ -66,11 +66,9 @@ public class Main {
       throw new RuntimeException("clientSecret is needed");
     }
 
-    var clientId = "***REMOVED***";
-
     SpotifyApi spotifyApi = new SpotifyApi.Builder()
       .setRefreshToken(spotifyRefreshToken)
-      .setClientId(clientId)
+      .setClientId(configuration.spotify().clientId())
       .setClientSecret(clientSecret)
       .build();
 

@@ -1,12 +1,13 @@
 package com.github.juliusd.radiohitsplaylist.config;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ConfigLoaderTest {
 
@@ -19,16 +20,17 @@ class ConfigLoaderTest {
     //language=yaml
     String str =
       """
-       ---
-       spotify:
-         refreshToken: myRefreshToken
-         clientSecret: myClientSecret
-       """;
+        ---
+        spotify:
+          refreshToken: myRefreshToken
+          clientId: myClientId
+          clientSecret: myClientSecret
+        """;
 
     Files.write(path, str.getBytes());
 
 
     Configuration configuration = new ConfigLoader().loadConfig(path.toAbsolutePath().toString());
-    Assertions.assertEquals(configuration, new Configuration(new SpotifyConfiguration("myRefreshToken", "myClientSecret")));
+    assertEquals(configuration, new Configuration(new SpotifyConfiguration("myRefreshToken", "myClientId", "myClientSecret")));
   }
 }
