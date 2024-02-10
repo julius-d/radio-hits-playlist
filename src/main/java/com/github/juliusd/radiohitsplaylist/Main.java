@@ -1,5 +1,7 @@
 package com.github.juliusd.radiohitsplaylist;
 
+import com.github.juliusd.radiohitsplaylist.config.ConfigLoader;
+import com.github.juliusd.radiohitsplaylist.config.Configuration;
 import com.github.juliusd.radiohitsplaylist.source.berlinhitradio.BerlinHitRadioClientConfiguration;
 import com.github.juliusd.radiohitsplaylist.source.berlinhitradio.BerlinHitRadioLoader;
 import com.github.juliusd.radiohitsplaylist.source.family.FamilyRadioClientConfiguration;
@@ -19,7 +21,9 @@ public class Main {
     System.out.println("Start");
     System.out.println("Version: " + PlaylistShuffel.class.getPackage().getImplementationVersion());
 
-    var spotifyApi = buildSpotifyApi();
+    var configuration = new ConfigLoader().loadConfig(System.getProperty("configFilePath"));
+
+    var spotifyApi = buildSpotifyApi(configuration);
     var playlistShuffel = new PlaylistShuffel(spotifyApi);
     var berlinHitRadioLoader = new BerlinHitRadioClientConfiguration().berlinHitRadioLoader();
     var familyRadioLoader = new FamilyRadioClientConfiguration().familyRadioLoader();
@@ -48,16 +52,16 @@ public class Main {
     List<Track> tracks = familyRadioLoader.load(streamName);
     var playlistUpdater = new PlaylistUpdater(spotifyApi);
     playlistUpdater.update(tracks, playlistId, descriptionPrefix);
-    System.out.println("Refreshed family radio " + streamName );
+    System.out.println("Refreshed family radio " + streamName);
   }
 
-  private static SpotifyApi buildSpotifyApi() throws IOException, SpotifyWebApiException, ParseException {
-    String spotifyRefreshToken = System.getProperty("spotifyRefreshToken");
+  private static SpotifyApi buildSpotifyApi(Configuration configuration) throws IOException, SpotifyWebApiException, ParseException {
+    String spotifyRefreshToken = configuration.spotify().refreshToken();
     if (spotifyRefreshToken == null || spotifyRefreshToken.isBlank()) {
       throw new RuntimeException("spotifyRefreshToken is needed");
     }
 
-    String clientSecret = System.getProperty("spotifyClientSecret");
+    String clientSecret = configuration.spotify().clientSecret();
     if (clientSecret == null || clientSecret.isBlank()) {
       throw new RuntimeException("clientSecret is needed");
     }
