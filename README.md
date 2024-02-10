@@ -1,5 +1,6 @@
 # radio-hits-playlist 📻
 
+![music machine](img/music-machine.jpeg)
 
 # Usage
 
