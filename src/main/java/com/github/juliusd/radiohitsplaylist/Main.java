@@ -52,8 +52,6 @@ public class Main {
   }
 
   private static SpotifyApi buildSpotifyApi() throws IOException, SpotifyWebApiException, ParseException {
-    String spotifyAccessToken = System.getProperty("spotifyAccessToken");
-
     String spotifyRefreshToken = System.getProperty("spotifyRefreshToken");
     if (spotifyRefreshToken == null || spotifyRefreshToken.isBlank()) {
       throw new RuntimeException("spotifyRefreshToken is needed");
@@ -67,7 +65,6 @@ public class Main {
     var clientId = "***REMOVED***";
 
     SpotifyApi spotifyApi = new SpotifyApi.Builder()
-      .setAccessToken(spotifyAccessToken)
       .setRefreshToken(spotifyRefreshToken)
       .setClientId(clientId)
       .setClientSecret(clientSecret)
