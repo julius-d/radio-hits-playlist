@@ -28,10 +28,9 @@ public class Main {
     var berlinHitRadioLoader = new BerlinHitRadioClientConfiguration().berlinHitRadioLoader();
     var familyRadioLoader = new FamilyRadioClientConfiguration().familyRadioLoader();
 
-    playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist("***REMOVED***");
-    playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist("***REMOVED***");
-    playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist("***REMOVED***");
-
+    configuration.shuffleTasks().forEach(shuffleTaskConfiguration -> {
+      playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist(shuffleTaskConfiguration.playlistId());
+    });
 
     refreshFamilyPlaylistFromSource(familyRadioLoader, spotifyApi, "teddy-live", "***REMOVED***", "Familien Radio Hits für Groß und Klein - aktualisiert am ");
     refreshFamilyPlaylistFromSource(familyRadioLoader, spotifyApi, "teddy-deutschpop", "***REMOVED***", "Deutsch-Pop Radio ohne Ende, für die ganze Familien - aktualisiert am ");
