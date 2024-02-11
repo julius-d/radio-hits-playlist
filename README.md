@@ -12,6 +12,7 @@ java -jar -DconfigFilePath=./config.yaml /tmp/radio-hits-playlist.jar
 ```
 And the config.yaml shall look like
 ````yaml
+---
 spotify:
   refreshToken: myRefreshToken
   clientId: myClientId
@@ -20,4 +21,18 @@ shuffleTasks:
   - playlistId: myPlaylistId0001
   - playlistId: myPlaylistId0002
   - playlistId: myPlaylistId0003
+reCreateFamilyRadioPlaylistTasks:
+  - playlistId: targetPlaylistId4
+    streamName: myStream1
+    descriptionPrefix: my prefix
+  - playlistId: targetPlaylistId5
+    streamName: myStream2
+    descriptionPrefix: my other prefix
+reCreateBerlinHitRadioPlaylistTasks:
+  - playlistId: targetPlaylistId6
+    streamName: myHitStream1
+    descriptionPrefix: my prefix2
+  - playlistId: targetPlaylistId7
+    streamName: myHitStream2
+    descriptionPrefix: my other prefix2
 ````
