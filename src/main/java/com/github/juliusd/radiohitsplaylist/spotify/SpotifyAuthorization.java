@@ -1,5 +1,6 @@
 package com.github.juliusd.radiohitsplaylist.spotify;
 
+import com.github.juliusd.radiohitsplaylist.config.ConfigLoader;
 import org.apache.hc.core5.http.ParseException;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.SpotifyHttpManager;
@@ -10,26 +11,23 @@ import java.io.IOException;
 import java.net.URI;
 
 public class SpotifyAuthorization {
-  private static final String clientId = "***REMOVED***";
-  private static final String clientSecret = System.getProperty("spotifyClientSecret");
   private static final URI redirectUri = SpotifyHttpManager.makeUri("https://github.com/julius-d/radio-hits-playlist/redirected");
+  private final SpotifyApi spotifyApi;
 
-  private static final SpotifyApi spotifyApi = new SpotifyApi.Builder()
-    .setClientId(clientId)
-    .setClientSecret(clientSecret)
-    .setRedirectUri(redirectUri)
-    .build();
-  private static final AuthorizationCodeUriRequest authorizationCodeUriRequest = spotifyApi.authorizationCodeUri()
-    .scope("playlist-modify-public,playlist-modify-private,playlist-read-private,playlist-modify-public")
-    .build();
+  public SpotifyAuthorization(SpotifyApi spotifyApi) {
+    this.spotifyApi = spotifyApi;
+  }
 
-  public static void authorizationCodeUri() {
+  public void authorizationCodeUri() {
+    AuthorizationCodeUriRequest authorizationCodeUriRequest = spotifyApi.authorizationCodeUri()
+      .scope("playlist-modify-public,playlist-modify-private,playlist-read-private,playlist-modify-public")
+      .build();
     var uri = authorizationCodeUriRequest.execute();
 
     System.out.println("URI: " + uri.toString());
   }
 
-  public static void createAccessToken(String code) throws IOException, ParseException, SpotifyWebApiException {
+  public void createAccessToken(String code) throws IOException, ParseException, SpotifyWebApiException {
     var authorizationCodeRequest = spotifyApi.authorizationCode(code).build();
     var authorizationCodeCredentials = authorizationCodeRequest.execute();
     System.out.println("AccessToken: " + authorizationCodeCredentials.getAccessToken());
@@ -38,8 +36,16 @@ public class SpotifyAuthorization {
   }
 
   public static void main(String[] args) throws IOException, ParseException, SpotifyWebApiException {
-    authorizationCodeUri();
-    createAccessToken("code from url");
+    var configuration = new ConfigLoader().loadConfig(System.getProperty("configFilePath"));
+    var spotifyApi = new SpotifyApi.Builder()
+      .setClientId(configuration.spotify().clientId())
+      .setClientSecret(configuration.spotify().clientSecret())
+      .setRedirectUri(redirectUri)
+      .build();
+
+    var spotifyAuthorization = new SpotifyAuthorization(spotifyApi);
+    spotifyAuthorization.authorizationCodeUri();
+    spotifyAuthorization.createAccessToken("code from url");
   }
 
 }
