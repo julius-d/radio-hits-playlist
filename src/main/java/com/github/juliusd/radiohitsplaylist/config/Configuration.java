@@ -5,7 +5,8 @@ import java.util.List;
 public record Configuration(
   SpotifyConfiguration spotify,
   List<ShuffleTaskConfiguration> shuffleTasks,
-  List<ReCreateFamilyRadioPlaylistTaskConfiguration> reCreateFamilyRadioPlaylistTasks
+  List<ReCreateFamilyRadioPlaylistTaskConfiguration> reCreateFamilyRadioPlaylistTasks,
+  List<ReCreateBerlinHitRadioPlaylistTaskConfiguration> reCreateBerlinHitRadioPlaylistTasks
 
 ) {
 }

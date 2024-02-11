@@ -37,6 +37,13 @@ class ConfigLoaderTest {
           - playlistId: targetPlaylistId5
             streamName: myStream2
             descriptionPrefix: my other prefix
+        reCreateBerlinHitRadioPlaylistTasks:
+          - playlistId: targetPlaylistId6
+            streamName: myHitStream1
+            descriptionPrefix: my prefix2
+          - playlistId: targetPlaylistId7
+            streamName: myHitStream2
+            descriptionPrefix: my other prefix2
         """;
 
     Files.write(path, str.getBytes());
@@ -53,6 +60,11 @@ class ConfigLoaderTest {
       List.of(
         new ReCreateFamilyRadioPlaylistTaskConfiguration("myStream1", "targetPlaylistId4", "my prefix"),
         new ReCreateFamilyRadioPlaylistTaskConfiguration("myStream2", "targetPlaylistId5", "my other prefix")
-      )));
+      ),
+      List.of(
+        new ReCreateBerlinHitRadioPlaylistTaskConfiguration("myHitStream1", "targetPlaylistId6", "my prefix2"),
+        new ReCreateBerlinHitRadioPlaylistTaskConfiguration("myHitStream2", "targetPlaylistId7", "my other prefix2")
+      )
+    ));
   }
 }
