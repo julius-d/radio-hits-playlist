@@ -44,7 +44,7 @@ public class PlaylistUpdater {
       String today = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
       spotifyApi
         .changePlaylistsDetails(playlistId)
-        .description(descriptionPrefix + today)
+        .description(descriptionPrefix.trim() + " " + today)
         .build().execute();
     } catch (IOException | SpotifyWebApiException | ParseException e) {
       throw new SpotifyException(e);
