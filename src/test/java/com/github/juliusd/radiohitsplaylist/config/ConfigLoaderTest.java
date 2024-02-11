@@ -30,6 +30,13 @@ class ConfigLoaderTest {
           - playlistId: myPlaylistId0001
           - playlistId: myPlaylistId0002
           - playlistId: myPlaylistId0003
+        reCreateFamilyRadioPlaylistTasks:
+          - playlistId: targetPlaylistId4
+            streamName: myStream1
+            descriptionPrefix: my prefix
+          - playlistId: targetPlaylistId5
+            streamName: myStream2
+            descriptionPrefix: my other prefix
         """;
 
     Files.write(path, str.getBytes());
@@ -42,6 +49,10 @@ class ConfigLoaderTest {
         new ShuffleTaskConfiguration("myPlaylistId0001"),
         new ShuffleTaskConfiguration("myPlaylistId0002"),
         new ShuffleTaskConfiguration("myPlaylistId0003")
+      ),
+      List.of(
+        new ReCreateFamilyRadioPlaylistTaskConfiguration("myStream1", "targetPlaylistId4", "my prefix"),
+        new ReCreateFamilyRadioPlaylistTaskConfiguration("myStream2", "targetPlaylistId5", "my other prefix")
       )));
   }
 }
