@@ -87,7 +87,7 @@ public class PlaylistUpdater {
       var trackPaging = searchTracksRequest.execute();
       return Arrays.stream(trackPaging.getItems()).findFirst();
     } catch (IOException | SpotifyWebApiException | ParseException e) {
-      throw new SpotifyException(e);
+      throw new SpotifyException("Failed to search for " + q, e);
     }
   }
 
