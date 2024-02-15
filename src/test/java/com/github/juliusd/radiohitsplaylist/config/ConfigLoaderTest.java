@@ -6,6 +6,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,10 +17,9 @@ class ConfigLoaderTest {
   private Path tempDirectory;
 
   @Test
-  void load() throws IOException {
-    Path path = Files.createFile(tempDirectory.resolve("test.yaml"));
-    //language=yaml
-    String str =
+  void loadsFullConfig() throws IOException {
+    Path path = givenConfig(
+      //language=yaml
       """
         ---
         spotify:
@@ -44,12 +44,10 @@ class ConfigLoaderTest {
           - playlistId: targetPlaylistId7
             streamName: myHitStream2
             descriptionPrefix: my other prefix2
-        """;
-
-    Files.write(path, str.getBytes());
+        """);
 
 
-    Configuration configuration = new ConfigLoader().loadConfig(path.toAbsolutePath().toString());
+    Configuration configuration = new ConfigLoader().loadConfig(path.toString());
     assertEquals(configuration, new Configuration(
       new SpotifyConfiguration("myRefreshToken", "myClientId", "myClientSecret"),
       List.of(
@@ -66,5 +64,29 @@ class ConfigLoaderTest {
         new ReCreateBerlinHitRadioPlaylistTaskConfiguration("myHitStream2", "targetPlaylistId7", "my other prefix2")
       )
     ));
+  }
+
+  @Test
+  void notConfigureListsAreEmpty() throws IOException {
+    Path path = givenConfig(
+      //language=yaml
+      """
+        ---
+        spotify:
+          refreshToken: myRefreshToken
+          clientId: myClientId
+          clientSecret: myClientSecret
+        """);
+
+    Configuration configuration = new ConfigLoader().loadConfig(path.toString());
+    assertEquals(Collections.emptyList(), configuration.reCreateFamilyRadioPlaylistTasks());
+    assertEquals(Collections.emptyList(), configuration.reCreateFamilyRadioPlaylistTasks());
+    assertEquals(Collections.emptyList(), configuration.shuffleTasks());
+  }
+
+  private Path givenConfig(String config) throws IOException {
+    Path path = Files.createFile(tempDirectory.resolve("test.yaml"));
+    Files.write(path, config.getBytes());
+    return path.toAbsolutePath();
   }
 }
