@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.function.Predicate.not;
+
 public class PlaylistUpdater {
   private final SpotifyApi spotifyApi;
 
@@ -71,19 +73,29 @@ public class PlaylistUpdater {
   }
 
   private Optional<String> findSpotifyTrack(Track track) {
-    String q1 = "artist:\"" + track.artist().trim() + "\" track:\"" + track.title() + "\"";
-    var firstArtist = Arrays.stream(track.artist().split("&")).findFirst().map(String::trim).orElse(track.artist());
-    String q2 = "artist:\"" + firstArtist + "\" track:\"" + track.title() + "\"";
+    String quoteQuery = "artist:\"" + track.artist().trim() + "\" track:\"" + track.title() + "\"";
 
     String titleAndArtist = track.title() + " " + track.artist();
-    String q3;
+    String unquotedQuery;
     if (titleAndArtist.length() < 100) {
-      q3 = titleAndArtist + " artist: " + track.artist() + " track: " + track.title();
+      unquotedQuery = titleAndArtist + " artist: " + track.artist() + " track: " + track.title();
     } else {
-      q3 = titleAndArtist;
+      unquotedQuery = titleAndArtist;
     }
-    var song = execSearch(q1).or(() -> execSearch(q2)).or(() -> execSearch(q3));
-    // System.out.println(track + " | " + q1 + "|" + q2 + "| " + song.map(it -> it.getHref()).orElse("-"));
+
+    Optional<se.michaelthelin.spotify.model_objects.specification.Track> song;
+    if (track.artist().contains("&")) {
+      var firstArtist = Arrays.stream(track.artist().split("&"))
+        .filter(not(String::isBlank))
+        .map(String::trim)
+        .findFirst()
+        .orElse(track.artist());
+      String firstArtistQuoteQuery = "artist:\"" + firstArtist + "\" track:\"" + track.title() + "\"";
+      song = execSearch(quoteQuery).or(() -> execSearch(firstArtistQuoteQuery)).or(() -> execSearch(unquotedQuery));
+    } else {
+      song = execSearch(quoteQuery).or(() -> execSearch(unquotedQuery));
+    }
+
     return song
       .map(se.michaelthelin.spotify.model_objects.specification.Track::getUri);
   }
