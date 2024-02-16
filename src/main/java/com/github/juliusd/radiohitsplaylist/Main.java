@@ -10,6 +10,7 @@ import com.github.juliusd.radiohitsplaylist.source.family.FamilyRadioClientConfi
 import com.github.juliusd.radiohitsplaylist.source.family.FamilyRadioLoader;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistShuffel;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistUpdater;
+import com.github.juliusd.radiohitsplaylist.spotify.TrackFinder;
 import org.apache.hc.core5.http.ParseException;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
@@ -31,17 +32,18 @@ public class Main {
     var playlistShuffel = new PlaylistShuffel(spotifyApi);
     var berlinHitRadioLoader = new BerlinHitRadioClientConfiguration().berlinHitRadioLoader();
     var familyRadioLoader = new FamilyRadioClientConfiguration().familyRadioLoader();
+    var playlistUpdater = new PlaylistUpdater(spotifyApi, new TrackFinder(spotifyApi));
 
     configuration.shuffleTasks().forEach(shuffleTaskConfiguration -> {
       playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist(shuffleTaskConfiguration.playlistId());
     });
 
     configuration.reCreateFamilyRadioPlaylistTasks().forEach(task -> {
-      refreshFamilyPlaylistFromSource(familyRadioLoader, spotifyApi, task);
+      refreshFamilyPlaylistFromSource(familyRadioLoader, playlistUpdater, task);
     });
 
     configuration.reCreateBerlinHitRadioPlaylistTasks().forEach(task -> {
-      refreshPlaylistFromSource(berlinHitRadioLoader, spotifyApi, task);
+      refreshPlaylistFromSource(berlinHitRadioLoader, playlistUpdater, task);
     });
 
     log("Done");
@@ -49,22 +51,20 @@ public class Main {
 
   private static void refreshPlaylistFromSource(
     BerlinHitRadioLoader berlinHitRadioLoader,
-    SpotifyApi spotifyApi,
+    PlaylistUpdater playlistUpdater,
     ReCreateBerlinHitRadioPlaylistTaskConfiguration configuration
   ) {
     List<Track> tracks = berlinHitRadioLoader.load(configuration.streamName());
-    var playlistUpdater = new PlaylistUpdater(spotifyApi);
     playlistUpdater.update(tracks, configuration.playlistId(), configuration.descriptionPrefix());
     log("Refreshed " + configuration.streamName() + " with " + tracks.size() + " tracks");
   }
 
   private static void refreshFamilyPlaylistFromSource(
     FamilyRadioLoader familyRadioLoader,
-    SpotifyApi spotifyApi,
+    PlaylistUpdater playlistUpdater,
     ReCreateFamilyRadioPlaylistTaskConfiguration configuration
   ) {
     List<Track> tracks = familyRadioLoader.load(configuration.streamName());
-    var playlistUpdater = new PlaylistUpdater(spotifyApi);
     playlistUpdater.update(tracks, configuration.playlistId(), configuration.descriptionPrefix());
     log("Refreshed family radio " + configuration.streamName());
   }
