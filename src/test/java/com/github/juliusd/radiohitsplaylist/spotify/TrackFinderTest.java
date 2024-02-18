@@ -168,7 +168,8 @@ class TrackFinderTest {
       .withQueryParam("q", equalTo("artist:\"Udo Lindenberg\" track:\"Komet\""))
       .withQueryParam("market", equalTo("DE"))
       .withQueryParam("limit", equalTo("2"))
-      .withQueryParam("type", equalTo("track"));
+      .withQueryParam("type", equalTo("track"))
+    );
     verify(2, getRequestedFor(urlPathEqualTo("/v1/search")));
 
     assertThat(spotifyTrack).contains("spotify:track:7oQepKHmXDaPC3rgeLRvQu");
