@@ -10,11 +10,11 @@ import se.michaelthelin.spotify.requests.authorization.authorization_code.Author
 import java.io.IOException;
 import java.net.URI;
 
-public class SpotifyAuthorization {
+public class SpotifyInitialRefreshTokenCreator {
   private static final URI redirectUri = SpotifyHttpManager.makeUri("https://github.com/julius-d/radio-hits-playlist/redirected");
   private final SpotifyApi spotifyApi;
 
-  public SpotifyAuthorization(SpotifyApi spotifyApi) {
+  public SpotifyInitialRefreshTokenCreator(SpotifyApi spotifyApi) {
     this.spotifyApi = spotifyApi;
   }
 
@@ -43,7 +43,7 @@ public class SpotifyAuthorization {
       .setRedirectUri(redirectUri)
       .build();
 
-    var spotifyAuthorization = new SpotifyAuthorization(spotifyApi);
+    var spotifyAuthorization = new SpotifyInitialRefreshTokenCreator(spotifyApi);
     spotifyAuthorization.authorizationCodeUri();
     spotifyAuthorization.createAccessToken("code from url");
   }
