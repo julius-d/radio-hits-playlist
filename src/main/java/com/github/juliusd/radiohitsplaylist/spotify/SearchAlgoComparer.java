@@ -40,6 +40,15 @@ public class SearchAlgoComparer {
         <head>
             <title>Search algo comparer</title>
             <meta charset="UTF-8">
+            <style>
+            table, th, td {
+              border: 1px solid black;
+              border-collapse: collapse;
+            }
+            tr:nth-child(odd) {
+              background-color: LightGray;
+            }
+            </style>
         </head>
         <body>
         <table>
