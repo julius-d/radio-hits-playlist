@@ -15,24 +15,28 @@ import java.util.Optional;
 
 import static java.util.function.Predicate.not;
 
-public class TrackFinder {
+public class TrackFinderAlternative {
 
   private final SpotifyApi spotifyApi;
 
-  public TrackFinder(SpotifyApi spotifyApi) {
+  public TrackFinderAlternative(SpotifyApi spotifyApi) {
     this.spotifyApi = spotifyApi;
   }
 
   public Optional<SpotifyTrack> findSpotifyTrack(Track track) {
-    String quoteQuery = "artist:\"" + track.artist().trim() + "\" track:\"" + track.title() + "\"";
+    String quoteQuery =
+      "artist:\"" + track.artist().trim()
+      + "\" track:\"" + track.title() + "\"";
 
-    String titleAndArtist = track.title() + " " + track.artist();
-    String unquotedQuery;
-    if (titleAndArtist.length() < 100) {
-      unquotedQuery = titleAndArtist + " artist: " + track.artist() + " track: " + track.title();
-    } else {
-      unquotedQuery = titleAndArtist;
-    }
+//    String titleAndArtist = track.title() + " " + track.artist();
+    String unquotedQuery = "artist:" + track.artist() + " track:" + track.title();
+    String plainQuery = track.artist() + " " + track.title();
+//    String unquotedQuery;
+//    if (titleAndArtist.length() < 200) {
+//      unquotedQuery = titleAndArtist + " artist:" + track.artist() + " track:" + track.title();
+//    } else {
+//      unquotedQuery = titleAndArtist;
+//    }
 
     Optional<se.michaelthelin.spotify.model_objects.specification.Track> song;
     if (track.artist().contains("&")) {
@@ -44,7 +48,7 @@ public class TrackFinder {
       String firstArtistQuoteQuery = "artist:\"" + firstArtist + "\" track:\"" + track.title() + "\"";
       song = execSearch(quoteQuery).or(() -> execSearch(firstArtistQuoteQuery)).or(() -> execSearch(unquotedQuery));
     } else {
-      song = execSearch(quoteQuery).or(() -> execSearch(unquotedQuery));
+      song = execSearch(quoteQuery).or(() -> execSearch(unquotedQuery)).or(() -> execSearch(plainQuery));
     }
 
     return song
@@ -67,5 +71,6 @@ public class TrackFinder {
       throw new SpotifyException("Failed to search for " + q, e);
     }
   }
+
 
 }

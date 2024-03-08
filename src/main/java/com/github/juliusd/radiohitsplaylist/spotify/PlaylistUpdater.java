@@ -9,6 +9,7 @@ import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 
 import java.io.IOException;
+import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -46,9 +47,9 @@ public class PlaylistUpdater {
     }
   }
 
-  private void storeOnPlayList(List<String> spotifyTrackUris, String playlistId) {
+  private void storeOnPlayList(List<URI> spotifyTrackUris, String playlistId) {
     try {
-      JsonArray uris = new Gson().toJsonTree(spotifyTrackUris, new TypeToken<List<String>>() {
+      JsonArray uris = new Gson().toJsonTree(spotifyTrackUris.stream().map(URI::toString).toList(), new TypeToken<List<String>>() {
       }.getType()).getAsJsonArray();
       String result = spotifyApi
         .replacePlaylistsItems(playlistId, uris)
@@ -59,9 +60,9 @@ public class PlaylistUpdater {
     }
   }
 
-  private List<String> findSpotifyTrackIds(List<Track> tracks) {
+  private List<URI> findSpotifyTrackIds(List<Track> tracks) {
     return tracks.stream()
-      .flatMap(track -> trackFinder.findSpotifyTrack(track).stream())
+      .flatMap(track -> trackFinder.findSpotifyTrack(track).map(SpotifyTrack::uri).stream())
       .toList();
   }
 
