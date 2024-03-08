@@ -40,11 +40,13 @@ public class TrackFinderAlternative {
     querries.add(unquotedQuery);
     String plainQuery = track.artist() + " " + track.title();
     querries.add(plainQuery);
-    return querries.stream().reduce(Optional.empty(),
-        (Optional<se.michaelthelin.spotify.model_objects.specification.Track> o, String q) -> o.or(() -> execSearch(q)),
-        (track1, track2) -> track1.isPresent() ? track1 : track2
-      )
-      .map(SpotifyTrackMapper::toSpotifyTrack);
+      for (String query : querries) {
+          var searchResult = execSearch(query);
+          if (searchResult.isPresent()) {
+            return  searchResult.map(SpotifyTrackMapper::toSpotifyTrack);
+          }
+      }
+      return Optional.empty();
   }
 
   private Optional<se.michaelthelin.spotify.model_objects.specification.Track> execSearch(String q) {
