@@ -8,6 +8,7 @@ import com.github.juliusd.radiohitsplaylist.source.family.FamilyRadioClientConfi
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URI;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -70,7 +71,9 @@ public class SearchAlgoComparer {
           <th>#</th>
           <th>Given</th>
           <th>Algo 1</th>
+          <th>Algo 1 Cover</th>
           <th>Algo 2</th>
+          <th>Algo 2 Cover</th>
         </tr>
         """);
 
@@ -106,12 +109,15 @@ public class SearchAlgoComparer {
       }
       System.out.println("Track " + i + " " + trClass);
 
-      stringBuilder.append("""
+      stringBuilder.append(
+        """
         <tr class="%s">
           <td>%s</td>
           <td><b>%s</b><br>%s</td>
-          <td><b>%s</b><br>%s<br>%s</td>
-          <td><b>%s</b><br>%s<br>%s</td>
+          <td><b>%s</b><br>%s<br>%s (%s)</td>
+          <td><img src="%s" height="60" alt="cover"></td>
+          <td><b>%s</b><br>%s<br>%s (%s)</td>
+          <td><img src="%s" height="60" alt="cover"></td>
         </tr>
         """.formatted(
         trClass,
@@ -121,10 +127,14 @@ public class SearchAlgoComparer {
         algo1result.trackTitle(),
         algo1result.artists(),
         algo1result.starRating(),
+        algo1result.levenshteinDistance(),
+        algo1result.albumCover(),
         algo2result.trackTitle(),
         algo2result.artists(),
-        algo2result.starRating()
-      ));
+        algo2result.starRating(),
+        algo2result.levenshteinDistance(),
+        algo2result.albumCover()
+        ));
     }));
 
     stringBuilder.append(
@@ -133,7 +143,9 @@ public class SearchAlgoComparer {
           <td></td>
           <td></td>
           <td><b>%s</b></td>
+          <td></td>
           <td><b>%s</b></td>
+          <td></td>
         </tr>
         </table>
         </body>
@@ -145,11 +157,12 @@ public class SearchAlgoComparer {
     storeInFile(stringBuilder.toString());
   }
 
-  private static AlgoResult getAlgoResult(Optional<SpotifyTrack> algo1spotifyTrack, String givenTrackTitle, String givenArtist) {
-    String foundTrackTitle = algo1spotifyTrack.map(SpotifyTrack::name).orElse("-");
-    String foundArtists = algo1spotifyTrack.stream().flatMap(it -> it.artists().stream()).collect(Collectors.joining(", "));
-    boolean completeMatch = algo1spotifyTrack.isPresent() && givenTrackTitle.equals(foundTrackTitle) && givenArtist.equals(foundArtists);
-    boolean nearCompleteMatch = algo1spotifyTrack.isPresent() && givenTrackTitle.equalsIgnoreCase(foundTrackTitle)
+  private static AlgoResult getAlgoResult(Optional<SpotifyTrack> spotifyTrack, String givenTrackTitle, String givenArtist) {
+    String foundTrackTitle = spotifyTrack.map(SpotifyTrack::name).orElse("-");
+    String foundArtists = spotifyTrack.stream().flatMap(it -> it.artists().stream()).collect(Collectors.joining(", "));
+    URI albumCover = spotifyTrack.map(SpotifyTrack::albumCover).orElse(null);
+    boolean completeMatch = spotifyTrack.isPresent() && givenTrackTitle.equals(foundTrackTitle) && givenArtist.equals(foundArtists);
+    boolean nearCompleteMatch = spotifyTrack.isPresent() && givenTrackTitle.equalsIgnoreCase(foundTrackTitle)
                                 && normalize(givenArtist).equals(normalize(foundArtists));
     int levenshteinDistance =
       calculateLevenshteinDistance(normalize(givenTrackTitle), normalize(foundTrackTitle)) +
@@ -175,12 +188,13 @@ public class SearchAlgoComparer {
       starRatingValue = 0;
       starRating = "❌❌❌❌❌";
     }
-    return new AlgoResult(foundTrackTitle, foundArtists, starRating, starRatingValue, levenshteinDistance);
+    return new AlgoResult(foundTrackTitle, foundArtists, albumCover, starRating, starRatingValue, levenshteinDistance);
   }
 
   private record AlgoResult(
     String trackTitle,
     String artists,
+    URI albumCover,
     String starRating,
     int starRatingValue,
     int levenshteinDistance) {

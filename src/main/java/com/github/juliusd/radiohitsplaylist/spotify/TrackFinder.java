@@ -5,12 +5,9 @@ import com.neovisionaries.i18n.CountryCode;
 import org.apache.hc.core5.http.ParseException;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
-import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 import static java.util.function.Predicate.not;
@@ -48,12 +45,7 @@ public class TrackFinder {
     }
 
     return song
-      .map(this::toSpotifyTrack);
-  }
-
-  private SpotifyTrack toSpotifyTrack(se.michaelthelin.spotify.model_objects.specification.Track track) {
-    List<String> artists = Arrays.stream(track.getArtists()).map(ArtistSimplified::getName).toList();
-    return new SpotifyTrack(track.getName(), artists, URI.create(track.getUri()));
+      .map(SpotifyTrackMapper::toSpotifyTrack);
   }
 
   private Optional<se.michaelthelin.spotify.model_objects.specification.Track> execSearch(String q) {

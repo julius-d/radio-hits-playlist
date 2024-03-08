@@ -6,6 +6,7 @@ import java.util.List;
 public record SpotifyTrack(
   String name,
   List<String> artists,
-  URI uri
+  URI uri,
+  URI albumCover
 ) {
 }
