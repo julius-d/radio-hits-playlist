@@ -7,7 +7,9 @@ import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static java.util.function.Predicate.not;
@@ -21,21 +23,10 @@ public class TrackFinderAlternative {
   }
 
   public Optional<SpotifyTrack> findSpotifyTrack(Track track) {
-    String quoteQuery =
-      "artist:\"" + track.artist().trim()
-      + "\" track:\"" + track.title() + "\"";
+    List<String> querries = new ArrayList<>();
+    String quoteQuery = "artist:\"" + track.artist().trim() + "\" track:\"" + track.title() + "\"";
+    querries.add(quoteQuery);
 
-//    String titleAndArtist = track.title() + " " + track.artist();
-    String unquotedQuery = "artist:" + track.artist() + " track:" + track.title();
-    String plainQuery = track.artist() + " " + track.title();
-//    String unquotedQuery;
-//    if (titleAndArtist.length() < 200) {
-//      unquotedQuery = titleAndArtist + " artist:" + track.artist() + " track:" + track.title();
-//    } else {
-//      unquotedQuery = titleAndArtist;
-//    }
-
-    Optional<se.michaelthelin.spotify.model_objects.specification.Track> song;
     if (track.artist().contains("&")) {
       var firstArtist = Arrays.stream(track.artist().split("&"))
         .filter(not(String::isBlank))
@@ -43,17 +34,16 @@ public class TrackFinderAlternative {
         .findFirst()
         .orElse(track.artist());
       String firstArtistQuoteQuery = "artist:\"" + firstArtist + "\" track:\"" + track.title() + "\"";
-      song = execSearch(quoteQuery)
-        .or(() -> execSearch(firstArtistQuoteQuery))
-        .or(() -> execSearch(unquotedQuery))
-        .or(() -> execSearch(plainQuery));
-    } else {
-      song = execSearch(quoteQuery)
-        .or(() -> execSearch(unquotedQuery))
-        .or(() -> execSearch(plainQuery));
+      querries.add(firstArtistQuoteQuery);
     }
-
-    return song
+    String unquotedQuery = "artist:" + track.artist() + " track:" + track.title();
+    querries.add(unquotedQuery);
+    String plainQuery = track.artist() + " " + track.title();
+    querries.add(plainQuery);
+    return querries.stream().reduce(Optional.empty(),
+        (Optional<se.michaelthelin.spotify.model_objects.specification.Track> o, String q) -> o.or(() -> execSearch(q)),
+        (track1, track2) -> track1.isPresent() ? track1 : track2
+      )
       .map(SpotifyTrackMapper::toSpotifyTrack);
   }
 

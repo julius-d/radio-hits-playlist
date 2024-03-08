@@ -59,7 +59,7 @@ public class SearchAlgoComparer {
             }
             tr.different {
              background-color: Red;
-            }    
+            }   
             tr.only-uri-different {
              background-color: #FFCCCB;
             }
