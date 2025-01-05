@@ -34,7 +34,7 @@ public class BundesmuxLoader {
         String title = divs.get(2).text().trim();
         return new Track(title, artist);
       });
-    }).distinct().limit(100).collect(toList());
+    }).distinct().collect(toList());
     Collections.reverse(tracks);
     return Collections.unmodifiableList(tracks);
   }
