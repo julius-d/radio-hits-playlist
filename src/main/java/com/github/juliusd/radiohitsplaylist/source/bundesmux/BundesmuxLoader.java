@@ -30,11 +30,15 @@ public class BundesmuxLoader {
       Elements playListEntry = doc.select("turbo-stream template > div > div");
       return playListEntry.stream().map((Element entry) -> {
         Elements divs = entry.select("div > div");
+//        String date = divs.get(0).text().trim();
         String artist = divs.get(1).text().trim();
         String title = divs.get(2).text().trim();
+//        System.out.println(date+") "+ artist+": "+title);
         return new Track(title, artist);
       });
-    }).distinct().collect(toList());
+    })
+      .filter(track -> !track.title().equalsIgnoreCase("Coming Up"))
+      .distinct().collect(toList());
     Collections.reverse(tracks);
     return Collections.unmodifiableList(tracks);
   }
