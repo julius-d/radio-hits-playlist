@@ -44,6 +44,14 @@ class ConfigLoaderTest {
           - playlistId: targetPlaylistId7
             streamName: myHitStream2
             descriptionPrefix: my other prefix2
+        bundesmuxUrl: https://example.org/b
+        reCreateBundesmuxPlaylistTasks:
+          - playlistId: targetPlaylistId8
+            streamName: myBundesStream1
+            descriptionPrefix: my prefix7
+          - playlistId: targetPlaylistId9
+            streamName: myBundesStream2
+            descriptionPrefix: my other prefix7
         """);
 
 
@@ -62,6 +70,11 @@ class ConfigLoaderTest {
       List.of(
         new ReCreateBerlinHitRadioPlaylistTaskConfiguration("myHitStream1", "targetPlaylistId6", "my prefix2"),
         new ReCreateBerlinHitRadioPlaylistTaskConfiguration("myHitStream2", "targetPlaylistId7", "my other prefix2")
+      ),
+      "https://example.org/b",
+      List.of(
+        new ReCreateBundesmuxPlaylistTaskConfiguration("myBundesStream1", "targetPlaylistId8", "my prefix7"),
+        new ReCreateBundesmuxPlaylistTaskConfiguration("myBundesStream2", "targetPlaylistId9", "my other prefix7")
       )
     ));
   }
@@ -81,6 +94,7 @@ class ConfigLoaderTest {
     Configuration configuration = new ConfigLoader().loadConfig(path.toString());
     assertEquals(Collections.emptyList(), configuration.reCreateFamilyRadioPlaylistTasks());
     assertEquals(Collections.emptyList(), configuration.reCreateFamilyRadioPlaylistTasks());
+    assertEquals(Collections.emptyList(), configuration.reCreateBundesmuxPlaylistTasks());
     assertEquals(Collections.emptyList(), configuration.shuffleTasks());
   }
 
