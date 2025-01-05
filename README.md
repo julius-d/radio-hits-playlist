@@ -35,4 +35,12 @@ reCreateBerlinHitRadioPlaylistTasks:
   - playlistId: targetPlaylistId7
     streamName: myHitStream2
     descriptionPrefix: my other prefix2
+bundesmuxUrl: https://example.org/b
+reCreateBundesmuxPlaylistTasks:
+  - playlistId: targetPlaylistId8
+    streamName: myBundesStream1
+    descriptionPrefix: my prefix7
+  - playlistId: targetPlaylistId9
+    streamName: myBundesStream2
+    descriptionPrefix: my other prefix7
 ````
