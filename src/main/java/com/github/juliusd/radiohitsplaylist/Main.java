@@ -2,9 +2,12 @@ package com.github.juliusd.radiohitsplaylist;
 
 import com.github.juliusd.radiohitsplaylist.config.ConfigLoader;
 import com.github.juliusd.radiohitsplaylist.config.ReCreateBerlinHitRadioPlaylistTaskConfiguration;
+import com.github.juliusd.radiohitsplaylist.config.ReCreateBundesmuxPlaylistTaskConfiguration;
 import com.github.juliusd.radiohitsplaylist.config.ReCreateFamilyRadioPlaylistTaskConfiguration;
 import com.github.juliusd.radiohitsplaylist.source.berlinhitradio.BerlinHitRadioClientConfiguration;
 import com.github.juliusd.radiohitsplaylist.source.berlinhitradio.BerlinHitRadioLoader;
+import com.github.juliusd.radiohitsplaylist.source.bundesmux.BundesmuxClientConfiguration;
+import com.github.juliusd.radiohitsplaylist.source.bundesmux.BundesmuxLoader;
 import com.github.juliusd.radiohitsplaylist.source.family.FamilyRadioClientConfiguration;
 import com.github.juliusd.radiohitsplaylist.source.family.FamilyRadioLoader;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistShuffel;
@@ -44,6 +47,14 @@ public class Main {
       refreshPlaylistFromSource(berlinHitRadioLoader, playlistUpdater, task);
     });
 
+    if (!configuration.reCreateBundesmuxPlaylistTasks().isEmpty()) {
+      var bundesmuxLoader = new BundesmuxClientConfiguration(configuration).bundesmuxLoader();
+
+      configuration.reCreateBundesmuxPlaylistTasks().forEach(task -> {
+        refreshBundesmuxPlaylistFromSource(bundesmuxLoader, playlistUpdater, task);
+      });
+    }
+
     log("Done");
   }
 
@@ -67,4 +78,13 @@ public class Main {
     log("Refreshed family radio " + configuration.streamName());
   }
 
+  private static void refreshBundesmuxPlaylistFromSource(
+    BundesmuxLoader bundesmuxLoader,
+    PlaylistUpdater playlistUpdater,
+    ReCreateBundesmuxPlaylistTaskConfiguration configuration
+  ) {
+    List<Track> tracks = bundesmuxLoader.load(configuration.streamName());
+    playlistUpdater.update(tracks, configuration.playlistId(), configuration.descriptionPrefix());
+    log("Refreshed bundesmux " + configuration.streamName());
+  }
 }
