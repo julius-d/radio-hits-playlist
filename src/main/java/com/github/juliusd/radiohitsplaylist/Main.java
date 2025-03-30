@@ -32,14 +32,24 @@ public class Main {
     log("Version: " + PlaylistShuffel.class.getPackage().getImplementationVersion());
 
     var configuration = new ConfigLoader().loadConfig(System.getProperty("configFilePath"));
+    var notifier = determineNotifier(configuration);
+    try {
+      executePlaylistTasks(configuration);
+      notifier.runFinishedSuccessfully();
+      log("Done");
+    } catch (Exception e) {
+      notifier.runFailed(e);
+      throw e;
+    }
+  }
 
+  private static void executePlaylistTasks(Configuration configuration) {
     var spotifyApi = new SpotifyApiConfiguration().spotifyApi(configuration);
     var playlistShuffel = new PlaylistShuffel(spotifyApi);
     var berlinHitRadioLoader = new BerlinHitRadioClientConfiguration().berlinHitRadioLoader();
     var familyRadioLoader = new FamilyRadioClientConfiguration().familyRadioLoader();
     var playlistUpdater = new PlaylistUpdater(spotifyApi, new TrackFinder(spotifyApi));
 
-    Notifier notifier = determineNotifier(configuration);
 
     configuration.shuffleTasks().forEach(shuffleTaskConfiguration -> {
       playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist(shuffleTaskConfiguration.playlistId());
@@ -60,9 +70,6 @@ public class Main {
         refreshBundesmuxPlaylistFromSource(bundesmuxLoader, playlistUpdater, task);
       });
     }
-
-    notifier.runFinishedSuccessfully();
-    log("Done");
   }
 
   private static Notifier determineNotifier(Configuration configuration) {
