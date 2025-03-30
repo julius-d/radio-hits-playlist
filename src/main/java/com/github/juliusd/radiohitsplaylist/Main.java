@@ -1,9 +1,13 @@
 package com.github.juliusd.radiohitsplaylist;
 
 import com.github.juliusd.radiohitsplaylist.config.ConfigLoader;
+import com.github.juliusd.radiohitsplaylist.config.Configuration;
 import com.github.juliusd.radiohitsplaylist.config.ReCreateBerlinHitRadioPlaylistTaskConfiguration;
 import com.github.juliusd.radiohitsplaylist.config.ReCreateBundesmuxPlaylistTaskConfiguration;
 import com.github.juliusd.radiohitsplaylist.config.ReCreateFamilyRadioPlaylistTaskConfiguration;
+import com.github.juliusd.radiohitsplaylist.monitoring.GotifyClientConfiguration;
+import com.github.juliusd.radiohitsplaylist.monitoring.NoOpNotifier;
+import com.github.juliusd.radiohitsplaylist.monitoring.Notifier;
 import com.github.juliusd.radiohitsplaylist.source.berlinhitradio.BerlinHitRadioClientConfiguration;
 import com.github.juliusd.radiohitsplaylist.source.berlinhitradio.BerlinHitRadioLoader;
 import com.github.juliusd.radiohitsplaylist.source.bundesmux.BundesmuxClientConfiguration;
@@ -35,6 +39,8 @@ public class Main {
     var familyRadioLoader = new FamilyRadioClientConfiguration().familyRadioLoader();
     var playlistUpdater = new PlaylistUpdater(spotifyApi, new TrackFinder(spotifyApi));
 
+    Notifier notifier = determineNotifier(configuration);
+
     configuration.shuffleTasks().forEach(shuffleTaskConfiguration -> {
       playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist(shuffleTaskConfiguration.playlistId());
     });
@@ -55,7 +61,16 @@ public class Main {
       });
     }
 
+    notifier.runFinishedSuccessfully();
     log("Done");
+  }
+
+  private static Notifier determineNotifier(Configuration configuration) {
+    if (configuration.gotify() != null) {
+      return new GotifyClientConfiguration().notifier(configuration.gotify());
+    } else {
+      return new NoOpNotifier();
+    }
   }
 
   private static void refreshPlaylistFromSource(

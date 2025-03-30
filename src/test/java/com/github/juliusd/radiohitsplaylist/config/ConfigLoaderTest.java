@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class ConfigLoaderTest {
 
@@ -21,38 +22,43 @@ class ConfigLoaderTest {
     Path path = givenConfig(
       //language=yaml
       """
-        ---
-        spotify:
-          refreshToken: myRefreshToken
-          clientId: myClientId
-          clientSecret: myClientSecret
-        shuffleTasks:
-          - playlistId: myPlaylistId0001
-          - playlistId: myPlaylistId0002
-          - playlistId: myPlaylistId0003
-        reCreateFamilyRadioPlaylistTasks:
-          - playlistId: targetPlaylistId4
-            streamName: myStream1
-            descriptionPrefix: my prefix
-          - playlistId: targetPlaylistId5
-            streamName: myStream2
-            descriptionPrefix: my other prefix
-        reCreateBerlinHitRadioPlaylistTasks:
-          - playlistId: targetPlaylistId6
-            streamName: myHitStream1
-            descriptionPrefix: my prefix2
-          - playlistId: targetPlaylistId7
-            streamName: myHitStream2
-            descriptionPrefix: my other prefix2
-        bundesmuxUrl: https://example.org/b
-        reCreateBundesmuxPlaylistTasks:
-          - playlistId: targetPlaylistId8
-            streamName: myBundesStream1
-            descriptionPrefix: my prefix7
-          - playlistId: targetPlaylistId9
-            streamName: myBundesStream2
-            descriptionPrefix: my other prefix7
-        """);
+      ---
+      spotify:
+        refreshToken: myRefreshToken
+        clientId: myClientId
+        clientSecret: myClientSecret
+      shuffleTasks:
+        - playlistId: myPlaylistId0001
+        - playlistId: myPlaylistId0002
+        - playlistId: myPlaylistId0003
+      reCreateFamilyRadioPlaylistTasks:
+        - playlistId: targetPlaylistId4
+          streamName: myStream1
+          descriptionPrefix: my prefix
+        - playlistId: targetPlaylistId5
+          streamName: myStream2
+          descriptionPrefix: my other prefix
+      reCreateBerlinHitRadioPlaylistTasks:
+        - playlistId: targetPlaylistId6
+          streamName: myHitStream1
+          descriptionPrefix: my prefix2
+        - playlistId: targetPlaylistId7
+          streamName: myHitStream2
+          descriptionPrefix: my other prefix2
+      bundesmuxUrl: https://example.org/b
+      reCreateBundesmuxPlaylistTasks:
+        - playlistId: targetPlaylistId8
+          streamName: myBundesStream1
+          descriptionPrefix: my prefix7
+        - playlistId: targetPlaylistId9
+          streamName: myBundesStream2
+          descriptionPrefix: my other prefix7
+      gotify:
+       notifyOnSuccess: false
+       notifyOnFailure: true
+       gotifyUrl: https://example.org/gotify
+       gotifyApiToken: myApiToken
+      """);
 
 
     Configuration configuration = new ConfigLoader().loadConfig(path.toString());
@@ -75,7 +81,9 @@ class ConfigLoaderTest {
       List.of(
         new ReCreateBundesmuxPlaylistTaskConfiguration("myBundesStream1", "targetPlaylistId8", "my prefix7"),
         new ReCreateBundesmuxPlaylistTaskConfiguration("myBundesStream2", "targetPlaylistId9", "my other prefix7")
-      )
+      ),
+      new NotifierConfiguration(false, true, "https://example.org/gotify", "myApiToken")
+
     ));
   }
 
@@ -84,18 +92,34 @@ class ConfigLoaderTest {
     Path path = givenConfig(
       //language=yaml
       """
-        ---
-        spotify:
-          refreshToken: myRefreshToken
-          clientId: myClientId
-          clientSecret: myClientSecret
-        """);
+      ---
+      spotify:
+        refreshToken: myRefreshToken
+        clientId: myClientId
+        clientSecret: myClientSecret
+      """);
 
     Configuration configuration = new ConfigLoader().loadConfig(path.toString());
     assertEquals(Collections.emptyList(), configuration.reCreateFamilyRadioPlaylistTasks());
     assertEquals(Collections.emptyList(), configuration.reCreateFamilyRadioPlaylistTasks());
     assertEquals(Collections.emptyList(), configuration.reCreateBundesmuxPlaylistTasks());
     assertEquals(Collections.emptyList(), configuration.shuffleTasks());
+  }
+
+  @Test
+  void notifierConfigCanBeEmpty() throws IOException {
+    Path path = givenConfig(
+      //language=yaml
+      """
+      ---
+      spotify:
+        refreshToken: myRefreshToken
+        clientId: myClientId
+        clientSecret: myClientSecret
+      """);
+
+    Configuration configuration = new ConfigLoader().loadConfig(path.toString());
+    assertNull(configuration.gotify());
   }
 
   private Path givenConfig(String config) throws IOException {

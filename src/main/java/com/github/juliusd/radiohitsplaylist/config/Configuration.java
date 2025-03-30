@@ -8,7 +8,7 @@ public record Configuration(
   List<ReCreateFamilyRadioPlaylistTaskConfiguration> reCreateFamilyRadioPlaylistTasks,
   List<ReCreateBerlinHitRadioPlaylistTaskConfiguration> reCreateBerlinHitRadioPlaylistTasks,
   String bundesmuxUrl,
-  List<ReCreateBundesmuxPlaylistTaskConfiguration> reCreateBundesmuxPlaylistTasks
-
+  List<ReCreateBundesmuxPlaylistTaskConfiguration> reCreateBundesmuxPlaylistTasks,
+  NotifierConfiguration gotify
 ) {
 }
