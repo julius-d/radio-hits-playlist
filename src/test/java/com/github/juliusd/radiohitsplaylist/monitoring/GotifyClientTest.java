@@ -46,6 +46,7 @@ class GotifyClientTest {
 
     verify(postRequestedFor(urlEqualTo("/message"))
       .withHeader("X-Gotify-Key", equalTo(TOKEN))
+      .withHeader("Content-Type", equalTo("application/json"))
       .withRequestBody(equalToJson(
         """
         {

@@ -7,6 +7,7 @@ import feign.RequestLine;
 public interface GotifyClient {
 
   @Headers({
+    "Content-Type: application/json",
     "X-Gotify-Key: {apiToken}",
   })
   @RequestLine("POST /message")
