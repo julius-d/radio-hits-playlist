@@ -14,7 +14,9 @@ public class GotifyNotifier implements Notifier {
 
   @Override
   public void runFinishedSuccessfully() {
-    gotifyClient.sendMessage(config.gotifyApiToken(), new GotfiyMessage("Finished", "run finished successfully", 1));
-
+    if (config.notifyOnSuccess()) {
+      GotfiyMessage message = new GotfiyMessage("Finished", "run finished successfully", 1);
+      gotifyClient.sendMessage(config.gotifyApiToken(), message);
+    }
   }
 }
