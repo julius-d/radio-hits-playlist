@@ -1,6 +1,5 @@
 package com.github.juliusd.radiohitsplaylist.monitoring;
 
-import com.github.juliusd.radiohitsplaylist.Statistic;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 

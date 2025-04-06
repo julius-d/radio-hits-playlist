@@ -1,8 +1,11 @@
 package com.github.juliusd.radiohitsplaylist.monitoring;
 
-import com.github.juliusd.radiohitsplaylist.Statistic;
-
 public interface Notifier {
-  void runFinishedSuccessfully(Statistic statistic);
+  void recordPlaylistShuffled(String playlistName);
+
+  void recordPlaylistRefresh(String streamName, int amountOfTracks);
+
+  void runFinishedSuccessfully();
+
   void runFailed(Throwable throwable);
 }

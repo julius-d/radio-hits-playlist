@@ -1,10 +1,16 @@
 package com.github.juliusd.radiohitsplaylist.monitoring;
 
-import com.github.juliusd.radiohitsplaylist.Statistic;
-
 public class NoOpNotifier implements Notifier {
   @Override
-  public void runFinishedSuccessfully(Statistic statistic) {
+  public void recordPlaylistShuffled(String playlistName) {
+  }
+
+  @Override
+  public void recordPlaylistRefresh(String streamName, int amountOfTracks) {
+  }
+
+  @Override
+  public void runFinishedSuccessfully() {
   }
 
   @Override

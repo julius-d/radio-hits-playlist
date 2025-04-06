@@ -1,11 +1,9 @@
 package com.github.juliusd.radiohitsplaylist.monitoring;
 
-import com.github.juliusd.radiohitsplaylist.Statistic;
-
 import java.util.List;
 
 
-public class NotificationTextBuilder {
+class NotificationTextBuilder {
 
   static String createMessageText(Statistic statistic) {
     StringBuilder messageText = new StringBuilder("Run finished successfully\n\n");

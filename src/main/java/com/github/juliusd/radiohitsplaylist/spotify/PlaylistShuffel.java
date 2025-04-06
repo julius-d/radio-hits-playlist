@@ -1,6 +1,6 @@
 package com.github.juliusd.radiohitsplaylist.spotify;
 
-import com.github.juliusd.radiohitsplaylist.Statistic;
+import com.github.juliusd.radiohitsplaylist.monitoring.Notifier;
 import com.neovisionaries.i18n.CountryCode;
 import org.apache.hc.core5.http.ParseException;
 import se.michaelthelin.spotify.SpotifyApi;
@@ -17,7 +17,7 @@ public class PlaylistShuffel {
   }
 
 
-  public void moveFirst5TracksToTheEndOfThePlaylist(String playlistId, Statistic statistic) {
+  public void moveFirst5TracksToTheEndOfThePlaylist(String playlistId, Notifier notifier) {
     try {
       var playlist = spotifyApi.getPlaylist(playlistId)
         .market(CountryCode.DE)
@@ -27,7 +27,7 @@ public class PlaylistShuffel {
       var reorderPlaylistsItemsRequest = spotifyApi.reorderPlaylistsItems(playlistId, 0, totalAmountOfTracks).range_length(5).build();
       reorderPlaylistsItemsRequest.execute();
       System.out.println("Shuffled Playlist: " + playlist.getName());
-      statistic.recordPlaylistShuffled(playlist.getName());
+      notifier.recordPlaylistShuffled(playlist.getName());
     } catch (IOException | SpotifyWebApiException | ParseException e) {
       throw new SpotifyException(e);
     }

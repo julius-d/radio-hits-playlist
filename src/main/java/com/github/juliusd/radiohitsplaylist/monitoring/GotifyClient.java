@@ -4,7 +4,7 @@ import feign.Headers;
 import feign.Param;
 import feign.RequestLine;
 
-public interface GotifyClient {
+interface GotifyClient {
 
   @Headers({
     "Content-Type: application/json",

@@ -1,10 +1,10 @@
-package com.github.juliusd.radiohitsplaylist;
+package com.github.juliusd.radiohitsplaylist.monitoring;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Statistic {
+class Statistic {
 
   private final List<String> shuffledPlaylists = new ArrayList<>();
   private final List<PlaylistRefreshResult> refreshedPlaylists = new ArrayList<>();
