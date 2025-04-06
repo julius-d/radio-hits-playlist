@@ -9,8 +9,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ConfigLoaderTest {
 
@@ -62,29 +61,29 @@ class ConfigLoaderTest {
 
 
     Configuration configuration = new ConfigLoader().loadConfig(path.toString());
-    assertEquals(configuration, new Configuration(
-      new SpotifyConfiguration("myRefreshToken", "myClientId", "myClientSecret"),
-      List.of(
-        new ShuffleTaskConfiguration("myPlaylistId0001"),
-        new ShuffleTaskConfiguration("myPlaylistId0002"),
-        new ShuffleTaskConfiguration("myPlaylistId0003")
-      ),
-      List.of(
-        new ReCreateFamilyRadioPlaylistTaskConfiguration("myStream1", "targetPlaylistId4", "my prefix"),
-        new ReCreateFamilyRadioPlaylistTaskConfiguration("myStream2", "targetPlaylistId5", "my other prefix")
-      ),
-      List.of(
-        new ReCreateBerlinHitRadioPlaylistTaskConfiguration("myHitStream1", "targetPlaylistId6", "my prefix2"),
-        new ReCreateBerlinHitRadioPlaylistTaskConfiguration("myHitStream2", "targetPlaylistId7", "my other prefix2")
-      ),
-      "https://example.org/b",
-      List.of(
-        new ReCreateBundesmuxPlaylistTaskConfiguration("myBundesStream1", "targetPlaylistId8", "my prefix7"),
-        new ReCreateBundesmuxPlaylistTaskConfiguration("myBundesStream2", "targetPlaylistId9", "my other prefix7")
-      ),
-      new NotifierConfiguration(false, true, "https://example.org/gotify", "myApiToken")
+    assertThat(new Configuration(
+            new SpotifyConfiguration("myRefreshToken", "myClientId", "myClientSecret"),
+            List.of(
+                    new ShuffleTaskConfiguration("myPlaylistId0001"),
+                    new ShuffleTaskConfiguration("myPlaylistId0002"),
+                    new ShuffleTaskConfiguration("myPlaylistId0003")
+            ),
+            List.of(
+                    new ReCreateFamilyRadioPlaylistTaskConfiguration("myStream1", "targetPlaylistId4", "my prefix"),
+                    new ReCreateFamilyRadioPlaylistTaskConfiguration("myStream2", "targetPlaylistId5", "my other prefix")
+            ),
+            List.of(
+                    new ReCreateBerlinHitRadioPlaylistTaskConfiguration("myHitStream1", "targetPlaylistId6", "my prefix2"),
+                    new ReCreateBerlinHitRadioPlaylistTaskConfiguration("myHitStream2", "targetPlaylistId7", "my other prefix2")
+            ),
+            "https://example.org/b",
+            List.of(
+                    new ReCreateBundesmuxPlaylistTaskConfiguration("myBundesStream1", "targetPlaylistId8", "my prefix7"),
+                    new ReCreateBundesmuxPlaylistTaskConfiguration("myBundesStream2", "targetPlaylistId9", "my other prefix7")
+            ),
+            new NotifierConfiguration(false, true, "https://example.org/gotify", "myApiToken")
 
-    ));
+    )).isEqualTo(configuration);
   }
 
   @Test
@@ -100,10 +99,10 @@ class ConfigLoaderTest {
       """);
 
     Configuration configuration = new ConfigLoader().loadConfig(path.toString());
-    assertEquals(Collections.emptyList(), configuration.reCreateFamilyRadioPlaylistTasks());
-    assertEquals(Collections.emptyList(), configuration.reCreateFamilyRadioPlaylistTasks());
-    assertEquals(Collections.emptyList(), configuration.reCreateBundesmuxPlaylistTasks());
-    assertEquals(Collections.emptyList(), configuration.shuffleTasks());
+    assertThat(configuration.reCreateFamilyRadioPlaylistTasks()).isEqualTo(Collections.emptyList());
+    assertThat(configuration.reCreateFamilyRadioPlaylistTasks()).isEqualTo(Collections.emptyList());
+    assertThat(configuration.reCreateBundesmuxPlaylistTasks()).isEqualTo(Collections.emptyList());
+    assertThat(configuration.shuffleTasks()).isEqualTo(Collections.emptyList());
   }
 
   @Test
@@ -119,7 +118,7 @@ class ConfigLoaderTest {
       """);
 
     Configuration configuration = new ConfigLoader().loadConfig(path.toString());
-    assertNull(configuration.gotify());
+    assertThat(configuration.gotify()).isNull();
   }
 
   private Path givenConfig(String config) throws IOException {
