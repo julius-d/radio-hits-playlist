@@ -1,12 +1,17 @@
 package com.github.juliusd.radiohitsplaylist.monitoring;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
 class NotificationTextBuilder {
 
   static String createMessageText(Statistic statistic) {
-    StringBuilder messageText = new StringBuilder("Run finished successfully\n\n");
+    var durationText = getDurationText(statistic);
+
+
+    StringBuilder messageText = new StringBuilder("Run finished successfully after ").append(durationText).append("\n\n");
 
     List<String> shuffledPlaylists = statistic.getShuffledPlaylists();
     if (!shuffledPlaylists.isEmpty()) {
@@ -27,6 +32,26 @@ class NotificationTextBuilder {
     }
 
     return messageText.toString();
+  }
+
+  private static String getDurationText(Statistic statistic) {
+    if (statistic.getStartTime() != null) {
+      LocalDateTime endTime = LocalDateTime.now();
+      Duration duration = Duration.between(statistic.getStartTime(), endTime);
+      return formatDuration(duration);
+    }
+    return "???";
+  }
+
+  private static String formatDuration(Duration duration) {
+    long minutes = duration.toMinutes();
+    long seconds = duration.minusMinutes(minutes).getSeconds();
+
+    if (minutes > 0) {
+      return String.format("%d min %d sec", minutes, seconds);
+    } else {
+      return String.format("%d sec", seconds);
+    }
   }
 
   static String createFailedMessageText(Throwable throwable) {

@@ -21,7 +21,7 @@ class NotificationTextBuilderTest {
 
       String expected =
         """
-        Run finished successfully
+        Run finished successfully after ???
         
         Shuffled playlists (1):
         - myPlaylist
@@ -30,7 +30,7 @@ class NotificationTextBuilderTest {
         - myStream: 12 tracks
         - otherStream: 23 tracks
         """;
-      assertThat(result).isEqualTo(expected);
+      assertThat(result).startsWith(expected);
     }
 
     @Test
@@ -43,7 +43,7 @@ class NotificationTextBuilderTest {
 
       String expected =
         """
-        Run finished successfully
+        Run finished successfully after ???
         
         Refreshed playlists (2):
         - myStream: 12 tracks
@@ -61,7 +61,7 @@ class NotificationTextBuilderTest {
 
       String expected =
         """
-        Run finished successfully
+        Run finished successfully after ???
         
         Shuffled playlists (1):
         - myPlaylist

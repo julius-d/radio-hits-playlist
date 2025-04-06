@@ -14,6 +14,11 @@ class GotifyNotifier implements Notifier {
   }
 
   @Override
+  public void runStarted() {
+    statistic.runStarted();
+  }
+
+  @Override
   public void recordPlaylistShuffled(String playlistName) {
     statistic.recordPlaylistShuffled(playlistName);
   }

@@ -2,6 +2,10 @@ package com.github.juliusd.radiohitsplaylist.monitoring;
 
 public class NoOpNotifier implements Notifier {
   @Override
+  public void runStarted() {
+  }
+
+  @Override
   public void recordPlaylistShuffled(String playlistName) {
   }
 

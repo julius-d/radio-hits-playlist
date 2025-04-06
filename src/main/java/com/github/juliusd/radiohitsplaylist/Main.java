@@ -34,6 +34,7 @@ public class Main {
     var configuration = new ConfigLoader().loadConfig(System.getProperty("configFilePath"));
     var notifier = determineNotifier(configuration);
     try {
+      notifier.runStarted();
       executePlaylistTasks(configuration, notifier);
       notifier.runFinishedSuccessfully();
       log("Done");
