@@ -2,7 +2,7 @@ package com.github.juliusd.radiohitsplaylist.monitoring;
 
 import com.github.juliusd.radiohitsplaylist.config.NotifierConfiguration;
 
-public class GotifyNotifier implements Notifier {
+class GotifyNotifier implements Notifier {
 
   private final Statistic statistic = new Statistic();
   private final GotifyClient gotifyClient;

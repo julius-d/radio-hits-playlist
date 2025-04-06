@@ -8,7 +8,7 @@ import feign.jackson.JacksonEncoder;
 
 public class GotifyClientConfiguration {
 
-  public GotifyNotifier notifier(NotifierConfiguration config) {
+  public Notifier notifier(NotifierConfiguration config) {
     GotifyClient gotifyClient = gotifyClient(config);
     return new GotifyNotifier(gotifyClient, config);
   }
