@@ -33,9 +33,10 @@ public class Main {
 
     var configuration = new ConfigLoader().loadConfig(System.getProperty("configFilePath"));
     var notifier = determineNotifier(configuration);
+    var statistic = new Statistic();
     try {
-      executePlaylistTasks(configuration);
-      notifier.runFinishedSuccessfully();
+      executePlaylistTasks(configuration, statistic);
+      notifier.runFinishedSuccessfully(statistic);
       log("Done");
     } catch (Exception e) {
       notifier.runFailed(e);
@@ -43,7 +44,7 @@ public class Main {
     }
   }
 
-  private static void executePlaylistTasks(Configuration configuration) {
+  private static void executePlaylistTasks(Configuration configuration, Statistic statistic) {
     var spotifyApi = new SpotifyApiConfiguration().spotifyApi(configuration);
     var playlistShuffel = new PlaylistShuffel(spotifyApi);
     var berlinHitRadioLoader = new BerlinHitRadioClientConfiguration().berlinHitRadioLoader();
@@ -52,22 +53,22 @@ public class Main {
 
 
     configuration.shuffleTasks().forEach(shuffleTaskConfiguration -> {
-      playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist(shuffleTaskConfiguration.playlistId());
+      playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist(shuffleTaskConfiguration.playlistId(), statistic);
     });
 
     configuration.reCreateFamilyRadioPlaylistTasks().forEach(task -> {
-      refreshFamilyPlaylistFromSource(familyRadioLoader, playlistUpdater, task);
+      refreshFamilyPlaylistFromSource(familyRadioLoader, playlistUpdater, task, statistic);
     });
 
     configuration.reCreateBerlinHitRadioPlaylistTasks().forEach(task -> {
-      refreshPlaylistFromSource(berlinHitRadioLoader, playlistUpdater, task);
+      refreshPlaylistFromSource(berlinHitRadioLoader, playlistUpdater, task, statistic);
     });
 
     if (!configuration.reCreateBundesmuxPlaylistTasks().isEmpty()) {
       var bundesmuxLoader = new BundesmuxClientConfiguration(configuration).bundesmuxLoader();
 
       configuration.reCreateBundesmuxPlaylistTasks().forEach(task -> {
-        refreshBundesmuxPlaylistFromSource(bundesmuxLoader, playlistUpdater, task);
+        refreshBundesmuxPlaylistFromSource(bundesmuxLoader, playlistUpdater, task, statistic);
       });
     }
   }
@@ -83,30 +84,33 @@ public class Main {
   private static void refreshPlaylistFromSource(
     BerlinHitRadioLoader berlinHitRadioLoader,
     PlaylistUpdater playlistUpdater,
-    ReCreateBerlinHitRadioPlaylistTaskConfiguration configuration
-  ) {
+    ReCreateBerlinHitRadioPlaylistTaskConfiguration configuration,
+    Statistic statistic) {
     List<Track> tracks = berlinHitRadioLoader.load(configuration.streamName());
     playlistUpdater.update(tracks, configuration.playlistId(), configuration.descriptionPrefix());
+    statistic.recordPlaylistRefresh(configuration.streamName(), tracks.size());
     log("Refreshed " + configuration.streamName() + " with " + tracks.size() + " tracks");
   }
 
   private static void refreshFamilyPlaylistFromSource(
     FamilyRadioLoader familyRadioLoader,
     PlaylistUpdater playlistUpdater,
-    ReCreateFamilyRadioPlaylistTaskConfiguration configuration
-  ) {
+    ReCreateFamilyRadioPlaylistTaskConfiguration configuration,
+    Statistic statistic) {
     List<Track> tracks = familyRadioLoader.load(configuration.streamName());
     playlistUpdater.update(tracks, configuration.playlistId(), configuration.descriptionPrefix());
+    statistic.recordPlaylistRefresh(configuration.streamName(), tracks.size());
     log("Refreshed family radio " + configuration.streamName());
   }
 
   private static void refreshBundesmuxPlaylistFromSource(
     BundesmuxLoader bundesmuxLoader,
     PlaylistUpdater playlistUpdater,
-    ReCreateBundesmuxPlaylistTaskConfiguration configuration
-  ) {
+    ReCreateBundesmuxPlaylistTaskConfiguration configuration,
+    Statistic statistic) {
     List<Track> tracks = bundesmuxLoader.load(configuration.streamName());
     playlistUpdater.update(tracks, configuration.playlistId(), configuration.descriptionPrefix());
+    statistic.recordPlaylistRefresh(configuration.streamName(), tracks.size());
     log("Refreshed bundesmux " + configuration.streamName());
   }
 }
