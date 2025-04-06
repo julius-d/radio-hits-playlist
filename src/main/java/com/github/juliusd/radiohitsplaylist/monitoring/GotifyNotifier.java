@@ -3,8 +3,6 @@ package com.github.juliusd.radiohitsplaylist.monitoring;
 import com.github.juliusd.radiohitsplaylist.Statistic;
 import com.github.juliusd.radiohitsplaylist.config.NotifierConfiguration;
 
-import java.util.List;
-
 public class GotifyNotifier implements Notifier {
 
   private final GotifyClient gotifyClient;
@@ -28,8 +26,11 @@ public class GotifyNotifier implements Notifier {
   @Override
   public void runFailed(Throwable throwable) {
     if (config.notifyOnFailure()) {
-      var message = new GotfiyMessage("Failed", "run failed with " + throwable.getMessage(), 3);
+      var messageText = NotificationTextBuilder.createFailedMessageText(throwable);
+
+      var message = new GotfiyMessage("Failed", messageText, 3);
       gotifyClient.sendMessage(config.gotifyApiToken(), message);
     }
   }
+
 }

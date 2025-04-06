@@ -30,4 +30,26 @@ public class NotificationTextBuilder {
 
     return messageText.toString();
   }
+
+  static String createFailedMessageText(Throwable throwable) {
+    String exceptionClassName = throwable.getClass().getSimpleName();
+
+    StackTraceElement[] stackTrace = throwable.getStackTrace();
+    StringBuilder stackTraceStr = new StringBuilder();
+
+    int traceLimit = Math.min(3, stackTrace.length);
+    for (int i = 0; i < traceLimit; i++) {
+      stackTraceStr.append("\n  at ").append(stackTrace[i]);
+    }
+
+    if (stackTrace.length > traceLimit) {
+      stackTraceStr.append("\n  ... ").append(stackTrace.length - traceLimit).append(" more");
+    }
+
+    String messageText = String.format("Run failed with %s: %s%s",
+      exceptionClassName,
+      throwable.getMessage(),
+      stackTraceStr);
+    return messageText;
+  }
 }
