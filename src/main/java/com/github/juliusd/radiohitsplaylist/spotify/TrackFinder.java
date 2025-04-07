@@ -5,6 +5,7 @@ import com.neovisionaries.i18n.CountryCode;
 import org.apache.hc.core5.http.ParseException;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
+import se.michaelthelin.spotify.exceptions.detailed.BadGatewayException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static com.github.juliusd.radiohitsplaylist.Logger.log;
 import static java.util.function.Predicate.not;
 
 public class TrackFinder {
@@ -49,13 +51,26 @@ public class TrackFinder {
 
   private Optional<se.michaelthelin.spotify.model_objects.specification.Track> execSearch(String q) {
     try {
+      return execSearchWithRetry(q, 2);
+    } catch (IOException | SpotifyWebApiException | ParseException e) {
+      throw new SpotifyException("Failed to search for " + q, e);
+    }
+  }
+
+  private Optional<se.michaelthelin.spotify.model_objects.specification.Track> execSearchWithRetry(String q, int remainingRetries) throws IOException, SpotifyWebApiException, ParseException {
+    try {
       var searchTracksRequest = spotifyApi.searchTracks(q)
         .market(CountryCode.DE)
         .limit(2).build();
       var trackPaging = searchTracksRequest.execute();
       return Arrays.stream(trackPaging.getItems()).findFirst();
-    } catch (IOException | SpotifyWebApiException | ParseException e) {
-      throw new SpotifyException("Failed to search for " + q, e);
+    } catch (BadGatewayException e) {
+      log("BadGatewayException: " + e.getMessage());
+      if (remainingRetries > 0) {
+        return execSearchWithRetry(q, remainingRetries - 1);
+      } else {
+        throw e;
+      }
     }
   }
 
