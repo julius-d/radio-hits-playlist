@@ -3,6 +3,9 @@ package com.github.juliusd.radiohitsplaylist.monitoring;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.util.Arrays;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class NotificationTextBuilderTest {
@@ -85,6 +88,7 @@ class NotificationTextBuilderTest {
       assertThat(result).contains("at com.github.juliusd.radiohitsplaylist.monitoring.NotificationTextBuilderTest$FailedMessageTest");
     }
 
+
     @Test
     void limitedStackTraceElementsAreIncluded() {
       Exception exception = createDeepException();
@@ -95,7 +99,7 @@ class NotificationTextBuilderTest {
         .filter(line -> line.trim().startsWith("at "))
         .count();
 
-      assertThat(stackTraceLines).isEqualTo(3);
+      assertThat(stackTraceLines).isEqualTo(2);
       assertThat(result).contains("... ");
     }
 
@@ -122,6 +126,27 @@ class NotificationTextBuilderTest {
 
     private Exception methodD() {
       return new RuntimeException("Deep nested exception");
+    }
+
+    @Test
+    void includesCausedByExceptionsInFailedMessageText() {
+      Exception rootCause = new IOException("Root cause");
+      Exception middleCause = new IllegalStateException("Middle cause", rootCause);
+      Exception topException = new RuntimeException("Top exception", middleCause);
+
+      var result = NotificationTextBuilder.createFailedMessageText(topException);
+
+      assertThat(result).contains("Run failed with RuntimeException: Top exception");
+      assertThat(result).contains("Caused by: IllegalStateException: Middle cause");
+      assertThat(result).contains("Caused by: IOException: Root cause");
+
+      String[] lines = result.split("\n");
+      long rootCauseStackLines = Arrays.stream(lines)
+        .dropWhile(line -> !line.contains("Caused by: IOException"))
+        .filter(line -> line.trim().startsWith("at "))
+        .count();
+
+      assertThat(rootCauseStackLines).isEqualTo(2);
     }
   }
 }

@@ -55,24 +55,40 @@ class NotificationTextBuilder {
   }
 
   static String createFailedMessageText(Throwable throwable) {
-    String exceptionClassName = throwable.getClass().getSimpleName();
+    StringBuilder messageText = new StringBuilder();
+
+    messageText.append(String.format("Run failed with %s: %s",
+      throwable.getClass().getSimpleName(),
+      throwable.getMessage()));
 
     StackTraceElement[] stackTrace = throwable.getStackTrace();
-    StringBuilder stackTraceStr = new StringBuilder();
-
-    int traceLimit = Math.min(3, stackTrace.length);
+    int traceLimit = Math.min(2, stackTrace.length);
     for (int i = 0; i < traceLimit; i++) {
-      stackTraceStr.append("\n  at ").append(stackTrace[i]);
+      messageText.append("\n  at ").append(stackTrace[i]);
     }
 
     if (stackTrace.length > traceLimit) {
-      stackTraceStr.append("\n  ... ").append(stackTrace.length - traceLimit).append(" more");
+      messageText.append("\n  ... ").append(stackTrace.length - traceLimit).append(" more");
     }
 
-    String messageText = String.format("Run failed with %s: %s%s",
-      exceptionClassName,
-      throwable.getMessage(),
-      stackTraceStr);
-    return messageText;
+    Throwable cause = throwable.getCause();
+    while (cause != null) {
+      messageText.append("\nCaused by: ").append(cause.getClass().getSimpleName())
+        .append(": ").append(cause.getMessage());
+
+      stackTrace = cause.getStackTrace();
+      traceLimit = Math.min(2, stackTrace.length);
+      for (int i = 0; i < traceLimit; i++) {
+        messageText.append("\n  at ").append(stackTrace[i]);
+      }
+
+      if (stackTrace.length > traceLimit) {
+        messageText.append("\n  ... ").append(stackTrace.length - traceLimit).append(" more");
+      }
+
+      cause = cause.getCause();
+    }
+
+    return messageText.toString();
   }
 }
