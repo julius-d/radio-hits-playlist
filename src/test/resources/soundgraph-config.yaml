@@ -1,0 +1,19 @@
+targetPlaylist: "your_target_playlist_id"
+steps:
+  - type: combine
+    sources:
+      - sourceType: playlist
+        playlistId: "source_playlist_1"
+        steps:
+          - type: shuffle
+          - type: limit
+            value: 100
+      - sourceType: album
+        albumId: "source_album_1"
+        steps:
+          - type: shuffle
+          - type: limit
+            value: 50
+  - type: shuffle
+  - type: limit
+    value: 150 
