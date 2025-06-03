@@ -11,7 +11,7 @@ wget -P /tmp/ --backups=1 https://github.com/julius-d/radio-hits-playlist/releas
 java -jar -DconfigFilePath=./config.yaml /tmp/radio-hits-playlist.jar  
 ```
 And the config.yaml shall look like
-````yaml
+```yaml
 ---
 spotify:
   refreshToken: myRefreshToken
@@ -43,4 +43,24 @@ reCreateBundesmuxPlaylistTasks:
   - playlistId: targetPlaylistId9
     streamName: myBundesStream2
     descriptionPrefix: my other prefix7
-````
+soundgraphTasks:
+  - targetPlaylist: targetPlaylistId10
+    steps:
+      - type: combine
+        sources:
+          - sourceType: playlist
+            playlistId: source_playlist_1
+            steps:
+              - type: shuffle
+              - type: limit
+                value: 100
+          - sourceType: album
+            albumId: source_album_1
+            steps:
+              - type: shuffle
+              - type: limit
+                value: 50
+      - type: shuffle
+      - type: limit
+        value: 150
+```
