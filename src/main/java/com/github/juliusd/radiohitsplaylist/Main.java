@@ -18,6 +18,7 @@ import com.github.juliusd.radiohitsplaylist.spotify.PlaylistShuffel;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistUpdater;
 import com.github.juliusd.radiohitsplaylist.spotify.SpotifyApiConfiguration;
 import com.github.juliusd.radiohitsplaylist.spotify.TrackFinder;
+import com.github.juliusd.radiohitsplaylist.soundgraph.SoundgraphService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -50,7 +51,7 @@ public class Main {
     var berlinHitRadioLoader = new BerlinHitRadioClientConfiguration().berlinHitRadioLoader();
     var familyRadioLoader = new FamilyRadioClientConfiguration().familyRadioLoader();
     var playlistUpdater = new PlaylistUpdater(spotifyApi, new TrackFinder(spotifyApi));
-
+    var soundgraphService = new SoundgraphService(spotifyApi);
 
     configuration.shuffleTasks().forEach(shuffleTaskConfiguration -> {
       playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist(shuffleTaskConfiguration.playlistId(), notifier);
@@ -71,6 +72,16 @@ public class Main {
         refreshBundesmuxPlaylistFromSource(bundesmuxLoader, playlistUpdater, task, notifier);
       });
     }
+
+    configuration.soundgraphTasks().forEach(task -> {
+      try {
+        soundgraphService.processSoundgraphConfig(task);
+        notifier.recordPlaylistRefresh("Soundgraph " + task.targetPlaylistId(), 0);
+        log("Processed Soundgraph task for playlist " + task.targetPlaylistId());
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to process Soundgraph task for playlist " + task.targetPlaylistId(), e);
+      }
+    });
   }
 
   private static Notifier determineNotifier(Configuration configuration) {
