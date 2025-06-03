@@ -28,19 +28,19 @@ public class SoundgraphService {
 
     public void processSoundgraphConfig(SoundgraphConfig config) throws IOException, SpotifyWebApiException, ParseException {
         List<String> trackUris = processSteps(config);
-        updatePlaylist(config.getTargetPlaylistId(), trackUris);
+        updatePlaylist(config.targetPlaylistId(), trackUris);
     }
 
     private List<String> processSteps(SoundgraphConfig config) throws IOException, SpotifyWebApiException, ParseException {
         List<String> trackUris = new ArrayList<>();
         
-        for (SoundgraphConfig.Step step : config.getSteps()) {
+        for (SoundgraphConfig.Step step : config.steps()) {
             if (step instanceof SoundgraphConfig.CombineStep) {
                 trackUris = processCombineStep((SoundgraphConfig.CombineStep) step);
             } else if (step instanceof SoundgraphConfig.ShuffleStep) {
                 trackUris = processShuffleStep(trackUris);
             } else if (step instanceof SoundgraphConfig.LimitStep) {
-                trackUris = processLimitStep(trackUris, ((SoundgraphConfig.LimitStep) step).getValue());
+                trackUris = processLimitStep(trackUris, ((SoundgraphConfig.LimitStep) step).value());
             }
         }
         
@@ -50,24 +50,24 @@ public class SoundgraphService {
     private List<String> processCombineStep(SoundgraphConfig.CombineStep combineStep) throws IOException, SpotifyWebApiException, ParseException {
         List<String> combinedTracks = new ArrayList<>();
         
-        for (SoundgraphConfig.Source source : combineStep.getSources()) {
+        for (SoundgraphConfig.Source source : combineStep.sources()) {
             List<String> sourceTracks;
             
             if (source instanceof SoundgraphConfig.PlaylistSource) {
-                sourceTracks = getPlaylistTracks(((SoundgraphConfig.PlaylistSource) source).getPlaylistId());
+                sourceTracks = getPlaylistTracks(((SoundgraphConfig.PlaylistSource) source).playlistId());
             } else if (source instanceof SoundgraphConfig.AlbumSource) {
-                sourceTracks = getAlbumTracks(((SoundgraphConfig.AlbumSource) source).getAlbumId());
+                sourceTracks = getAlbumTracks(((SoundgraphConfig.AlbumSource) source).albumId());
             } else {
-                throw new IllegalArgumentException("Unsupported source type: " + source.getSourceType());
+                throw new IllegalArgumentException("Unsupported source type: " + source.sourceType());
             }
             
             // Process any nested steps
-            if (source.getSteps() != null) {
-                for (SoundgraphConfig.Step step : source.getSteps()) {
+            if (source.steps() != null) {
+                for (SoundgraphConfig.Step step : source.steps()) {
                     if (step instanceof SoundgraphConfig.ShuffleStep) {
                         sourceTracks = processShuffleStep(sourceTracks);
                     } else if (step instanceof SoundgraphConfig.LimitStep) {
-                        sourceTracks = processLimitStep(sourceTracks, ((SoundgraphConfig.LimitStep) step).getValue());
+                        sourceTracks = processLimitStep(sourceTracks, ((SoundgraphConfig.LimitStep) step).value());
                     }
                 }
             }

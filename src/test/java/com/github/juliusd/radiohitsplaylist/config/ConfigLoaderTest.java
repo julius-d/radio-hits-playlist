@@ -52,6 +52,26 @@ class ConfigLoaderTest {
         - playlistId: targetPlaylistId9
           streamName: myBundesStream2
           descriptionPrefix: my other prefix7
+      soundgraphTasks:
+        - targetPlaylist: targetPlaylistId10
+          steps:
+            - type: combine
+              sources:
+                - sourceType: playlist
+                  playlistId: source_playlist_1
+                  steps:
+                    - type: shuffle
+                    - type: limit
+                      value: 100
+                - sourceType: album
+                  albumId: source_album_1
+                  steps:
+                    - type: shuffle
+                    - type: limit
+                      value: 50
+            - type: shuffle
+            - type: limit
+              value: 150
       gotify:
        notifyOnSuccess: false
        notifyOnFailure: true
@@ -59,9 +79,36 @@ class ConfigLoaderTest {
        gotifyApiToken: myApiToken
       """);
 
-
     Configuration configuration = new ConfigLoader().loadConfig(path.toString());
-    assertThat(new Configuration(
+    
+    // Create expected SoundgraphConfig
+    var soundgraphConfig = new SoundgraphConfig(
+        "targetPlaylistId10",
+        List.of(
+            new SoundgraphConfig.CombineStep(
+                List.of(
+                    new SoundgraphConfig.PlaylistSource(
+                        "source_playlist_1",
+                        List.of(
+                            new SoundgraphConfig.ShuffleStep(),
+                            new SoundgraphConfig.LimitStep(100)
+                        )
+                    ),
+                    new SoundgraphConfig.AlbumSource(
+                        "source_album_1",
+                        List.of(
+                            new SoundgraphConfig.ShuffleStep(),
+                            new SoundgraphConfig.LimitStep(50)
+                        )
+                    )
+                )
+            ),
+            new SoundgraphConfig.ShuffleStep(),
+            new SoundgraphConfig.LimitStep(150)
+        )
+    );
+
+    assertThat(configuration).isEqualTo(new Configuration(
             new SpotifyConfiguration("myRefreshToken", "myClientId", "myClientSecret"),
             List.of(
                     new ShuffleTaskConfiguration("myPlaylistId0001"),
@@ -81,9 +128,9 @@ class ConfigLoaderTest {
                     new ReCreateBundesmuxPlaylistTaskConfiguration("myBundesStream1", "targetPlaylistId8", "my prefix7"),
                     new ReCreateBundesmuxPlaylistTaskConfiguration("myBundesStream2", "targetPlaylistId9", "my other prefix7")
             ),
+            List.of(soundgraphConfig),
             new NotifierConfiguration(false, true, "https://example.org/gotify", "myApiToken")
-
-    )).isEqualTo(configuration);
+    ));
   }
 
   @Test
@@ -103,6 +150,7 @@ class ConfigLoaderTest {
     assertThat(configuration.reCreateFamilyRadioPlaylistTasks()).isEqualTo(Collections.emptyList());
     assertThat(configuration.reCreateBundesmuxPlaylistTasks()).isEqualTo(Collections.emptyList());
     assertThat(configuration.shuffleTasks()).isEqualTo(Collections.emptyList());
+    assertThat(configuration.soundgraphTasks()).isEqualTo(Collections.emptyList());
   }
 
   @Test

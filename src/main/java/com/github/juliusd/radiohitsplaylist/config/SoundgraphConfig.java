@@ -5,44 +5,18 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.List;
 
-public class SoundgraphConfig {
-    @JsonProperty("targetPlaylist")
-    private String targetPlaylistId;
-    
-    private List<Step> steps;
-
-    public String getTargetPlaylistId() {
-        return targetPlaylistId;
-    }
-
-    public void setTargetPlaylistId(String targetPlaylistId) {
-        this.targetPlaylistId = targetPlaylistId;
-    }
-
-    public List<Step> getSteps() {
-        return steps;
-    }
-
-    public void setSteps(List<Step> steps) {
-        this.steps = steps;
-    }
-
+public record SoundgraphConfig(
+    @JsonProperty("targetPlaylist") String targetPlaylistId,
+    List<Step> steps
+) {
     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
     @JsonSubTypes({
         @JsonSubTypes.Type(value = CombineStep.class, name = "combine"),
         @JsonSubTypes.Type(value = ShuffleStep.class, name = "shuffle"),
         @JsonSubTypes.Type(value = LimitStep.class, name = "limit")
     })
-    public static abstract class Step {
-        private String type;
-
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
+    public sealed interface Step permits CombineStep, ShuffleStep, LimitStep {
+        String type();
     }
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "sourceType")
@@ -50,96 +24,53 @@ public class SoundgraphConfig {
         @JsonSubTypes.Type(value = PlaylistSource.class, name = "playlist"),
         @JsonSubTypes.Type(value = AlbumSource.class, name = "album")
     })
-    public static abstract class Source {
-        private String sourceType;
-        private List<Step> steps;
+    public sealed interface Source permits PlaylistSource, AlbumSource {
+        String sourceType();
+        List<Step> steps();
+    }
 
-        public String getSourceType() {
-            return sourceType;
-        }
-
-        public void setSourceType(String sourceType) {
-            this.sourceType = sourceType;
-        }
-
-        public List<Step> getSteps() {
-            return steps;
-        }
-
-        public void setSteps(List<Step> steps) {
-            this.steps = steps;
+    public record PlaylistSource(
+        @JsonProperty("playlistId") String playlistId,
+        List<Step> steps
+    ) implements Source {
+        @Override
+        public String sourceType() {
+            return "playlist";
         }
     }
 
-    public static class PlaylistSource extends Source {
-        @JsonProperty("playlistId")
-        private String playlistId;
-
-        public PlaylistSource() {
-            setSourceType("playlist");
-        }
-
-        public String getPlaylistId() {
-            return playlistId;
-        }
-
-        public void setPlaylistId(String playlistId) {
-            this.playlistId = playlistId;
+    public record AlbumSource(
+        @JsonProperty("albumId") String albumId,
+        List<Step> steps
+    ) implements Source {
+        @Override
+        public String sourceType() {
+            return "album";
         }
     }
 
-    public static class AlbumSource extends Source {
-        @JsonProperty("albumId")
-        private String albumId;
-
-        public AlbumSource() {
-            setSourceType("album");
-        }
-
-        public String getAlbumId() {
-            return albumId;
-        }
-
-        public void setAlbumId(String albumId) {
-            this.albumId = albumId;
+    public record CombineStep(
+        List<Source> sources
+    ) implements Step {
+        @Override
+        public String type() {
+            return "combine";
         }
     }
 
-    public static class CombineStep extends Step {
-        private List<Source> sources;
-
-        public CombineStep() {
-            setType("combine");
-        }
-
-        public List<Source> getSources() {
-            return sources;
-        }
-
-        public void setSources(List<Source> sources) {
-            this.sources = sources;
+    public record ShuffleStep() implements Step {
+        @Override
+        public String type() {
+            return "shuffle";
         }
     }
 
-    public static class ShuffleStep extends Step {
-        public ShuffleStep() {
-            setType("shuffle");
-        }
-    }
-
-    public static class LimitStep extends Step {
-        private int value;
-
-        public LimitStep() {
-            setType("limit");
-        }
-
-        public int getValue() {
-            return value;
-        }
-
-        public void setValue(int value) {
-            this.value = value;
+    public record LimitStep(
+        int value
+    ) implements Step {
+        @Override
+        public String type() {
+            return "limit";
         }
     }
 } 
