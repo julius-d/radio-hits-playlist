@@ -14,6 +14,10 @@ public class NoOpNotifier implements Notifier {
   }
 
   @Override
+  public void recordSoundgraphExecuted(String playlistId, int amountOfTracks) {
+  }
+
+  @Override
   public void runFinishedSuccessfully() {
   }
 

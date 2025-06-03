@@ -10,7 +10,6 @@ class NotificationTextBuilder {
   static String createMessageText(Statistic statistic) {
     var durationText = getDurationText(statistic);
 
-
     StringBuilder messageText = new StringBuilder("Run finished successfully after ").append(durationText).append("\n\n");
 
     List<String> shuffledPlaylists = statistic.getShuffledPlaylists();
@@ -18,7 +17,7 @@ class NotificationTextBuilder {
       messageText.append("Shuffled playlists (").append(shuffledPlaylists.size()).append("):\n");
       shuffledPlaylists.forEach(playlist -> messageText.append("- ").append(playlist).append("\n"));
 
-      if (!statistic.getRefreshedPlaylists().isEmpty()) {
+      if (!statistic.getRefreshedPlaylists().isEmpty() || !statistic.getSoundgraphResults().isEmpty()) {
         messageText.append("\n");
       }
     }
@@ -27,6 +26,18 @@ class NotificationTextBuilder {
       messageText.append("Refreshed playlists (").append(statistic.getRefreshedPlaylists().size()).append("):\n");
       statistic.getRefreshedPlaylists().forEach(result ->
         messageText.append("- ").append(result.streamName())
+          .append(": ").append(result.amountOfTracks())
+          .append(" tracks\n"));
+
+      if (!statistic.getSoundgraphResults().isEmpty()) {
+        messageText.append("\n");
+      }
+    }
+
+    if (!statistic.getSoundgraphResults().isEmpty()) {
+      messageText.append("Soundgraph playlists (").append(statistic.getSoundgraphResults().size()).append("):\n");
+      statistic.getSoundgraphResults().forEach(result ->
+        messageText.append("- ").append(result.playlistId())
           .append(": ").append(result.amountOfTracks())
           .append(" tracks\n"));
     }

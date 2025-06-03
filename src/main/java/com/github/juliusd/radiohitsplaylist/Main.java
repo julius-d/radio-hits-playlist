@@ -75,9 +75,9 @@ public class Main {
 
     configuration.soundgraphTasks().forEach(task -> {
       try {
-        soundgraphService.processSoundgraphConfig(task);
-        notifier.recordPlaylistRefresh("Soundgraph " + task.targetPlaylistId(), 0);
-        log("Processed Soundgraph task for playlist " + task.targetPlaylistId());
+        List<String> trackUris = soundgraphService.processSoundgraphConfig(task);
+        notifier.recordSoundgraphExecuted(task.targetPlaylistId(), trackUris.size());
+        log("Processed Soundgraph task for playlist " + task.targetPlaylistId() + " with " + trackUris.size() + " tracks");
       } catch (Exception e) {
         throw new RuntimeException("Failed to process Soundgraph task for playlist " + task.targetPlaylistId(), e);
       }

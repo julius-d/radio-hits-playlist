@@ -26,9 +26,10 @@ public class SoundgraphService {
         this.spotifyApi = spotifyApi;
     }
 
-    public void processSoundgraphConfig(SoundgraphConfig config) throws IOException, SpotifyWebApiException, ParseException {
+    public List<String> processSoundgraphConfig(SoundgraphConfig config) throws IOException, SpotifyWebApiException, ParseException {
         List<String> trackUris = processSteps(config);
         updatePlaylist(config.targetPlaylistId(), trackUris);
+        return trackUris;
     }
 
     private List<String> processSteps(SoundgraphConfig config) throws IOException, SpotifyWebApiException, ParseException {

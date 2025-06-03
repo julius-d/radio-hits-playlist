@@ -19,6 +19,8 @@ class NotificationTextBuilderTest {
       statistic.recordPlaylistRefresh("myStream", 12);
       statistic.recordPlaylistRefresh("otherStream", 23);
       statistic.recordPlaylistShuffled("myPlaylist");
+      statistic.recordSoundgraphExecuted("soundgraphPlaylist1", 45);
+      statistic.recordSoundgraphExecuted("soundgraphPlaylist2", 67);
 
       String result = NotificationTextBuilder.createMessageText(statistic);
 
@@ -32,12 +34,79 @@ class NotificationTextBuilderTest {
         Refreshed playlists (2):
         - myStream: 12 tracks
         - otherStream: 23 tracks
+        
+        Soundgraph playlists (2):
+        - soundgraphPlaylist1: 45 tracks
+        - soundgraphPlaylist2: 67 tracks
         """;
       assertThat(result).startsWith(expected);
     }
 
     @Test
     void canCreateMessageTextWhenNoShuffledPlaylists() {
+      var statistic = new Statistic();
+      statistic.recordPlaylistRefresh("myStream", 12);
+      statistic.recordPlaylistRefresh("otherStream", 23);
+      statistic.recordSoundgraphExecuted("soundgraphPlaylist1", 45);
+
+      String result = NotificationTextBuilder.createMessageText(statistic);
+
+      String expected =
+        """
+        Run finished successfully after ???
+        
+        Refreshed playlists (2):
+        - myStream: 12 tracks
+        - otherStream: 23 tracks
+        
+        Soundgraph playlists (1):
+        - soundgraphPlaylist1: 45 tracks
+        """;
+      assertThat(result).isEqualTo(expected);
+    }
+
+    @Test
+    void canCreateMessageTextWhenNoRefreshPlaylists() {
+      var statistic = new Statistic();
+      statistic.recordPlaylistShuffled("myPlaylist");
+      statistic.recordSoundgraphExecuted("soundgraphPlaylist1", 45);
+
+      String result = NotificationTextBuilder.createMessageText(statistic);
+
+      String expected =
+        """
+        Run finished successfully after ???
+        
+        Shuffled playlists (1):
+        - myPlaylist
+        
+        Soundgraph playlists (1):
+        - soundgraphPlaylist1: 45 tracks
+        """;
+      assertThat(result).isEqualTo(expected);
+    }
+
+    @Test
+    void canCreateMessageTextWithOnlySoundgraphPlaylists() {
+      var statistic = new Statistic();
+      statistic.recordSoundgraphExecuted("soundgraphPlaylist1", 45);
+      statistic.recordSoundgraphExecuted("soundgraphPlaylist2", 67);
+
+      String result = NotificationTextBuilder.createMessageText(statistic);
+
+      String expected =
+        """
+        Run finished successfully after ???
+        
+        Soundgraph playlists (2):
+        - soundgraphPlaylist1: 45 tracks
+        - soundgraphPlaylist2: 67 tracks
+        """;
+      assertThat(result).isEqualTo(expected);
+    }
+
+    @Test
+    void canCreateMessageTextWithOnlyRefreshedPlaylists() {
       var statistic = new Statistic();
       statistic.recordPlaylistRefresh("myStream", 12);
       statistic.recordPlaylistRefresh("otherStream", 23);
@@ -56,9 +125,10 @@ class NotificationTextBuilderTest {
     }
 
     @Test
-    void canCreateMessageTextWhenNoRefreshPlaylists() {
+    void canCreateMessageTextWithOnlyShuffledPlaylists() {
       var statistic = new Statistic();
-      statistic.recordPlaylistShuffled("myPlaylist");
+      statistic.recordPlaylistShuffled("myPlaylist1");
+      statistic.recordPlaylistShuffled("myPlaylist2");
 
       String result = NotificationTextBuilder.createMessageText(statistic);
 
@@ -66,8 +136,9 @@ class NotificationTextBuilderTest {
         """
         Run finished successfully after ???
         
-        Shuffled playlists (1):
-        - myPlaylist
+        Shuffled playlists (2):
+        - myPlaylist1
+        - myPlaylist2
         """;
       assertThat(result).isEqualTo(expected);
     }

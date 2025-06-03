@@ -9,6 +9,7 @@ class Statistic {
 
   private final List<String> shuffledPlaylists = new ArrayList<>();
   private final List<PlaylistRefreshResult> refreshedPlaylists = new ArrayList<>();
+  private final List<SoundgraphResult> soundgraphResults = new ArrayList<>();
   private LocalDateTime startTime;
 
   public void recordPlaylistShuffled(String playlistName) {
@@ -19,12 +20,20 @@ class Statistic {
     refreshedPlaylists.add(new PlaylistRefreshResult(streamName, amountOfTracks));
   }
 
+  public void recordSoundgraphExecuted(String playlistId, int amountOfTracks) {
+    soundgraphResults.add(new SoundgraphResult(playlistId, amountOfTracks));
+  }
+
   public List<String> getShuffledPlaylists() {
     return Collections.unmodifiableList(shuffledPlaylists);
   }
 
   public List<PlaylistRefreshResult> getRefreshedPlaylists() {
     return Collections.unmodifiableList(refreshedPlaylists);
+  }
+
+  public List<SoundgraphResult> getSoundgraphResults() {
+    return Collections.unmodifiableList(soundgraphResults);
   }
 
   public void runStarted() {
@@ -37,6 +46,11 @@ class Statistic {
 
   public record PlaylistRefreshResult(
     String streamName, int amountOfTracks
+  ) {
+  }
+
+  public record SoundgraphResult(
+    String playlistId, int amountOfTracks
   ) {
   }
 }

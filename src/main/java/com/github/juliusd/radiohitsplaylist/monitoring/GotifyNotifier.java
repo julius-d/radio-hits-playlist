@@ -29,6 +29,11 @@ class GotifyNotifier implements Notifier {
   }
 
   @Override
+  public void recordSoundgraphExecuted(String playlistId, int amountOfTracks) {
+    statistic.recordSoundgraphExecuted(playlistId, amountOfTracks);
+  }
+
+  @Override
   public void runFinishedSuccessfully() {
     if (config.notifyOnSuccess()) {
       var messageText = NotificationTextBuilder.createMessageText(statistic);
