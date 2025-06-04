@@ -25,32 +25,7 @@ class SoundgraphServiceTest {
         soundgraphService = new SoundgraphService(spotifyApi);
     }
 
-    @Test
-    void shouldProcessSoundgraphConfigWithPlaylistAndAlbumSources() throws Exception {
-        // given
-        String configYaml = //language=yaml
-            """
-            targetPlaylist: "target_playlist_id"
-            pipe:
-              steps:
-                - type: combine
-                  sources:
-                    - steps:
-                        - type: loadPlaylist
-                          playlistId: "source_playlist_1"
-                        - type: limit
-                          value: 2
-                    - steps:
-                        - type: loadAlbum
-                          albumId: "source_album_1"
-                        - type: limit
-                          value: 1
-                - type: shuffle
-                - type: limit
-                  value: 3
-            """;
-
-        // Mock playlist tracks response
+    private void givenPlaylistTracksResponse(String playlistId) {
         String playlistResponse = //language=json
             """
             {
@@ -231,11 +206,11 @@ class SoundgraphServiceTest {
                     }
                 ]
             }""";
-        
-        wireMock.register(stubFor(get(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks"))
+        wireMock.register(stubFor(get(urlPathEqualTo("/v1/playlists/" + playlistId + "/tracks"))
             .willReturn(okJson(playlistResponse))));
+    }
 
-        // Mock album tracks response
+    private void givenAlbumTracksResponse(String albumId) {
         String albumResponse = //language=json
             """
             {
@@ -252,8 +227,37 @@ class SoundgraphServiceTest {
                     }
                 ]
             }""";
-        wireMock.register(stubFor(get(urlPathEqualTo("/v1/albums/source_album_1/tracks"))
+        wireMock.register(stubFor(get(urlPathEqualTo("/v1/albums/" + albumId + "/tracks"))
             .willReturn(okJson(albumResponse))));
+    }
+
+    @Test
+    void shouldProcessSoundgraphConfigWithPlaylistAndAlbumSources() throws Exception {
+        // given
+        String configYaml = //language=yaml
+            """
+            targetPlaylist: "target_playlist_id"
+            pipe:
+              steps:
+                - type: combine
+                  sources:
+                    - steps:
+                        - type: loadPlaylist
+                          playlistId: "source_playlist_1"
+                        - type: limit
+                          value: 2
+                    - steps:
+                        - type: loadAlbum
+                          albumId: "source_album_1"
+                        - type: limit
+                          value: 1
+                - type: shuffle
+                - type: limit
+                  value: 3
+            """;
+
+        givenPlaylistTracksResponse("source_playlist_1");
+        givenAlbumTracksResponse("source_album_1");
 
         // Mock playlist update responses
         wireMock.register(stubFor(put(urlPathEqualTo("/v1/playlists/target_playlist_id/tracks"))
@@ -279,7 +283,6 @@ class SoundgraphServiceTest {
             .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:track1")))
             .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:track2")))
             .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:album1"))));
-
     }
 
     private static SpotifyApi buildSpotifyApiForLocalhost(int port) {
