@@ -23,15 +23,26 @@ public class SoundgraphService {
     }
 
     public List<String> processSoundgraphConfig(SoundgraphConfig config) throws IOException, SpotifyWebApiException, ParseException {
-        List<String> trackUris = processSteps(config);
+        List<String> trackUris = processPipe(config.pipe());
         updatePlaylist(config.targetPlaylistId(), trackUris);
         return trackUris;
     }
 
-    private List<String> processSteps(SoundgraphConfig config) throws IOException, SpotifyWebApiException, ParseException {
+    private List<String> processCombineStep(SoundgraphConfig.CombineStep combineStep) throws IOException, SpotifyWebApiException, ParseException {
+        List<String> combinedTracks = new ArrayList<>();
+        
+        for (SoundgraphConfig.Pipe pipe : combineStep.sources()) {
+            List<String> sourceTracks = processPipe(pipe);
+            combinedTracks.addAll(sourceTracks);
+        }
+        
+        return combinedTracks;
+    }
+
+    private List<String> processPipe(SoundgraphConfig.Pipe pipe) throws IOException, SpotifyWebApiException, ParseException {
         List<String> trackUris = new ArrayList<>();
         
-        for (SoundgraphConfig.Step step : config.pipe().steps()) {
+        for (SoundgraphConfig.Step step : pipe.steps()) {
             if (step instanceof SoundgraphConfig.LoadPlaylistStep) {
                 trackUris = getPlaylistTracks(((SoundgraphConfig.LoadPlaylistStep) step).playlistId());
             } else if (step instanceof SoundgraphConfig.LoadAlbumStep) {
@@ -48,33 +59,6 @@ public class SoundgraphService {
         }
         
         return trackUris;
-    }
-
-    private List<String> processCombineStep(SoundgraphConfig.CombineStep combineStep) throws IOException, SpotifyWebApiException, ParseException {
-        List<String> combinedTracks = new ArrayList<>();
-        
-        for (SoundgraphConfig.Pipe pipe : combineStep.sources()) {
-            List<String> sourceTracks = new ArrayList<>();
-            
-            // Process each step in the pipe
-            for (SoundgraphConfig.Step step : pipe.steps()) {
-                if (step instanceof SoundgraphConfig.LoadPlaylistStep) {
-                    sourceTracks = getPlaylistTracks(((SoundgraphConfig.LoadPlaylistStep) step).playlistId());
-                } else if (step instanceof SoundgraphConfig.LoadAlbumStep) {
-                    sourceTracks = getAlbumTracks(((SoundgraphConfig.LoadAlbumStep) step).albumId());
-                } else if (step instanceof SoundgraphConfig.ShuffleStep) {
-                    sourceTracks = processShuffleStep(sourceTracks);
-                } else if (step instanceof SoundgraphConfig.LimitStep) {
-                    sourceTracks = processLimitStep(sourceTracks, ((SoundgraphConfig.LimitStep) step).value());
-                } else if (step instanceof SoundgraphConfig.DedupStep) {
-                    sourceTracks = processDedupStep(sourceTracks);
-                }
-            }
-            
-            combinedTracks.addAll(sourceTracks);
-        }
-        
-        return combinedTracks;
     }
 
     private List<String> processShuffleStep(List<String> tracks) {
