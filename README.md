@@ -44,23 +44,35 @@ reCreateBundesmuxPlaylistTasks:
     streamName: myBundesStream2
     descriptionPrefix: my other prefix7
 soundgraphTasks:
+  # Simple example with a single playlist
   - targetPlaylist: targetPlaylistId10
-    steps:
-      - type: combine
-        sources:
-          - sourceType: playlist
-            playlistId: source_playlist_1
-            steps:
-              - type: shuffle
-              - type: limit
-                value: 100
-          - sourceType: album
-            albumId: source_album_1
-            steps:
-              - type: shuffle
-              - type: limit
-                value: 50
-      - type: shuffle
-      - type: limit
-        value: 150
+    pipe:
+      steps:
+        - type: loadPlaylist
+          playlistId: source_playlist_1
+        - type: limit
+          value: 100
+        - type: shuffle
+
+  # Complex example combining multiple sources
+  - targetPlaylist: targetPlaylistId11
+    pipe:
+      steps:
+        - type: combine
+          sources:
+            - steps:
+                - type: loadPlaylist
+                  playlistId: source_playlist_1
+                - type: shuffle
+                - type: limit
+                  value: 100
+            - steps:
+                - type: loadAlbum
+                  albumId: source_album_1
+                - type: shuffle
+                - type: limit
+                  value: 50
+        - type: shuffle
+        - type: limit
+          value: 150
 ```

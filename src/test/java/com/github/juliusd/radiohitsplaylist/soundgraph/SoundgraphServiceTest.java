@@ -29,23 +29,24 @@ class SoundgraphServiceTest {
     void shouldProcessSoundgraphConfigWithPlaylistAndAlbumSources() throws Exception {
         // given
         String configYaml = """
-            targetPlaylist: "target_playlist_id"
-            steps:
-              - type: combine
-                sources:
-                  - sourceType: playlist
-                    playlistId: "source_playlist_1"
-                    steps:
-                      - type: limit
-                        value: 2
-                  - sourceType: album
-                    albumId: "source_album_1"
-                    steps:
-                      - type: limit
-                        value: 1
-              - type: shuffle
-              - type: limit
-                value: 3
+            targetPlaylist: \"target_playlist_id\"
+            pipe:
+              steps:
+                - type: combine
+                  sources:
+                    - steps:
+                        - type: loadPlaylist
+                          playlistId: \"source_playlist_1\"
+                        - type: limit
+                          value: 2
+                    - steps:
+                        - type: loadAlbum
+                          albumId: \"source_album_1\"
+                        - type: limit
+                          value: 1
+                - type: shuffle
+                - type: limit
+                  value: 3
             """;
 
         // Mock playlist tracks response

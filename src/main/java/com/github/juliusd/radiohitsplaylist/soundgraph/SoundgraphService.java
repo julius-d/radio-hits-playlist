@@ -8,14 +8,10 @@ import com.google.gson.reflect.TypeToken;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.specification.PlaylistTrack;
-import se.michaelthelin.spotify.model_objects.specification.Track;
-import se.michaelthelin.spotify.model_objects.specification.Album;
-import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
 import org.apache.hc.core5.http.ParseException;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,8 +31,12 @@ public class SoundgraphService {
     private List<String> processSteps(SoundgraphConfig config) throws IOException, SpotifyWebApiException, ParseException {
         List<String> trackUris = new ArrayList<>();
         
-        for (SoundgraphConfig.Step step : config.steps()) {
-            if (step instanceof SoundgraphConfig.CombineStep) {
+        for (SoundgraphConfig.Step step : config.pipe().steps()) {
+            if (step instanceof SoundgraphConfig.LoadPlaylistStep) {
+                trackUris = getPlaylistTracks(((SoundgraphConfig.LoadPlaylistStep) step).playlistId());
+            } else if (step instanceof SoundgraphConfig.LoadAlbumStep) {
+                trackUris = getAlbumTracks(((SoundgraphConfig.LoadAlbumStep) step).albumId());
+            } else if (step instanceof SoundgraphConfig.CombineStep) {
                 trackUris = processCombineStep((SoundgraphConfig.CombineStep) step);
             } else if (step instanceof SoundgraphConfig.ShuffleStep) {
                 trackUris = processShuffleStep(trackUris);
@@ -51,25 +51,19 @@ public class SoundgraphService {
     private List<String> processCombineStep(SoundgraphConfig.CombineStep combineStep) throws IOException, SpotifyWebApiException, ParseException {
         List<String> combinedTracks = new ArrayList<>();
         
-        for (SoundgraphConfig.Source source : combineStep.sources()) {
-            List<String> sourceTracks;
+        for (SoundgraphConfig.Pipe pipe : combineStep.sources()) {
+            List<String> sourceTracks = new ArrayList<>();
             
-            if (source instanceof SoundgraphConfig.PlaylistSource) {
-                sourceTracks = getPlaylistTracks(((SoundgraphConfig.PlaylistSource) source).playlistId());
-            } else if (source instanceof SoundgraphConfig.AlbumSource) {
-                sourceTracks = getAlbumTracks(((SoundgraphConfig.AlbumSource) source).albumId());
-            } else {
-                throw new IllegalArgumentException("Unsupported source type: " + source.sourceType());
-            }
-            
-            // Process any nested steps
-            if (source.steps() != null) {
-                for (SoundgraphConfig.Step step : source.steps()) {
-                    if (step instanceof SoundgraphConfig.ShuffleStep) {
-                        sourceTracks = processShuffleStep(sourceTracks);
-                    } else if (step instanceof SoundgraphConfig.LimitStep) {
-                        sourceTracks = processLimitStep(sourceTracks, ((SoundgraphConfig.LimitStep) step).value());
-                    }
+            // Process each step in the pipe
+            for (SoundgraphConfig.Step step : pipe.steps()) {
+                if (step instanceof SoundgraphConfig.LoadPlaylistStep) {
+                    sourceTracks = getPlaylistTracks(((SoundgraphConfig.LoadPlaylistStep) step).playlistId());
+                } else if (step instanceof SoundgraphConfig.LoadAlbumStep) {
+                    sourceTracks = getAlbumTracks(((SoundgraphConfig.LoadAlbumStep) step).albumId());
+                } else if (step instanceof SoundgraphConfig.ShuffleStep) {
+                    sourceTracks = processShuffleStep(sourceTracks);
+                } else if (step instanceof SoundgraphConfig.LimitStep) {
+                    sourceTracks = processLimitStep(sourceTracks, ((SoundgraphConfig.LimitStep) step).value());
                 }
             }
             

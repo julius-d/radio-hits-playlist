@@ -7,50 +7,44 @@ import java.util.List;
 
 public record SoundgraphConfig(
     @JsonProperty("targetPlaylist") String targetPlaylistId,
-    List<Step> steps
+    @JsonProperty("pipe") Pipe pipe
 ) {
     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
     @JsonSubTypes({
+        @JsonSubTypes.Type(value = LoadPlaylistStep.class, name = "loadPlaylist"),
+        @JsonSubTypes.Type(value = LoadAlbumStep.class, name = "loadAlbum"),
         @JsonSubTypes.Type(value = CombineStep.class, name = "combine"),
         @JsonSubTypes.Type(value = ShuffleStep.class, name = "shuffle"),
         @JsonSubTypes.Type(value = LimitStep.class, name = "limit")
     })
-    public sealed interface Step permits CombineStep, ShuffleStep, LimitStep {
+    public sealed interface Step permits LoadPlaylistStep, LoadAlbumStep, CombineStep, ShuffleStep, LimitStep {
         String type();
     }
 
-    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "sourceType")
-    @JsonSubTypes({
-        @JsonSubTypes.Type(value = PlaylistSource.class, name = "playlist"),
-        @JsonSubTypes.Type(value = AlbumSource.class, name = "album")
-    })
-    public sealed interface Source permits PlaylistSource, AlbumSource {
-        String sourceType();
-        List<Step> steps();
-    }
-
-    public record PlaylistSource(
-        @JsonProperty("playlistId") String playlistId,
+    public record Pipe(
         List<Step> steps
-    ) implements Source {
+    ) {}
+
+    public record LoadPlaylistStep(
+        @JsonProperty("playlistId") String playlistId
+    ) implements Step {
         @Override
-        public String sourceType() {
-            return "playlist";
+        public String type() {
+            return "loadPlaylist";
         }
     }
 
-    public record AlbumSource(
-        @JsonProperty("albumId") String albumId,
-        List<Step> steps
-    ) implements Source {
+    public record LoadAlbumStep(
+        @JsonProperty("albumId") String albumId
+    ) implements Step {
         @Override
-        public String sourceType() {
-            return "album";
+        public String type() {
+            return "loadAlbum";
         }
     }
 
     public record CombineStep(
-        List<Source> sources
+        List<Pipe> sources
     ) implements Step {
         @Override
         public String type() {
