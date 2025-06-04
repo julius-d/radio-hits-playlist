@@ -42,6 +42,8 @@ public class SoundgraphService {
                 trackUris = processShuffleStep(trackUris);
             } else if (step instanceof SoundgraphConfig.LimitStep) {
                 trackUris = processLimitStep(trackUris, ((SoundgraphConfig.LimitStep) step).value());
+            } else if (step instanceof SoundgraphConfig.DedupStep) {
+                trackUris = processDedupStep(trackUris);
             }
         }
         
@@ -64,6 +66,8 @@ public class SoundgraphService {
                     sourceTracks = processShuffleStep(sourceTracks);
                 } else if (step instanceof SoundgraphConfig.LimitStep) {
                     sourceTracks = processLimitStep(sourceTracks, ((SoundgraphConfig.LimitStep) step).value());
+                } else if (step instanceof SoundgraphConfig.DedupStep) {
+                    sourceTracks = processDedupStep(sourceTracks);
                 }
             }
             
@@ -82,6 +86,12 @@ public class SoundgraphService {
     private List<String> processLimitStep(List<String> tracks, int limit) {
         return tracks.stream()
                 .limit(limit)
+                .collect(Collectors.toList());
+    }
+
+    private List<String> processDedupStep(List<String> tracks) {
+        return tracks.stream()
+                .distinct()
                 .collect(Collectors.toList());
     }
 

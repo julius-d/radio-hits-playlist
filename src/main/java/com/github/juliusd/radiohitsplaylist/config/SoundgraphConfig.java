@@ -15,9 +15,10 @@ public record SoundgraphConfig(
         @JsonSubTypes.Type(value = LoadAlbumStep.class, name = "loadAlbum"),
         @JsonSubTypes.Type(value = CombineStep.class, name = "combine"),
         @JsonSubTypes.Type(value = ShuffleStep.class, name = "shuffle"),
-        @JsonSubTypes.Type(value = LimitStep.class, name = "limit")
+        @JsonSubTypes.Type(value = LimitStep.class, name = "limit"),
+        @JsonSubTypes.Type(value = DedupStep.class, name = "dedup")
     })
-    public sealed interface Step permits LoadPlaylistStep, LoadAlbumStep, CombineStep, ShuffleStep, LimitStep {
+    public sealed interface Step permits LoadPlaylistStep, LoadAlbumStep, CombineStep, ShuffleStep, LimitStep, DedupStep {
         String type();
     }
 
@@ -65,6 +66,13 @@ public record SoundgraphConfig(
         @Override
         public String type() {
             return "limit";
+        }
+    }
+
+    public record DedupStep() implements Step {
+        @Override
+        public String type() {
+            return "dedup";
         }
     }
 } 

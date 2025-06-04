@@ -325,6 +325,65 @@ class SoundgraphServiceTest {
             .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:track3"))));
     }
 
+    @Test
+    void shouldRemoveDuplicateTracks() throws Exception {
+        // given
+        String configYaml = //language=yaml
+            """
+            targetPlaylist: "target_playlist_id"
+            pipe:
+              steps:
+                - type: loadPlaylist
+                  playlistId: "source_playlist_1"
+                - type: dedup
+            """;
+
+        // Mock playlist response with duplicate tracks
+        String playlistResponseWithDuplicates = //language=json
+            """
+            {
+                "items": [
+                    {
+                        "track": {
+                            "uri": "spotify:track:track1",
+                            "name": "Track 1"
+                        }
+                    },
+                    {
+                        "track": {
+                            "uri": "spotify:track:track1",
+                            "name": "Track 1"
+                        }
+                    },
+                    {
+                        "track": {
+                            "uri": "spotify:track:track2",
+                            "name": "Track 2"
+                        }
+                    }
+                ]
+            }""";
+        wireMock.register(stubFor(get(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks"))
+            .willReturn(okJson(playlistResponseWithDuplicates))));
+
+        givenPlaylistUpdateWillBeAccepted("target_playlist_id");
+
+        // when
+        whenProcessSoundgraphConfig(configYaml);
+
+        // then
+        verify(getRequestedFor(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks")));
+
+        // Verify that only unique tracks were added to the playlist
+        verify(putRequestedFor(urlPathEqualTo("/v1/playlists/target_playlist_id/tracks"))
+            .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:track1")))
+            .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:track2"))));
+        
+        // Verify that track1 appears only once
+        verify(putRequestedFor(urlPathEqualTo("/v1/playlists/target_playlist_id/tracks"))
+            .withRequestBody(matchingJsonPath("$.uris", not(containing("spotify:track:track1,spotify:track:track1")))));
+    }
+
     private static SpotifyApi buildSpotifyApiForLocalhost(int port) {
         return new SpotifyApi.Builder()
             .setScheme("http")
