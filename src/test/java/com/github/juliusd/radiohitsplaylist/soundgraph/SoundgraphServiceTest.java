@@ -344,25 +344,173 @@ class SoundgraphServiceTest {
             {
                 "items": [
                     {
+                        "added_at": "2024-01-01T00:00:00Z",
                         "track": {
+                            "album": {
+                                "album_type": "album",
+                                "total_tracks": 10,
+                                "id": "album1",
+                                "name": "Album 1",
+                                "release_date": "2024-01-01",
+                                "release_date_precision": "day",
+                                "type": "album",
+                                "uri": "spotify:album:album1",
+                                "artists": [
+                                    {
+                                        "external_urls": {
+                                            "spotify": "https://open.spotify.com/artist/artist1"
+                                        },
+                                        "href": "https://api.spotify.com/v1/artists/artist1",
+                                        "id": "artist1",
+                                        "name": "Artist 1",
+                                        "type": "artist",
+                                        "uri": "spotify:artist:artist1"
+                                    }
+                                ]
+                            },
+                            "artists": [
+                                {
+                                    "external_urls": {
+                                        "spotify": "https://open.spotify.com/artist/artist1"
+                                    },
+                                    "href": "https://api.spotify.com/v1/artists/artist1",
+                                    "id": "artist1",
+                                    "name": "Artist 1",
+                                    "type": "artist",
+                                    "uri": "spotify:artist:artist1"
+                                }
+                            ],
+                            "disc_number": 1,
+                            "duration_ms": 180000,
+                            "explicit": false,
+                            "external_ids": {
+                                "isrc": "ISRC1"
+                            },
+                            "href": "https://api.spotify.com/v1/tracks/track1",
+                            "id": "track1",
+                            "is_playable": true,
+                            "name": "Track 1",
+                            "popularity": 80,
+                            "preview_url": "https://p.scdn.co/mp3-preview/track1",
+                            "track_number": 1,
+                            "type": "track",
                             "uri": "spotify:track:track1",
-                            "name": "Track 1"
+                            "is_local": false
                         }
                     },
                     {
+                        "added_at": "2024-01-01T00:00:00Z",
                         "track": {
+                            "album": {
+                                "album_type": "album",
+                                "total_tracks": 10,
+                                "id": "album1",
+                                "name": "Album 1",
+                                "release_date": "2024-01-01",
+                                "release_date_precision": "day",
+                                "type": "album",
+                                "uri": "spotify:album:album1",
+                                "artists": [
+                                    {
+                                        "external_urls": {
+                                            "spotify": "https://open.spotify.com/artist/artist1"
+                                        },
+                                        "href": "https://api.spotify.com/v1/artists/artist1",
+                                        "id": "artist1",
+                                        "name": "Artist 1",
+                                        "type": "artist",
+                                        "uri": "spotify:artist:artist1"
+                                    }
+                                ]
+                            },
+                            "artists": [
+                                {
+                                    "external_urls": {
+                                        "spotify": "https://open.spotify.com/artist/artist1"
+                                    },
+                                    "href": "https://api.spotify.com/v1/artists/artist1",
+                                    "id": "artist1",
+                                    "name": "Artist 1",
+                                    "type": "artist",
+                                    "uri": "spotify:artist:artist1"
+                                }
+                            ],
+                            "disc_number": 1,
+                            "duration_ms": 180000,
+                            "explicit": false,
+                            "external_ids": {
+                                "isrc": "ISRC1"
+                            },
+                            "href": "https://api.spotify.com/v1/tracks/track1",
+                            "id": "track1",
+                            "is_playable": true,
+                            "name": "Track 1",
+                            "popularity": 80,
+                            "preview_url": "https://p.scdn.co/mp3-preview/track1",
+                            "track_number": 1,
+                            "type": "track",
                             "uri": "spotify:track:track1",
-                            "name": "Track 1"
+                            "is_local": false
                         }
                     },
                     {
+                        "added_at": "2024-01-01T00:00:00Z",
                         "track": {
+                            "album": {
+                                "album_type": "album",
+                                "total_tracks": 10,
+                                "id": "album2",
+                                "name": "Album 2",
+                                "release_date": "2024-01-01",
+                                "release_date_precision": "day",
+                                "type": "album",
+                                "uri": "spotify:album:album2",
+                                "artists": [
+                                    {
+                                        "external_urls": {
+                                            "spotify": "https://open.spotify.com/artist/artist2"
+                                        },
+                                        "href": "https://api.spotify.com/v1/artists/artist2",
+                                        "id": "artist2",
+                                        "name": "Artist 2",
+                                        "type": "artist",
+                                        "uri": "spotify:artist:artist2"
+                                    }
+                                ]
+                            },
+                            "artists": [
+                                {
+                                    "external_urls": {
+                                        "spotify": "https://open.spotify.com/artist/artist2"
+                                    },
+                                    "href": "https://api.spotify.com/v1/artists/artist2",
+                                    "id": "artist2",
+                                    "name": "Artist 2",
+                                    "type": "artist",
+                                    "uri": "spotify:artist:artist2"
+                                }
+                            ],
+                            "disc_number": 1,
+                            "duration_ms": 180000,
+                            "explicit": false,
+                            "external_ids": {
+                                "isrc": "ISRC2"
+                            },
+                            "href": "https://api.spotify.com/v1/tracks/track2",
+                            "id": "track2",
+                            "is_playable": true,
+                            "name": "Track 2",
+                            "popularity": 80,
+                            "preview_url": "https://p.scdn.co/mp3-preview/track2",
+                            "track_number": 1,
+                            "type": "track",
                             "uri": "spotify:track:track2",
-                            "name": "Track 2"
+                            "is_local": false
                         }
                     }
                 ]
-            }""";
+            }
+            """;
         wireMock.register(stubFor(get(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks"))
             .willReturn(okJson(playlistResponseWithDuplicates))));
 
