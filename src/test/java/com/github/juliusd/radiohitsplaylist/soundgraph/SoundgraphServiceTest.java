@@ -28,7 +28,8 @@ class SoundgraphServiceTest {
     @Test
     void shouldProcessSoundgraphConfigWithPlaylistAndAlbumSources() throws Exception {
         // given
-        String configYaml = """
+        String configYaml = //language=yaml
+            """
             targetPlaylist: "target_playlist_id"
             pipe:
               steps:
@@ -50,7 +51,8 @@ class SoundgraphServiceTest {
             """;
 
         // Mock playlist tracks response
-        String playlistResponse = """
+        String playlistResponse = //language=json
+            """
             {
                 "href": "https://api.spotify.com/v1/playlists/source_playlist_1/tracks",
                 "limit": 20,
@@ -234,8 +236,22 @@ class SoundgraphServiceTest {
             .willReturn(okJson(playlistResponse))));
 
         // Mock album tracks response
-        String albumResponse = "{\"items\":[{\"uri\":\"spotify:track:album1\",\"name\":\"Album Track 1\",\"artists\":[{\"name\":\"Album Artist 1\"}]},{\"uri\":\"spotify:track:album2\",\"name\":\"Album Track 2\",\"artists\":[{\"name\":\"Album Artist 2\"}]}]}";
-        
+        String albumResponse = //language=json
+            """
+            {
+                "items": [
+                    {
+                        "uri": "spotify:track:album1",
+                        "name": "Album Track 1",
+                        "artists": [{"name":"Album Artist 1"}]
+                    },
+                    {
+                        "uri": "spotify:track:album2",
+                        "name": "Album Track 2",
+                        "artists": [{"name":"Album Artist 2"}]
+                    }
+                ]
+            }""";
         wireMock.register(stubFor(get(urlPathEqualTo("/v1/albums/source_album_1/tracks"))
             .willReturn(okJson(albumResponse))));
 
@@ -250,16 +266,6 @@ class SoundgraphServiceTest {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         SoundgraphConfig config = mapper.readValue(configYaml, SoundgraphConfig.class);
         soundgraphService.processSoundgraphConfig(config);
-
-        // DEBUG: Print the request bodies received by WireMock
-        wireMock.getAllServeEvents().forEach(event -> {
-            var request = event.getRequest();
-            if (request.getUrl().contains("/v1/playlists/target_playlist_id/tracks") &&
-                (request.getMethod().value().equals("PUT") || request.getMethod().value().equals("POST"))) {
-                System.out.println("[DEBUG] " + request.getMethod() + " " + request.getUrl());
-                System.out.println("[DEBUG] Body: " + request.getBodyAsString());
-            }
-        });
 
         // then
         // Verify playlist tracks were fetched
