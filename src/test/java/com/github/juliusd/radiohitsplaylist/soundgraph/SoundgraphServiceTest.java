@@ -231,6 +231,20 @@ class SoundgraphServiceTest {
             .willReturn(okJson(albumResponse))));
     }
 
+    private void givenPlaylistUpdateWillBeAccepted(String playlistId) {
+        wireMock.register(stubFor(put(urlPathEqualTo("/v1/playlists/" + playlistId + "/tracks"))
+            .willReturn(okJson("{}"))));
+
+        wireMock.register(stubFor(post(urlPathEqualTo("/v1/playlists/" + playlistId + "/tracks"))
+            .willReturn(okJson("{}"))));
+    }
+
+    private void whenProcessSoundgraphConfig(String configYaml) throws Exception {
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        SoundgraphConfig config = mapper.readValue(configYaml, SoundgraphConfig.class);
+        soundgraphService.processSoundgraphConfig(config);
+    }
+
     @Test
     void shouldProcessSoundgraphConfigWithPlaylistAndAlbumSources() throws Exception {
         // given
@@ -260,16 +274,10 @@ class SoundgraphServiceTest {
         givenAlbumTracksResponse("source_album_1");
 
         // Mock playlist update responses
-        wireMock.register(stubFor(put(urlPathEqualTo("/v1/playlists/target_playlist_id/tracks"))
-            .willReturn(okJson("{}"))));
-
-        wireMock.register(stubFor(post(urlPathEqualTo("/v1/playlists/target_playlist_id/tracks"))
-            .willReturn(okJson("{}"))));
+        givenPlaylistUpdateWillBeAccepted("target_playlist_id");
 
         // when
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        SoundgraphConfig config = mapper.readValue(configYaml, SoundgraphConfig.class);
-        soundgraphService.processSoundgraphConfig(config);
+        whenProcessSoundgraphConfig(configYaml);
 
         // then
         // Verify playlist tracks were fetched
@@ -283,6 +291,38 @@ class SoundgraphServiceTest {
             .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:track1")))
             .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:track2")))
             .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:album1"))));
+    }
+
+    @Test
+    void shouldProcessSoundgraphConfigWithSinglePlaylistSource() throws Exception {
+        // given
+        String configYaml = //language=yaml
+            """
+            targetPlaylist: "target_playlist_id"
+            pipe:
+              steps:
+                - type: loadPlaylist
+                  playlistId: "source_playlist_1"
+                - type: limit
+                  value: 100
+                - type: shuffle
+            """;
+
+        givenPlaylistTracksResponse("source_playlist_1");
+        givenPlaylistUpdateWillBeAccepted("target_playlist_id");
+
+        // when
+        whenProcessSoundgraphConfig(configYaml);
+
+        // then
+        // Verify playlist tracks were fetched
+        verify(getRequestedFor(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks")));
+
+        // Verify tracks were replaced in playlist
+        verify(putRequestedFor(urlPathEqualTo("/v1/playlists/target_playlist_id/tracks"))
+            .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:track1")))
+            .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:track2")))
+            .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:track3"))));
     }
 
     private static SpotifyApi buildSpotifyApiForLocalhost(int port) {
