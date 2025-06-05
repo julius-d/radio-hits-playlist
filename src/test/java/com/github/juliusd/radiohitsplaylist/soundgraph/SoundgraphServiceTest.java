@@ -56,10 +56,11 @@ class SoundgraphServiceTest {
                                 new SoundgraphConfig.LimitStep(3)))));
 
         // then
-        assertThat(limitedTracks).hasSize(3);
-        assertThat(limitedTracks.get(0).uri()).isEqualTo(URI.create("spotify:track:track1"));
-        assertThat(limitedTracks.get(1).uri()).isEqualTo(URI.create("spotify:track:track2"));
-        assertThat(limitedTracks.get(2).uri()).isEqualTo(URI.create("spotify:track:track3"));
+        assertThat(limitedTracks).hasSize(3).extracting(SoundgraphSong::uri)
+                .containsExactly(
+                        URI.create("spotify:track:track1"),
+                        URI.create("spotify:track:track2"),
+                        URI.create("spotify:track:track3"));
     }
 
     @Test
@@ -81,9 +82,37 @@ class SoundgraphServiceTest {
                                 new SoundgraphConfig.LimitStep(5)))));
 
         // then
-        assertThat(limitedTracks).hasSize(2);
-        assertThat(limitedTracks.get(0).uri()).isEqualTo(URI.create("spotify:track:track1"));
-        assertThat(limitedTracks.get(1).uri()).isEqualTo(URI.create("spotify:track:track2"));
+        assertThat(limitedTracks).hasSize(2).extracting(SoundgraphSong::uri)
+                .containsExactly(
+                        URI.create("spotify:track:track1"),
+                        URI.create("spotify:track:track2"));
+    }
+
+    @Test
+    void shouldFilterOutExplicitTracks() throws Exception {
+        // given
+        List<SoundgraphSong> inputTracks = List.of(
+                new SoundgraphSong(URI.create("spotify:track:track1"), true), // explicit
+                new SoundgraphSong(URI.create("spotify:track:track2"), false), // non-explicit
+                new SoundgraphSong(URI.create("spotify:track:track3"), true), // explicit
+                new SoundgraphSong(URI.create("spotify:track:track4"), false)); // non-explicit
+
+        when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id"))
+                .thenReturn(inputTracks);
+
+        // when
+        List<SoundgraphSong> filteredTracks = soundgraphService.processSoundgraphConfig(
+                new SoundgraphConfig(
+                        "target_playlist_id",
+                        new SoundgraphConfig.Pipe(List.of(
+                                new SoundgraphConfig.LoadPlaylistStep("source_playlist_id"),
+                                new SoundgraphConfig.FilterOutExplicitStep()))));
+
+        // then
+        assertThat(filteredTracks).hasSize(2).extracting(SoundgraphSong::uri)
+                .containsExactly(
+                        URI.create("spotify:track:track2"),
+                        URI.create("spotify:track:track4"));
     }
 
 }
