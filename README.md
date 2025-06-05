@@ -75,4 +75,43 @@ soundgraphTasks:
         - type: shuffle
         - type: limit
           value: 150
+
+  # Comprehensive example showing all available steps
+  - targetPlaylist: targetPlaylistId12
+    pipe:
+      steps:
+        - type: combine
+          sources:
+            # First source: Load from playlist, remove duplicates, filter explicit content
+            - steps:
+                - type: loadPlaylist
+                  playlistId: source_playlist_1
+                - type: dedup
+                - type: filterOutExplicit
+                - type: limit
+                  value: 50
+            # Second source: Load from album, shuffle, limit
+            - steps:
+                - type: loadAlbum
+                  albumId: source_album_1
+                - type: shuffle
+                - type: limit
+                  value: 30
+        # Final processing steps
+        - type: shuffle
+        - type: dedup
+        - type: filterOutExplicit
+        - type: limit
+          value: 100
 ```
+# Available Steps Reference
+
+| Step                | Description                                | Required Parameters                    |
+|---------------------|--------------------------------------------|----------------------------------------|
+| `loadPlaylist`      | Loads tracks from a Spotify playlist       | `playlistId` (string)                  |
+| `loadAlbum`         | Loads tracks from a Spotify album          | `albumId` (string)                     |
+| `combine`           | Combines multiple sources of tracks        | `sources` (array of pipe configurations)|
+| `shuffle`           | Randomizes the order of tracks             | None                                    |
+| `limit`             | Limits the number of tracks                | `value` (integer)                       |
+| `dedup`             | Removes duplicate tracks                   | None                                    |
+| `filterOutExplicit` | Removes tracks marked as explicit          | None                                    |
