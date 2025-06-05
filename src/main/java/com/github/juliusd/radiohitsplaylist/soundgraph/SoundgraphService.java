@@ -32,11 +32,27 @@ public class SoundgraphService {
     }
 
     private List<SoundgraphSong> processCombineStep(SoundgraphConfig.CombineStep combineStep) throws IOException, SpotifyWebApiException, ParseException {
-        List<SoundgraphSong> combinedTracks = new ArrayList<>();
+        List<List<SoundgraphSong>> sourceTracksLists = new ArrayList<>();
         
+        // First collect all source tracks
         for (SoundgraphConfig.Pipe pipe : combineStep.sources()) {
             List<SoundgraphSong> sourceTracks = processPipe(pipe);
-            combinedTracks.addAll(sourceTracks);
+            sourceTracksLists.add(sourceTracks);
+        }
+        
+        // Interleave the tracks
+        List<SoundgraphSong> combinedTracks = new ArrayList<>();
+        int maxSize = sourceTracksLists.stream()
+                .mapToInt(List::size)
+                .max()
+                .orElse(0);
+                
+        for (int i = 0; i < maxSize; i++) {
+            for (List<SoundgraphSong> sourceTracks : sourceTracksLists) {
+                if (i < sourceTracks.size()) {
+                    combinedTracks.add(sourceTracks.get(i));
+                }
+            }
         }
         
         return combinedTracks;
