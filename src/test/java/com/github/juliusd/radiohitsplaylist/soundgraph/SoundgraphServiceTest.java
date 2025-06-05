@@ -185,4 +185,34 @@ class SoundgraphServiceTest {
                         URI.create("spotify:track:track5"));
     }
 
+    @Test
+    void shouldRemoveDuplicateTracksFromAlbum() throws Exception {
+        // given
+        List<SoundgraphSong> albumTracks = List.of(
+                new SoundgraphSong(URI.create("spotify:track:track1"), false),
+                new SoundgraphSong(URI.create("spotify:track:track1"), false), // duplicate
+                new SoundgraphSong(URI.create("spotify:track:track2"), false),
+                new SoundgraphSong(URI.create("spotify:track:track3"), false),
+                new SoundgraphSong(URI.create("spotify:track:track3"), false)); // duplicate
+
+        when(soundgraphSpotifyWrapper.getAlbumTracks("source_album_id"))
+                .thenReturn(albumTracks);
+
+        // when
+        List<SoundgraphSong> dedupedTracks = soundgraphService.processSoundgraphConfig(
+                new SoundgraphConfig(
+                        "target_playlist_id",
+                        new SoundgraphConfig.Pipe(List.of(
+                                new SoundgraphConfig.LoadAlbumStep("source_album_id"),
+                                new SoundgraphConfig.DedupStep()))));
+
+        // then
+        assertThat(dedupedTracks).hasSize(3)
+                .extracting(SoundgraphSong::uri)
+                .containsExactly(
+                        URI.create("spotify:track:track1"),
+                        URI.create("spotify:track:track2"),
+                        URI.create("spotify:track:track3"));
+    }
+
 }
