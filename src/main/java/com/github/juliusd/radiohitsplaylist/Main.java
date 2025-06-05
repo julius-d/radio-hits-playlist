@@ -19,6 +19,7 @@ import com.github.juliusd.radiohitsplaylist.spotify.PlaylistUpdater;
 import com.github.juliusd.radiohitsplaylist.spotify.SpotifyApiConfiguration;
 import com.github.juliusd.radiohitsplaylist.spotify.TrackFinder;
 import com.github.juliusd.radiohitsplaylist.soundgraph.SoundgraphService;
+import com.github.juliusd.radiohitsplaylist.soundgraph.SoundgraphSong;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -75,9 +76,9 @@ public class Main {
 
     configuration.soundgraphTasks().forEach(task -> {
       try {
-        List<String> trackUris = soundgraphService.processSoundgraphConfig(task);
-        notifier.recordSoundgraphExecuted(task.targetPlaylistId(), trackUris.size());
-        log("Processed Soundgraph task for playlist " + task.targetPlaylistId() + " with " + trackUris.size() + " tracks");
+        List<SoundgraphSong> tracks = soundgraphService.processSoundgraphConfig(task);
+        notifier.recordSoundgraphExecuted(task.targetPlaylistId(), tracks.size());
+        log("Processed Soundgraph task for playlist " + task.targetPlaylistId() + " with " + tracks.size() + " tracks");
       } catch (Exception e) {
         throw new RuntimeException("Failed to process Soundgraph task for playlist " + task.targetPlaylistId(), e);
       }
