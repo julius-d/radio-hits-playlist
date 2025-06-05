@@ -115,4 +115,42 @@ class SoundgraphServiceTest {
                         URI.create("spotify:track:track4"));
     }
 
+    @Test
+    void shouldCombineTracksFromMultipleSources() throws Exception {
+        // given
+        List<SoundgraphSong> source1Tracks = List.of(
+                new SoundgraphSong(URI.create("spotify:track:source1_track1"), false),
+                new SoundgraphSong(URI.create("spotify:track:source1_track2"), false));
+
+        List<SoundgraphSong> source2Tracks = List.of(
+                new SoundgraphSong(URI.create("spotify:track:source2_track1"), false),
+                new SoundgraphSong(URI.create("spotify:track:source2_track2"), false),
+                new SoundgraphSong(URI.create("spotify:track:source2_track3"), false));
+
+        when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_1"))
+                .thenReturn(source1Tracks);
+        when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_2"))
+                .thenReturn(source2Tracks);
+
+        // when
+        List<SoundgraphSong> combinedTracks = soundgraphService.processSoundgraphConfig(
+                new SoundgraphConfig(
+                        "target_playlist_id",
+                        new SoundgraphConfig.Pipe(List.of(
+                                new SoundgraphConfig.CombineStep(List.of(
+                                        new SoundgraphConfig.Pipe(List.of(
+                                                new SoundgraphConfig.LoadPlaylistStep("source_playlist_1"))),
+                                        new SoundgraphConfig.Pipe(List.of(
+                                                new SoundgraphConfig.LoadPlaylistStep("source_playlist_2")))))))));
+
+        // then
+        assertThat(combinedTracks).hasSize(5).extracting(SoundgraphSong::uri)
+                .containsExactly(
+                        URI.create("spotify:track:source1_track1"),
+                        URI.create("spotify:track:source2_track1"),
+                        URI.create("spotify:track:source1_track2"),
+                        URI.create("spotify:track:source2_track2"),
+                        URI.create("spotify:track:source2_track3"));
+    }
+
 }
