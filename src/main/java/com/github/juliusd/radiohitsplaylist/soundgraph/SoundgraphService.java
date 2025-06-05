@@ -7,8 +7,10 @@ import com.google.gson.reflect.TypeToken;
 
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
+import se.michaelthelin.spotify.model_objects.specification.Episode;
 import se.michaelthelin.spotify.model_objects.specification.PlaylistTrack;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
+import se.michaelthelin.spotify.model_objects.specification.Track;
 import org.apache.hc.core5.http.ParseException;
 
 import java.io.IOException;
@@ -89,7 +91,11 @@ public class SoundgraphService {
                 .getItems();
         
         for (PlaylistTrack playlistTrack : playlistTracks) {
-            tracks.add(new SoundgraphSong(URI.create(playlistTrack.getTrack().getUri())));
+            if (playlistTrack.getTrack() instanceof Track track) {
+                tracks.add(new SoundgraphSong(URI.create(track.getUri()), track.getIsExplicit()));
+            } else if (playlistTrack.getTrack() instanceof Episode episode) {
+                tracks.add(new SoundgraphSong(URI.create(episode.getUri()), episode.getExplicit()));
+            }
         }
         
         return tracks;
@@ -104,7 +110,10 @@ public class SoundgraphService {
                 .getItems();
         
         for (TrackSimplified track : albumTracks) {
-            tracks.add(new SoundgraphSong(URI.create(track.getUri())));
+            tracks.add(new SoundgraphSong(
+                URI.create(track.getUri()), 
+                track.getIsExplicit())
+            );
         }
         
         return tracks;
