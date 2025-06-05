@@ -218,12 +218,14 @@ class SoundgraphServiceTest {
                     {
                         "uri": "spotify:track:album1",
                         "name": "Album Track 1",
-                        "artists": [{"name":"Album Artist 1"}]
+                        "artists": [{"name":"Album Artist 1"}],
+                        "explicit": true
                     },
                     {
                         "uri": "spotify:track:album2",
                         "name": "Album Track 2",
-                        "artists": [{"name":"Album Artist 2"}]
+                        "artists": [{"name":"Album Artist 2"}],
+                        "explicit": false
                     }
                 ]
             }""";
@@ -530,6 +532,157 @@ class SoundgraphServiceTest {
         // Verify that track1 appears only once
         verify(putRequestedFor(urlPathEqualTo("/v1/playlists/target_playlist_id/tracks"))
             .withRequestBody(matchingJsonPath("$.uris", not(containing("spotify:track:track1,spotify:track:track1")))));
+    }
+
+    @Test
+    void shouldFilterOutExplicitTracks() throws Exception {
+        // given
+        String configYaml = //language=yaml
+            """
+            targetPlaylist: "target_playlist_id"
+            pipe:
+              steps:
+                - type: loadPlaylist
+                  playlistId: "source_playlist_1"
+                - type: filterOutExplicit
+            """;
+
+        // Mock playlist response with explicit and non-explicit tracks
+        String playlistResponseWithExplicitTracks = //language=json
+            """
+            {
+                "items": [
+                    {
+                        "added_at": "2024-01-01T00:00:00Z",
+                        "track": {
+                            "album": {
+                                "album_type": "album",
+                                "total_tracks": 10,
+                                "id": "album1",
+                                "name": "Album 1",
+                                "release_date": "2024-01-01",
+                                "release_date_precision": "day",
+                                "type": "album",
+                                "uri": "spotify:album:album1",
+                                "artists": [
+                                    {
+                                        "external_urls": {
+                                            "spotify": "https://open.spotify.com/artist/artist1"
+                                        },
+                                        "href": "https://api.spotify.com/v1/artists/artist1",
+                                        "id": "artist1",
+                                        "name": "Artist 1",
+                                        "type": "artist",
+                                        "uri": "spotify:artist:artist1"
+                                    }
+                                ]
+                            },
+                            "artists": [
+                                {
+                                    "external_urls": {
+                                        "spotify": "https://open.spotify.com/artist/artist1"
+                                    },
+                                    "href": "https://api.spotify.com/v1/artists/artist1",
+                                    "id": "artist1",
+                                    "name": "Artist 1",
+                                    "type": "artist",
+                                    "uri": "spotify:artist:artist1"
+                                }
+                            ],
+                            "disc_number": 1,
+                            "duration_ms": 180000,
+                            "explicit": true,
+                            "external_ids": {
+                                "isrc": "ISRC1"
+                            },
+                            "href": "https://api.spotify.com/v1/tracks/track1",
+                            "id": "track1",
+                            "is_playable": true,
+                            "name": "Track 1",
+                            "popularity": 80,
+                            "preview_url": "https://p.scdn.co/mp3-preview/track1",
+                            "track_number": 1,
+                            "type": "track",
+                            "uri": "spotify:track:track1",
+                            "is_local": false
+                        }
+                    },
+                    {
+                        "added_at": "2024-01-01T00:00:00Z",
+                        "track": {
+                            "album": {
+                                "album_type": "album",
+                                "total_tracks": 10,
+                                "id": "album2",
+                                "name": "Album 2",
+                                "release_date": "2024-01-01",
+                                "release_date_precision": "day",
+                                "type": "album",
+                                "uri": "spotify:album:album2",
+                                "artists": [
+                                    {
+                                        "external_urls": {
+                                            "spotify": "https://open.spotify.com/artist/artist2"
+                                        },
+                                        "href": "https://api.spotify.com/v1/artists/artist2",
+                                        "id": "artist2",
+                                        "name": "Artist 2",
+                                        "type": "artist",
+                                        "uri": "spotify:artist:artist2"
+                                    }
+                                ]
+                            },
+                            "artists": [
+                                {
+                                    "external_urls": {
+                                        "spotify": "https://open.spotify.com/artist/artist2"
+                                    },
+                                    "href": "https://api.spotify.com/v1/artists/artist2",
+                                    "id": "artist2",
+                                    "name": "Artist 2",
+                                    "type": "artist",
+                                    "uri": "spotify:artist:artist2"
+                                }
+                            ],
+                            "disc_number": 1,
+                            "duration_ms": 180000,
+                            "explicit": false,
+                            "external_ids": {
+                                "isrc": "ISRC2"
+                            },
+                            "href": "https://api.spotify.com/v1/tracks/track2",
+                            "id": "track2",
+                            "is_playable": true,
+                            "name": "Track 2",
+                            "popularity": 80,
+                            "preview_url": "https://p.scdn.co/mp3-preview/track2",
+                            "track_number": 1,
+                            "type": "track",
+                            "uri": "spotify:track:track2",
+                            "is_local": false
+                        }
+                    }
+                ]
+            }
+            """;
+        wireMock.register(stubFor(get(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks"))
+            .willReturn(okJson(playlistResponseWithExplicitTracks))));
+
+        givenPlaylistUpdateWillBeAccepted("target_playlist_id");
+
+        // when
+        whenProcessSoundgraphConfig(configYaml);
+
+        // then
+        verify(getRequestedFor(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks")));
+
+        // Verify that only non-explicit tracks were added to the playlist
+        verify(putRequestedFor(urlPathEqualTo("/v1/playlists/target_playlist_id/tracks"))
+            .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:track2"))));
+        
+        // Verify that explicit track was not added
+        verify(putRequestedFor(urlPathEqualTo("/v1/playlists/target_playlist_id/tracks"))
+            .withRequestBody(matchingJsonPath("$.uris", not(containing("spotify:track:track1")))));
     }
 
     private static SpotifyApi buildSpotifyApiForLocalhost(int port) {

@@ -71,6 +71,7 @@ class ConfigLoaderTest {
                       - type: limit
                         value: 50
               - type: shuffle
+              - type: filterOutExplicit
               - type: limit
                 value: 150
       gotify:
@@ -101,6 +102,7 @@ class ConfigLoaderTest {
                 )
             ),
             new SoundgraphConfig.ShuffleStep(),
+            new SoundgraphConfig.FilterOutExplicitStep(),
             new SoundgraphConfig.LimitStep(150)
         ))
     );

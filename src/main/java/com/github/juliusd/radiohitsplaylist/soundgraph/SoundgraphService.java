@@ -58,6 +58,8 @@ public class SoundgraphService {
                 tracks = processLimitStep(tracks, ((SoundgraphConfig.LimitStep) step).value());
             } else if (step instanceof SoundgraphConfig.DedupStep) {
                 tracks = processDedupStep(tracks);
+            } else if (step instanceof SoundgraphConfig.FilterOutExplicitStep) {
+                tracks = processFilterOutExplicitStep(tracks);
             }
         }
         
@@ -79,6 +81,12 @@ public class SoundgraphService {
     private List<SoundgraphSong> processDedupStep(List<SoundgraphSong> tracks) {
         return tracks.stream()
                 .distinct()
+                .collect(Collectors.toList());
+    }
+
+    private List<SoundgraphSong> processFilterOutExplicitStep(List<SoundgraphSong> tracks) {
+        return tracks.stream()
+                .filter(song -> !song.explicit())
                 .collect(Collectors.toList());
     }
 
