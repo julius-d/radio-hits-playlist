@@ -13,7 +13,7 @@ import se.michaelthelin.spotify.SpotifyApi;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 @WireMockTest
-class SoundgraphServiceTest {
+class SoundgraphTest {
 
     private SoundgraphService soundgraphService;
     private WireMock wireMock;

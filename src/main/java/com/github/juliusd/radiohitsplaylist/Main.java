@@ -19,6 +19,7 @@ import com.github.juliusd.radiohitsplaylist.spotify.PlaylistUpdater;
 import com.github.juliusd.radiohitsplaylist.spotify.SpotifyApiConfiguration;
 import com.github.juliusd.radiohitsplaylist.spotify.TrackFinder;
 import com.github.juliusd.radiohitsplaylist.soundgraph.SoundgraphService;
+import com.github.juliusd.radiohitsplaylist.soundgraph.SoundgraphSpotifyWrapper;
 import com.github.juliusd.radiohitsplaylist.soundgraph.SoundgraphSong;
 
 import java.time.LocalDateTime;
@@ -52,7 +53,8 @@ public class Main {
     var berlinHitRadioLoader = new BerlinHitRadioClientConfiguration().berlinHitRadioLoader();
     var familyRadioLoader = new FamilyRadioClientConfiguration().familyRadioLoader();
     var playlistUpdater = new PlaylistUpdater(spotifyApi, new TrackFinder(spotifyApi));
-    var soundgraphService = new SoundgraphService(spotifyApi);
+    var soundgraphSpotifyWrapper = new SoundgraphSpotifyWrapper(spotifyApi);
+    var soundgraphService = new SoundgraphService(soundgraphSpotifyWrapper);
 
     configuration.shuffleTasks().forEach(shuffleTaskConfiguration -> {
       playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist(shuffleTaskConfiguration.playlistId(), notifier);
