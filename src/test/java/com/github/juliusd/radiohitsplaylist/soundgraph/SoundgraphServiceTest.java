@@ -1,20 +1,12 @@
 package com.github.juliusd.radiohitsplaylist.soundgraph;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.github.juliusd.radiohitsplaylist.config.SoundgraphConfig;
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
-import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import se.michaelthelin.spotify.SpotifyApi;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
