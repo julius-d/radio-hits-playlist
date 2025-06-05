@@ -153,4 +153,36 @@ class SoundgraphServiceTest {
                         URI.create("spotify:track:source2_track3"));
     }
 
+    @Test
+    void shouldShuffleTracks() throws Exception {
+        // given
+        List<SoundgraphSong> inputTracks = List.of(
+                new SoundgraphSong(URI.create("spotify:track:track1"), false),
+                new SoundgraphSong(URI.create("spotify:track:track2"), false),
+                new SoundgraphSong(URI.create("spotify:track:track3"), false),
+                new SoundgraphSong(URI.create("spotify:track:track4"), false),
+                new SoundgraphSong(URI.create("spotify:track:track5"), false));
+
+        when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id"))
+                .thenReturn(inputTracks);
+
+        // when
+        List<SoundgraphSong> shuffledTracks = soundgraphService.processSoundgraphConfig(
+                new SoundgraphConfig(
+                        "target_playlist_id",
+                        new SoundgraphConfig.Pipe(List.of(
+                                new SoundgraphConfig.LoadPlaylistStep("source_playlist_id"),
+                                new SoundgraphConfig.ShuffleStep()))));
+
+        // then
+        assertThat(shuffledTracks).hasSize(5)
+                .extracting(SoundgraphSong::uri)
+                .containsExactlyInAnyOrder(
+                        URI.create("spotify:track:track1"),
+                        URI.create("spotify:track:track2"),
+                        URI.create("spotify:track:track3"),
+                        URI.create("spotify:track:track4"),
+                        URI.create("spotify:track:track5"));
+    }
+
 }
