@@ -30,11 +30,11 @@ class SoundgraphServiceTest {
     void shouldProcessLimitStep() throws Exception {
         // given
         List<SoundgraphSong> inputTracks = List.of(
-                new SoundgraphSong(URI.create("spotify:track:track1"), false),
-                new SoundgraphSong(URI.create("spotify:track:track2"), false),
-                new SoundgraphSong(URI.create("spotify:track:track3"), false),
-                new SoundgraphSong(URI.create("spotify:track:track4"), false),
-                new SoundgraphSong(URI.create("spotify:track:track5"), false));
+                new SoundgraphSong(URI.create("spotify:track:track1"), false, "Track 1", List.of("Artist 1")),
+                new SoundgraphSong(URI.create("spotify:track:track2"), false, "Track 2", List.of("Artist 2")),
+                new SoundgraphSong(URI.create("spotify:track:track3"), false, "Track 3", List.of("Artist 3")),
+                new SoundgraphSong(URI.create("spotify:track:track4"), false, "Track 4", List.of("Artist 4")),
+                new SoundgraphSong(URI.create("spotify:track:track5"), false, "Track 5", List.of("Artist 5")));
 
         when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id"))
                 .thenReturn(inputTracks);
@@ -60,8 +60,8 @@ class SoundgraphServiceTest {
     void shouldHandleLimitGreaterThanInputSize() throws Exception {
         // given
         List<SoundgraphSong> inputTracks = List.of(
-                new SoundgraphSong(URI.create("spotify:track:track1"), false),
-                new SoundgraphSong(URI.create("spotify:track:track2"), false));
+                new SoundgraphSong(URI.create("spotify:track:track1"), false, "Track 1", List.of("Artist 1")),
+                new SoundgraphSong(URI.create("spotify:track:track2"), false, "Track 2", List.of("Artist 2")));
 
         when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id"))
                 .thenReturn(inputTracks);
@@ -86,10 +86,10 @@ class SoundgraphServiceTest {
     void shouldFilterOutExplicitTracks() throws Exception {
         // given
         List<SoundgraphSong> inputTracks = List.of(
-                new SoundgraphSong(URI.create("spotify:track:track1"), true), // explicit
-                new SoundgraphSong(URI.create("spotify:track:track2"), false), // non-explicit
-                new SoundgraphSong(URI.create("spotify:track:track3"), true), // explicit
-                new SoundgraphSong(URI.create("spotify:track:track4"), false)); // non-explicit
+                new SoundgraphSong(URI.create("spotify:track:track1"), true, "Explicit Track 1", List.of("Artist 1")), // explicit
+                new SoundgraphSong(URI.create("spotify:track:track2"), false, "Clean Track 2", List.of("Artist 2")), // non-explicit
+                new SoundgraphSong(URI.create("spotify:track:track3"), true, "Explicit Track 3", List.of("Artist 3")), // explicit
+                new SoundgraphSong(URI.create("spotify:track:track4"), false, "Clean Track 4", List.of("Artist 4"))); // non-explicit
 
         when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id"))
                 .thenReturn(inputTracks);
@@ -114,13 +114,13 @@ class SoundgraphServiceTest {
     void shouldCombineTracksFromMultipleSources() throws Exception {
         // given
         List<SoundgraphSong> source1Tracks = List.of(
-                new SoundgraphSong(URI.create("spotify:track:source1_track1"), false),
-                new SoundgraphSong(URI.create("spotify:track:source1_track2"), false));
+                new SoundgraphSong(URI.create("spotify:track:source1_track1"), false, "Source 1 Track 1", List.of("Artist 1")),
+                new SoundgraphSong(URI.create("spotify:track:source1_track2"), false, "Source 1 Track 2", List.of("Artist 2")));
 
         List<SoundgraphSong> source2Tracks = List.of(
-                new SoundgraphSong(URI.create("spotify:track:source2_track1"), false),
-                new SoundgraphSong(URI.create("spotify:track:source2_track2"), false),
-                new SoundgraphSong(URI.create("spotify:track:source2_track3"), false));
+                new SoundgraphSong(URI.create("spotify:track:source2_track1"), false, "Source 2 Track 1", List.of("Artist 3")),
+                new SoundgraphSong(URI.create("spotify:track:source2_track2"), false, "Source 2 Track 2", List.of("Artist 4")),
+                new SoundgraphSong(URI.create("spotify:track:source2_track3"), false, "Source 2 Track 3", List.of("Artist 5")));
 
         when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_1"))
                 .thenReturn(source1Tracks);
@@ -153,11 +153,11 @@ class SoundgraphServiceTest {
     void shouldShuffleTracks() throws Exception {
         // given
         List<SoundgraphSong> inputTracks = List.of(
-                new SoundgraphSong(URI.create("spotify:track:track1"), false),
-                new SoundgraphSong(URI.create("spotify:track:track2"), false),
-                new SoundgraphSong(URI.create("spotify:track:track3"), false),
-                new SoundgraphSong(URI.create("spotify:track:track4"), false),
-                new SoundgraphSong(URI.create("spotify:track:track5"), false));
+                new SoundgraphSong(URI.create("spotify:track:track1"), false, "Track 1", List.of("Artist 1")),
+                new SoundgraphSong(URI.create("spotify:track:track2"), false, "Track 2", List.of("Artist 2")),
+                new SoundgraphSong(URI.create("spotify:track:track3"), false, "Track 3", List.of("Artist 3")),
+                new SoundgraphSong(URI.create("spotify:track:track4"), false, "Track 4", List.of("Artist 4")),
+                new SoundgraphSong(URI.create("spotify:track:track5"), false, "Track 5", List.of("Artist 5")));
 
         when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id"))
                 .thenReturn(inputTracks);
@@ -186,11 +186,11 @@ class SoundgraphServiceTest {
     void shouldRemoveDuplicateTracksFromAlbum() throws Exception {
         // given
         List<SoundgraphSong> albumTracks = List.of(
-                new SoundgraphSong(URI.create("spotify:track:track1"), false),
-                new SoundgraphSong(URI.create("spotify:track:track1"), false), // duplicate
-                new SoundgraphSong(URI.create("spotify:track:track2"), false),
-                new SoundgraphSong(URI.create("spotify:track:track3"), false),
-                new SoundgraphSong(URI.create("spotify:track:track3"), false)); // duplicate
+                new SoundgraphSong(URI.create("spotify:track:track1"), false, "Album Track 1", List.of("Album Artist")),
+                new SoundgraphSong(URI.create("spotify:track:track1"), false, "Album Track 1", List.of("Album Artist")), // duplicate
+                new SoundgraphSong(URI.create("spotify:track:track2"), false, "Album Track 2", List.of("Album Artist")),
+                new SoundgraphSong(URI.create("spotify:track:track3"), false, "Album Track 3", List.of("Album Artist")),
+                new SoundgraphSong(URI.create("spotify:track:track3"), false, "Album Track 3", List.of("Album Artist"))); // duplicate
 
         when(soundgraphSpotifyWrapper.getAlbumTracks("source_album_id"))
                 .thenReturn(albumTracks);
@@ -217,9 +217,9 @@ class SoundgraphServiceTest {
     void shouldLoadArtistTopTracks() throws Exception {
         // given
         List<SoundgraphSong> artistTracks = List.of(
-                new SoundgraphSong(URI.create("spotify:track:artist_track1"), false),
-                new SoundgraphSong(URI.create("spotify:track:artist_track2"), true),
-                new SoundgraphSong(URI.create("spotify:track:artist_track3"), false));
+                new SoundgraphSong(URI.create("spotify:track:artist_track1"), false, "Top Track 1", List.of("Test Artist")),
+                new SoundgraphSong(URI.create("spotify:track:artist_track2"), true, "Top Track 2", List.of("Test Artist")),
+                new SoundgraphSong(URI.create("spotify:track:artist_track3"), false, "Top Track 3", List.of("Test Artist")));
 
         when(soundgraphSpotifyWrapper.getArtistTopTracks("artist_id"))
                 .thenReturn(artistTracks);

@@ -11,6 +11,7 @@ import se.michaelthelin.spotify.model_objects.specification.Episode;
 import se.michaelthelin.spotify.model_objects.specification.PlaylistTrack;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
+import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
 import org.apache.hc.core5.http.ParseException;
 
 import static com.github.juliusd.radiohitsplaylist.Logger.log;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class SoundgraphSpotifyWrapper {
@@ -41,9 +43,20 @@ public class SoundgraphSpotifyWrapper {
 
             for (PlaylistTrack playlistTrack : playlistTracks) {
                 if (playlistTrack.getTrack() instanceof Track track) {
-                    tracks.add(new SoundgraphSong(URI.create(track.getUri()), track.getIsExplicit()));
+                    List<String> artistNames = Arrays.stream(track.getArtists())
+                            .map(ArtistSimplified::getName)
+                            .collect(Collectors.toList());
+                    tracks.add(new SoundgraphSong(
+                            URI.create(track.getUri()), 
+                            track.getIsExplicit(),
+                            track.getName(),
+                            artistNames));
                 } else if (playlistTrack.getTrack() instanceof Episode episode) {
-                    tracks.add(new SoundgraphSong(URI.create(episode.getUri()), episode.getExplicit()));
+                    tracks.add(new SoundgraphSong(
+                            URI.create(episode.getUri()), 
+                            episode.getExplicit(),
+                            episode.getName(),
+                            List.of(episode.getShow().getPublisher())));
                 }
             }
             return tracks;
@@ -64,9 +77,14 @@ public class SoundgraphSpotifyWrapper {
                 .getItems();
 
         for (TrackSimplified track : albumTracks) {
+            List<String> artistNames = Arrays.stream(track.getArtists())
+                    .map(ArtistSimplified::getName)
+                    .collect(Collectors.toList());
             tracks.add(new SoundgraphSong(
                     URI.create(track.getUri()),
-                    track.getIsExplicit()));
+                    track.getIsExplicit(),
+                    track.getName(),
+                    artistNames));
         }
 
         return tracks;
@@ -82,9 +100,14 @@ public class SoundgraphSpotifyWrapper {
                     .execute();
 
             for (Track track : topTracks) {
+                List<String> artistNames = Arrays.stream(track.getArtists())
+                        .map(ArtistSimplified::getName)
+                        .collect(Collectors.toList());
                 tracks.add(new SoundgraphSong(
                         URI.create(track.getUri()),
-                        track.getIsExplicit()));
+                        track.getIsExplicit(),
+                        track.getName(),
+                        artistNames));
             }
 
             return tracks;
