@@ -7,7 +7,7 @@ public interface Notifier {
 
   void recordPlaylistRefresh(String streamName, int amountOfTracks);
 
-  void recordSoundgraphExecuted(String playlistId, int amountOfTracks);
+  void recordSoundgraphExecuted(String name, int amountOfTracks);
 
   void runFinishedSuccessfully();
 

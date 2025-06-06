@@ -37,7 +37,7 @@ class NotificationTextBuilder {
     if (!statistic.getSoundgraphResults().isEmpty()) {
       messageText.append("Soundgraph playlists (").append(statistic.getSoundgraphResults().size()).append("):\n");
       statistic.getSoundgraphResults().forEach(result ->
-        messageText.append("- ").append(result.playlistId())
+        messageText.append("- ").append(result.name())
           .append(": ").append(result.amountOfTracks())
           .append(" tracks\n"));
     }

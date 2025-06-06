@@ -79,10 +79,10 @@ public class Main {
     configuration.soundgraphTasks().forEach(task -> {
       try {
         List<SoundgraphSong> tracks = soundgraphService.processSoundgraphConfig(task);
-        notifier.recordSoundgraphExecuted(task.targetPlaylistId(), tracks.size());
-        log("Processed Soundgraph task for playlist " + task.targetPlaylistId() + " with " + tracks.size() + " tracks");
+        notifier.recordSoundgraphExecuted(task.name(), tracks.size());
+        log("Processed Soundgraph task for playlist " + task.name() + " with " + tracks.size() + " tracks");
       } catch (Exception e) {
-        throw new RuntimeException("Failed to process Soundgraph task for playlist " + task.targetPlaylistId(), e);
+        throw new RuntimeException("Failed to process Soundgraph task for playlist " + task.name(), e);
       }
     });
   }

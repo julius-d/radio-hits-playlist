@@ -29,8 +29,8 @@ class GotifyNotifier implements Notifier {
   }
 
   @Override
-  public void recordSoundgraphExecuted(String playlistId, int amountOfTracks) {
-    statistic.recordSoundgraphExecuted(playlistId, amountOfTracks);
+  public void recordSoundgraphExecuted(String name, int amountOfTracks) {
+    statistic.recordSoundgraphExecuted(name, amountOfTracks);
   }
 
   @Override

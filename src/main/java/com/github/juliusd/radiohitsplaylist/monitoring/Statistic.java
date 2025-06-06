@@ -20,8 +20,8 @@ class Statistic {
     refreshedPlaylists.add(new PlaylistRefreshResult(streamName, amountOfTracks));
   }
 
-  public void recordSoundgraphExecuted(String playlistId, int amountOfTracks) {
-    soundgraphResults.add(new SoundgraphResult(playlistId, amountOfTracks));
+  public void recordSoundgraphExecuted(String name, int amountOfTracks) {
+    soundgraphResults.add(new SoundgraphResult(name, amountOfTracks));
   }
 
   public List<String> getShuffledPlaylists() {
@@ -50,7 +50,7 @@ class Statistic {
   }
 
   public record SoundgraphResult(
-    String playlistId, int amountOfTracks
+    String name, int amountOfTracks
   ) {
   }
 }

@@ -14,7 +14,7 @@ public class NoOpNotifier implements Notifier {
   }
 
   @Override
-  public void recordSoundgraphExecuted(String playlistId, int amountOfTracks) {
+  public void recordSoundgraphExecuted(String name, int amountOfTracks) {
   }
 
   @Override
