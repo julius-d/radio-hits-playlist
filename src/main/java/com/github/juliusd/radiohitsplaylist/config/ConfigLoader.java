@@ -12,6 +12,9 @@ import java.util.List;
 public class ConfigLoader {
 
   public Configuration loadConfig(String filePath) {
+    if (filePath == null || filePath.trim().isEmpty()) {
+      throw new IllegalArgumentException("Configuration file path cannot be null or empty");
+    }
     try {
       ObjectMapper mapper = YAMLMapper.builder()
         .build();
