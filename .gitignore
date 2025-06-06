@@ -40,3 +40,4 @@ build/
 
 /.idea/httpRequests/
 /dependency-reduced-pom.xml
+test.yaml
