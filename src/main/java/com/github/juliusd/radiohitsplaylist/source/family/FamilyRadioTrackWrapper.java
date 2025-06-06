@@ -1,4 +1,3 @@
 package com.github.juliusd.radiohitsplaylist.source.family;
 
-record FamilyRadioTrackWrapper(FamilyRadioTrack track) {
-}
+record FamilyRadioTrackWrapper(FamilyRadioTrack track) {}

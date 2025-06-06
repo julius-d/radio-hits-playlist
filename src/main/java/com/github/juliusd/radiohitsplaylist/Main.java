@@ -1,5 +1,7 @@
 package com.github.juliusd.radiohitsplaylist;
 
+import static com.github.juliusd.radiohitsplaylist.Logger.log;
+
 import com.github.juliusd.radiohitsplaylist.config.ConfigLoader;
 import com.github.juliusd.radiohitsplaylist.config.Configuration;
 import com.github.juliusd.radiohitsplaylist.config.ReCreateBerlinHitRadioPlaylistTaskConfiguration;
@@ -8,6 +10,9 @@ import com.github.juliusd.radiohitsplaylist.config.ReCreateFamilyRadioPlaylistTa
 import com.github.juliusd.radiohitsplaylist.monitoring.GotifyClientConfiguration;
 import com.github.juliusd.radiohitsplaylist.monitoring.NoOpNotifier;
 import com.github.juliusd.radiohitsplaylist.monitoring.Notifier;
+import com.github.juliusd.radiohitsplaylist.soundgraph.SoundgraphService;
+import com.github.juliusd.radiohitsplaylist.soundgraph.SoundgraphSong;
+import com.github.juliusd.radiohitsplaylist.soundgraph.SoundgraphSpotifyWrapper;
 import com.github.juliusd.radiohitsplaylist.source.berlinhitradio.BerlinHitRadioClientConfiguration;
 import com.github.juliusd.radiohitsplaylist.source.berlinhitradio.BerlinHitRadioLoader;
 import com.github.juliusd.radiohitsplaylist.source.bundesmux.BundesmuxClientConfiguration;
@@ -18,14 +23,8 @@ import com.github.juliusd.radiohitsplaylist.spotify.PlaylistShuffel;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistUpdater;
 import com.github.juliusd.radiohitsplaylist.spotify.SpotifyApiConfiguration;
 import com.github.juliusd.radiohitsplaylist.spotify.TrackFinder;
-import com.github.juliusd.radiohitsplaylist.soundgraph.SoundgraphService;
-import com.github.juliusd.radiohitsplaylist.soundgraph.SoundgraphSpotifyWrapper;
-import com.github.juliusd.radiohitsplaylist.soundgraph.SoundgraphSong;
-
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static com.github.juliusd.radiohitsplaylist.Logger.log;
 
 public class Main {
 
@@ -56,35 +55,58 @@ public class Main {
     var soundgraphSpotifyWrapper = new SoundgraphSpotifyWrapper(spotifyApi);
     var soundgraphService = new SoundgraphService(soundgraphSpotifyWrapper);
 
-    configuration.shuffleTasks().forEach(shuffleTaskConfiguration -> {
-      playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist(shuffleTaskConfiguration.playlistId(), notifier);
-    });
+    configuration
+        .shuffleTasks()
+        .forEach(
+            shuffleTaskConfiguration -> {
+              playlistShuffel.moveFirst5TracksToTheEndOfThePlaylist(
+                  shuffleTaskConfiguration.playlistId(), notifier);
+            });
 
-    configuration.reCreateFamilyRadioPlaylistTasks().forEach(task -> {
-      refreshFamilyPlaylistFromSource(familyRadioLoader, playlistUpdater, task, notifier);
-    });
+    configuration
+        .reCreateFamilyRadioPlaylistTasks()
+        .forEach(
+            task -> {
+              refreshFamilyPlaylistFromSource(familyRadioLoader, playlistUpdater, task, notifier);
+            });
 
-    configuration.reCreateBerlinHitRadioPlaylistTasks().forEach(task -> {
-      refreshPlaylistFromSource(berlinHitRadioLoader, playlistUpdater, task, notifier);
-    });
+    configuration
+        .reCreateBerlinHitRadioPlaylistTasks()
+        .forEach(
+            task -> {
+              refreshPlaylistFromSource(berlinHitRadioLoader, playlistUpdater, task, notifier);
+            });
 
     if (!configuration.reCreateBundesmuxPlaylistTasks().isEmpty()) {
       var bundesmuxLoader = new BundesmuxClientConfiguration(configuration).bundesmuxLoader();
 
-      configuration.reCreateBundesmuxPlaylistTasks().forEach(task -> {
-        refreshBundesmuxPlaylistFromSource(bundesmuxLoader, playlistUpdater, task, notifier);
-      });
+      configuration
+          .reCreateBundesmuxPlaylistTasks()
+          .forEach(
+              task -> {
+                refreshBundesmuxPlaylistFromSource(
+                    bundesmuxLoader, playlistUpdater, task, notifier);
+              });
     }
 
-    configuration.soundgraphTasks().forEach(task -> {
-      try {
-        List<SoundgraphSong> tracks = soundgraphService.processSoundgraphConfig(task);
-        notifier.recordSoundgraphExecuted(task.name(), tracks.size());
-        log("Processed Soundgraph task for playlist " + task.name() + " with " + tracks.size() + " tracks");
-      } catch (Exception e) {
-        throw new RuntimeException("Failed to process Soundgraph task for playlist " + task.name(), e);
-      }
-    });
+    configuration
+        .soundgraphTasks()
+        .forEach(
+            task -> {
+              try {
+                List<SoundgraphSong> tracks = soundgraphService.processSoundgraphConfig(task);
+                notifier.recordSoundgraphExecuted(task.name(), tracks.size());
+                log(
+                    "Processed Soundgraph task for playlist "
+                        + task.name()
+                        + " with "
+                        + tracks.size()
+                        + " tracks");
+              } catch (Exception e) {
+                throw new RuntimeException(
+                    "Failed to process Soundgraph task for playlist " + task.name(), e);
+              }
+            });
   }
 
   private static Notifier determineNotifier(Configuration configuration) {
@@ -96,10 +118,10 @@ public class Main {
   }
 
   private static void refreshPlaylistFromSource(
-    BerlinHitRadioLoader berlinHitRadioLoader,
-    PlaylistUpdater playlistUpdater,
-    ReCreateBerlinHitRadioPlaylistTaskConfiguration configuration,
-    Notifier notifier) {
+      BerlinHitRadioLoader berlinHitRadioLoader,
+      PlaylistUpdater playlistUpdater,
+      ReCreateBerlinHitRadioPlaylistTaskConfiguration configuration,
+      Notifier notifier) {
     List<Track> tracks = berlinHitRadioLoader.load(configuration.streamName());
     playlistUpdater.update(tracks, configuration.playlistId(), configuration.descriptionPrefix());
     notifier.recordPlaylistRefresh(configuration.streamName(), tracks.size());
@@ -107,10 +129,10 @@ public class Main {
   }
 
   private static void refreshFamilyPlaylistFromSource(
-    FamilyRadioLoader familyRadioLoader,
-    PlaylistUpdater playlistUpdater,
-    ReCreateFamilyRadioPlaylistTaskConfiguration configuration,
-    Notifier notifier) {
+      FamilyRadioLoader familyRadioLoader,
+      PlaylistUpdater playlistUpdater,
+      ReCreateFamilyRadioPlaylistTaskConfiguration configuration,
+      Notifier notifier) {
     List<Track> tracks = familyRadioLoader.load(configuration.streamName());
     playlistUpdater.update(tracks, configuration.playlistId(), configuration.descriptionPrefix());
     notifier.recordPlaylistRefresh(configuration.streamName(), tracks.size());
@@ -118,10 +140,10 @@ public class Main {
   }
 
   private static void refreshBundesmuxPlaylistFromSource(
-    BundesmuxLoader bundesmuxLoader,
-    PlaylistUpdater playlistUpdater,
-    ReCreateBundesmuxPlaylistTaskConfiguration configuration,
-    Notifier notifier) {
+      BundesmuxLoader bundesmuxLoader,
+      PlaylistUpdater playlistUpdater,
+      ReCreateBundesmuxPlaylistTaskConfiguration configuration,
+      Notifier notifier) {
     List<Track> tracks = bundesmuxLoader.load(configuration.streamName());
     playlistUpdater.update(tracks, configuration.playlistId(), configuration.descriptionPrefix());
     notifier.recordPlaylistRefresh(configuration.streamName(), tracks.size());

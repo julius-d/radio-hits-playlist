@@ -1,13 +1,12 @@
 package com.github.juliusd.radiohitsplaylist.spotify;
 
+import static com.github.juliusd.radiohitsplaylist.Logger.log;
+
 import com.github.juliusd.radiohitsplaylist.config.Configuration;
+import java.io.IOException;
 import org.apache.hc.core5.http.ParseException;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
-
-import java.io.IOException;
-
-import static com.github.juliusd.radiohitsplaylist.Logger.log;
 
 public class SpotifyApiConfiguration {
 
@@ -23,18 +22,22 @@ public class SpotifyApiConfiguration {
     }
 
     try {
-      SpotifyApi spotifyApi = new SpotifyApi.Builder()
-        .setRefreshToken(spotifyRefreshToken)
-        .setClientId(configuration.spotify().clientId())
-        .setClientSecret(clientSecret)
-        .build();
+      SpotifyApi spotifyApi =
+          new SpotifyApi.Builder()
+              .setRefreshToken(spotifyRefreshToken)
+              .setClientId(configuration.spotify().clientId())
+              .setClientSecret(clientSecret)
+              .build();
 
       var authorizationCodeRefreshRequest = spotifyApi.authorizationCodeRefresh().build();
       var authorizationCodeCredentials = authorizationCodeRefreshRequest.execute();
 
       spotifyApi.setAccessToken(authorizationCodeCredentials.getAccessToken());
 
-      log("New AccessToken expires in: " + authorizationCodeCredentials.getExpiresIn() + " seconds");
+      log(
+          "New AccessToken expires in: "
+              + authorizationCodeCredentials.getExpiresIn()
+              + " seconds");
       return spotifyApi;
     } catch (IOException | ParseException | SpotifyWebApiException e) {
       throw new SpotifyException("Could not create access token", e);

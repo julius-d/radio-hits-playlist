@@ -1,20 +1,19 @@
 package com.github.juliusd.radiohitsplaylist.spotify;
 
+import static com.github.juliusd.radiohitsplaylist.Logger.log;
+import static java.util.function.Predicate.not;
+
 import com.github.juliusd.radiohitsplaylist.Track;
 import com.neovisionaries.i18n.CountryCode;
-import org.apache.hc.core5.http.ParseException;
-import se.michaelthelin.spotify.SpotifyApi;
-import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
-import se.michaelthelin.spotify.exceptions.detailed.BadGatewayException;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
-import static com.github.juliusd.radiohitsplaylist.Logger.log;
-import static java.util.function.Predicate.not;
+import org.apache.hc.core5.http.ParseException;
+import se.michaelthelin.spotify.SpotifyApi;
+import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
+import se.michaelthelin.spotify.exceptions.detailed.BadGatewayException;
 
 public class TrackFinder {
 
@@ -30,26 +29,31 @@ public class TrackFinder {
     querries.add(quoteQuery);
 
     if (track.artist().contains("&")) {
-      var firstArtist = Arrays.stream(track.artist().split("&"))
-        .filter(not(String::isBlank))
-        .map(String::trim)
-        .findFirst()
-        .orElse(track.artist());
-      String firstArtistQuoteQuery = "artist:\"" + firstArtist + "\" track:\"" + track.title() + "\"";
+      var firstArtist =
+          Arrays.stream(track.artist().split("&"))
+              .filter(not(String::isBlank))
+              .map(String::trim)
+              .findFirst()
+              .orElse(track.artist());
+      String firstArtistQuoteQuery =
+          "artist:\"" + firstArtist + "\" track:\"" + track.title() + "\"";
       querries.add(firstArtistQuoteQuery);
     }
     String unquotedQuery = "artist:" + track.artist() + " track:" + track.title();
     querries.add(unquotedQuery);
     String plainQuery = track.artist() + " " + track.title();
     querries.add(plainQuery);
-    return querries.stream().reduce(Optional.empty(),
-        (Optional<se.michaelthelin.spotify.model_objects.specification.Track> o, String q) -> o.or(() -> execSearch(q)),
-        (track1, track2) -> track1.isPresent() ? track1 : track2
-      )
-      .map(SpotifyTrackMapper::toSpotifyTrack);
+    return querries.stream()
+        .reduce(
+            Optional.empty(),
+            (Optional<se.michaelthelin.spotify.model_objects.specification.Track> o, String q) ->
+                o.or(() -> execSearch(q)),
+            (track1, track2) -> track1.isPresent() ? track1 : track2)
+        .map(SpotifyTrackMapper::toSpotifyTrack);
   }
 
-  private Optional<se.michaelthelin.spotify.model_objects.specification.Track> execSearch(String q) {
+  private Optional<se.michaelthelin.spotify.model_objects.specification.Track> execSearch(
+      String q) {
     try {
       return execSearchWithRetry(q, 2);
     } catch (IOException | SpotifyWebApiException | ParseException e) {
@@ -57,11 +61,10 @@ public class TrackFinder {
     }
   }
 
-  private Optional<se.michaelthelin.spotify.model_objects.specification.Track> execSearchWithRetry(String q, int remainingRetries) throws IOException, SpotifyWebApiException, ParseException {
+  private Optional<se.michaelthelin.spotify.model_objects.specification.Track> execSearchWithRetry(
+      String q, int remainingRetries) throws IOException, SpotifyWebApiException, ParseException {
     try {
-      var searchTracksRequest = spotifyApi.searchTracks(q)
-        .market(CountryCode.DE)
-        .limit(2).build();
+      var searchTracksRequest = spotifyApi.searchTracks(q).market(CountryCode.DE).limit(2).build();
       var trackPaging = searchTracksRequest.execute();
       return Arrays.stream(trackPaging.getItems()).findFirst();
     } catch (BadGatewayException e) {
@@ -73,5 +76,4 @@ public class TrackFinder {
       }
     }
   }
-
 }

@@ -3,7 +3,6 @@ package com.github.juliusd.radiohitsplaylist.source.berlinhitradio;
 import feign.Headers;
 import feign.Param;
 import feign.RequestLine;
-
 import java.util.List;
 
 interface BerlinHitRadioClient {
@@ -17,12 +16,11 @@ interface BerlinHitRadioClient {
     "Sec-Fetch-Mode: cors",
     "Sec-Fetch-Site: same-origin",
   })
-  @RequestLine("GET /services/program-info/history/rtl/{streamName}/{dayOffset}/{hour}/1?items={items}")
+  @RequestLine(
+      "GET /services/program-info/history/rtl/{streamName}/{dayOffset}/{hour}/1?items={items}")
   List<BerlinHitRadioTrackWrapper> hitFinder(
-    @Param("streamName") String streamName,
-    @Param("dayOffset") int dayOffset,
-    @Param("hour") int hour,
-    @Param("items") int items
-  );
+      @Param("streamName") String streamName,
+      @Param("dayOffset") int dayOffset,
+      @Param("hour") int hour,
+      @Param("items") int items);
 }
-

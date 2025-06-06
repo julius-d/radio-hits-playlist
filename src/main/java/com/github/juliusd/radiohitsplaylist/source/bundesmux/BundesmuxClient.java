@@ -15,11 +15,10 @@ interface BundesmuxClient {
     "Sec-Fetch-Site: same-origin",
     "Priority: u=0"
   })
-  @RequestLine("GET /playlistsuche?selected_station={selectedStation}&selected_date={selectedDate}&reload=0&page={page}")
+  @RequestLine(
+      "GET /playlistsuche?selected_station={selectedStation}&selected_date={selectedDate}&reload=0&page={page}")
   String load(
-    @Param("selectedStation") String selectedStation,
-    @Param("selectedDate") String selectedDate,
-    @Param("page") int page
-  );
+      @Param("selectedStation") String selectedStation,
+      @Param("selectedDate") String selectedDate,
+      @Param("page") int page);
 }
-

@@ -9,10 +9,10 @@ public class FamilyRadioClientConfiguration {
 
   FamilyRadioClient berlinHitRadioClient() {
     return Feign.builder()
-      .decoder(new JacksonDecoder())
-      .encoder(new JacksonEncoder())
-      .logLevel(Logger.Level.FULL)
-      .target(FamilyRadioClient.class, System.getProperty("familyRadioUrl"));
+        .decoder(new JacksonDecoder())
+        .encoder(new JacksonEncoder())
+        .logLevel(Logger.Level.FULL)
+        .target(FamilyRadioClient.class, System.getProperty("familyRadioUrl"));
   }
 
   public FamilyRadioLoader familyRadioLoader() {

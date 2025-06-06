@@ -15,9 +15,9 @@ public class GotifyClientConfiguration {
 
   GotifyClient gotifyClient(NotifierConfiguration config) {
     return Feign.builder()
-      .decoder(new JacksonDecoder())
-      .encoder(new JacksonEncoder())
-      .logLevel(Logger.Level.FULL)
-      .target(GotifyClient.class, config.gotifyUrl());
+        .decoder(new JacksonDecoder())
+        .encoder(new JacksonEncoder())
+        .logLevel(Logger.Level.FULL)
+        .target(GotifyClient.class, config.gotifyUrl());
   }
 }

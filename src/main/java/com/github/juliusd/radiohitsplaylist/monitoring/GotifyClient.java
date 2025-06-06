@@ -11,8 +11,5 @@ interface GotifyClient {
     "X-Gotify-Key: {apiToken}",
   })
   @RequestLine("POST /message")
-  void sendMessage(
-    @Param("apiToken") String apiToken,
-    GotfiyMessage gotfiyMessage
-  );
+  void sendMessage(@Param("apiToken") String apiToken, GotfiyMessage gotfiyMessage);
 }

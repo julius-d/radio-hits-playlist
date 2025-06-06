@@ -1,12 +1,11 @@
 package com.github.juliusd.radiohitsplaylist.monitoring;
 
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.Arrays;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 class NotificationTextBuilderTest {
 
@@ -25,16 +24,16 @@ class NotificationTextBuilderTest {
       String result = NotificationTextBuilder.createMessageText(statistic);
 
       String expected =
-        """
+          """
         Run finished successfully after ???
-        
+
         Shuffled playlists (1):
         - myPlaylist
-        
+
         Refreshed playlists (2):
         - myStream: 12 tracks
         - otherStream: 23 tracks
-        
+
         Soundgraph playlists (2):
         - soundgraphPlaylist1: 45 tracks
         - soundgraphPlaylist2: 67 tracks
@@ -52,13 +51,13 @@ class NotificationTextBuilderTest {
       String result = NotificationTextBuilder.createMessageText(statistic);
 
       String expected =
-        """
+          """
         Run finished successfully after ???
-        
+
         Refreshed playlists (2):
         - myStream: 12 tracks
         - otherStream: 23 tracks
-        
+
         Soundgraph playlists (1):
         - soundgraphPlaylist1: 45 tracks
         """;
@@ -74,12 +73,12 @@ class NotificationTextBuilderTest {
       String result = NotificationTextBuilder.createMessageText(statistic);
 
       String expected =
-        """
+          """
         Run finished successfully after ???
-        
+
         Shuffled playlists (1):
         - myPlaylist
-        
+
         Soundgraph playlists (1):
         - soundgraphPlaylist1: 45 tracks
         """;
@@ -95,9 +94,9 @@ class NotificationTextBuilderTest {
       String result = NotificationTextBuilder.createMessageText(statistic);
 
       String expected =
-        """
+          """
         Run finished successfully after ???
-        
+
         Soundgraph playlists (2):
         - soundgraphPlaylist1: 45 tracks
         - soundgraphPlaylist2: 67 tracks
@@ -114,9 +113,9 @@ class NotificationTextBuilderTest {
       String result = NotificationTextBuilder.createMessageText(statistic);
 
       String expected =
-        """
+          """
         Run finished successfully after ???
-        
+
         Refreshed playlists (2):
         - myStream: 12 tracks
         - otherStream: 23 tracks
@@ -133,9 +132,9 @@ class NotificationTextBuilderTest {
       String result = NotificationTextBuilder.createMessageText(statistic);
 
       String expected =
-        """
+          """
         Run finished successfully after ???
-        
+
         Shuffled playlists (2):
         - myPlaylist1
         - myPlaylist2
@@ -156,9 +155,10 @@ class NotificationTextBuilderTest {
 
       // Verify the result contains expected elements
       assertThat(result).startsWith("Run failed with RuntimeException: Just a test");
-      assertThat(result).contains("at com.github.juliusd.radiohitsplaylist.monitoring.NotificationTextBuilderTest$FailedMessageTest");
+      assertThat(result)
+          .contains(
+              "at com.github.juliusd.radiohitsplaylist.monitoring.NotificationTextBuilderTest$FailedMessageTest");
     }
-
 
     @Test
     void limitedStackTraceElementsAreIncluded() {
@@ -166,9 +166,7 @@ class NotificationTextBuilderTest {
 
       String result = NotificationTextBuilder.createFailedMessageText(exception);
 
-      long stackTraceLines = result.lines()
-        .filter(line -> line.trim().startsWith("at "))
-        .count();
+      long stackTraceLines = result.lines().filter(line -> line.trim().startsWith("at ")).count();
 
       assertThat(stackTraceLines).isEqualTo(2);
       assertThat(result).contains("... ");
@@ -212,10 +210,11 @@ class NotificationTextBuilderTest {
       assertThat(result).contains("Caused by: IOException: Root cause");
 
       String[] lines = result.split("\n");
-      long rootCauseStackLines = Arrays.stream(lines)
-        .dropWhile(line -> !line.contains("Caused by: IOException"))
-        .filter(line -> line.trim().startsWith("at "))
-        .count();
+      long rootCauseStackLines =
+          Arrays.stream(lines)
+              .dropWhile(line -> !line.contains("Caused by: IOException"))
+              .filter(line -> line.trim().startsWith("at "))
+              .count();
 
       assertThat(rootCauseStackLines).isEqualTo(2);
     }

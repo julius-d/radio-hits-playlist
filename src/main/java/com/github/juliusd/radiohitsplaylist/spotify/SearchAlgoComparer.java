@@ -1,11 +1,12 @@
 package com.github.juliusd.radiohitsplaylist.spotify;
 
+import static com.github.juliusd.radiohitsplaylist.Logger.log;
+
 import com.github.juliusd.radiohitsplaylist.Track;
 import com.github.juliusd.radiohitsplaylist.config.ConfigLoader;
 import com.github.juliusd.radiohitsplaylist.config.ReCreateBerlinHitRadioPlaylistTaskConfiguration;
 import com.github.juliusd.radiohitsplaylist.source.berlinhitradio.BerlinHitRadioClientConfiguration;
 import com.github.juliusd.radiohitsplaylist.source.family.FamilyRadioClientConfiguration;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
@@ -22,8 +23,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static com.github.juliusd.radiohitsplaylist.Logger.log;
-
 public class SearchAlgoComparer {
 
   public static void main(String[] args) {
@@ -37,14 +36,16 @@ public class SearchAlgoComparer {
     var trackFinder = new TrackFinder(spotifyApi);
     var trackFinderAlternative = new TrackFinderAlternative(spotifyApi);
 
-    String streamName = configuration.reCreateBerlinHitRadioPlaylistTasks().stream()
-      .map(ReCreateBerlinHitRadioPlaylistTaskConfiguration::streamName)
-      .findFirst()
-      .orElseThrow();
+    String streamName =
+        configuration.reCreateBerlinHitRadioPlaylistTasks().stream()
+            .map(ReCreateBerlinHitRadioPlaylistTaskConfiguration::streamName)
+            .findFirst()
+            .orElseThrow();
     List<Track> tracks = berlinHitRadioLoader.load(streamName);
 
-    StringBuilder stringBuilder = new StringBuilder(
-      """
+    StringBuilder stringBuilder =
+        new StringBuilder(
+            """
         <html>
         <head>
             <title>Search algo comparer</title>
@@ -59,7 +60,7 @@ public class SearchAlgoComparer {
             }
             tr.different {
              background-color: Red;
-            }   
+            }
             tr.only-uri-different {
              background-color: #FFCCCB;
             }
@@ -80,37 +81,42 @@ public class SearchAlgoComparer {
     AtomicInteger algo1Rating = new AtomicInteger(0);
     AtomicInteger algo2Rating = new AtomicInteger(0);
 
+    tracks.forEach(
+        withCounter(
+            (i, track) -> {
+              var givenTrackTitle = track.title();
+              var givenArtist = track.artist();
+              var algo1spotifyTrack = trackFinder.findSpotifyTrack(track);
+              var algo1result = getAlgoResult(algo1spotifyTrack, givenTrackTitle, givenArtist);
+              var algo2spotifyTrack = trackFinderAlternative.findSpotifyTrack(track);
+              var algo2result = getAlgoResult(algo2spotifyTrack, givenTrackTitle, givenArtist);
 
-    tracks.forEach(withCounter((i, track) -> {
+              boolean uriSameResult =
+                  algo1spotifyTrack
+                      .map(it -> it.uri().toString())
+                      .equals(algo2spotifyTrack.map(it -> it.uri().toString()));
+              boolean trackAndTitleSameResult =
+                  algo1spotifyTrack
+                          .map(SpotifyTrack::artists)
+                          .equals(algo2spotifyTrack.map(SpotifyTrack::artists))
+                      && algo1spotifyTrack
+                          .map(SpotifyTrack::name)
+                          .equals(algo2spotifyTrack.map(SpotifyTrack::name));
+              algo1Rating.addAndGet(algo1result.starRatingValue());
+              algo2Rating.addAndGet(algo2result.starRatingValue());
 
-      var givenTrackTitle = track.title();
-      var givenArtist = track.artist();
-      var algo1spotifyTrack = trackFinder.findSpotifyTrack(track);
-      var algo1result = getAlgoResult(algo1spotifyTrack, givenTrackTitle, givenArtist);
-      var algo2spotifyTrack = trackFinderAlternative.findSpotifyTrack(track);
-      var algo2result = getAlgoResult(algo2spotifyTrack, givenTrackTitle, givenArtist);
+              final String trClass;
+              if (uriSameResult) {
+                trClass = "same";
+              } else if (trackAndTitleSameResult) {
+                trClass = "only-uri-different";
+              } else {
+                trClass = "different";
+              }
+              System.out.println("Track " + i + " " + trClass);
 
-      boolean uriSameResult = algo1spotifyTrack.map(it -> it.uri().toString())
-        .equals(algo2spotifyTrack.map(it -> it.uri().toString()));
-      boolean trackAndTitleSameResult = algo1spotifyTrack.map(SpotifyTrack::artists)
-                                          .equals(algo2spotifyTrack.map(SpotifyTrack::artists)) &&
-                                        algo1spotifyTrack.map(SpotifyTrack::name)
-                                          .equals(algo2spotifyTrack.map(SpotifyTrack::name));
-      algo1Rating.addAndGet(algo1result.starRatingValue());
-      algo2Rating.addAndGet(algo2result.starRatingValue());
-
-      final String trClass;
-      if (uriSameResult) {
-        trClass = "same";
-      } else if (trackAndTitleSameResult) {
-        trClass = "only-uri-different";
-      } else {
-        trClass = "different";
-      }
-      System.out.println("Track " + i + " " + trClass);
-
-      stringBuilder.append(
-        """
+              stringBuilder.append(
+                  """
         <tr class="%s">
           <td>%s</td>
           <td><b>%s</b><br>%s</td>
@@ -119,26 +125,26 @@ public class SearchAlgoComparer {
           <td><b>%s</b><br>%s<br>%s (%s)</td>
           <td><img src="%s" height="60" alt="cover"></td>
         </tr>
-        """.formatted(
-        trClass,
-        String.valueOf(i),
-        givenTrackTitle,
-        givenArtist,
-        algo1result.trackTitle(),
-        algo1result.artists(),
-        algo1result.starRating(),
-        algo1result.levenshteinDistance(),
-        algo1result.albumCover(),
-        algo2result.trackTitle(),
-        algo2result.artists(),
-        algo2result.starRating(),
-        algo2result.levenshteinDistance(),
-        algo2result.albumCover()
-        ));
-    }));
+        """
+                      .formatted(
+                          trClass,
+                          String.valueOf(i),
+                          givenTrackTitle,
+                          givenArtist,
+                          algo1result.trackTitle(),
+                          algo1result.artists(),
+                          algo1result.starRating(),
+                          algo1result.levenshteinDistance(),
+                          algo1result.albumCover(),
+                          algo2result.trackTitle(),
+                          algo2result.artists(),
+                          algo2result.starRating(),
+                          algo2result.levenshteinDistance(),
+                          algo2result.albumCover()));
+            }));
 
     stringBuilder.append(
-      """
+        """
          <tr>
           <td></td>
           <td></td>
@@ -150,23 +156,30 @@ public class SearchAlgoComparer {
         </table>
         </body>
         </html>
-        """.formatted(
-        algo1Rating.get(),
-        algo2Rating.get()
-      ));
+        """
+            .formatted(algo1Rating.get(), algo2Rating.get()));
     storeInFile(stringBuilder.toString());
   }
 
-  private static AlgoResult getAlgoResult(Optional<SpotifyTrack> spotifyTrack, String givenTrackTitle, String givenArtist) {
+  private static AlgoResult getAlgoResult(
+      Optional<SpotifyTrack> spotifyTrack, String givenTrackTitle, String givenArtist) {
     String foundTrackTitle = spotifyTrack.map(SpotifyTrack::name).orElse("-");
-    String foundArtists = spotifyTrack.stream().flatMap(it -> it.artists().stream()).collect(Collectors.joining(", "));
+    String foundArtists =
+        spotifyTrack.stream()
+            .flatMap(it -> it.artists().stream())
+            .collect(Collectors.joining(", "));
     URI albumCover = spotifyTrack.map(SpotifyTrack::albumCover).orElse(null);
-    boolean completeMatch = spotifyTrack.isPresent() && givenTrackTitle.equals(foundTrackTitle) && givenArtist.equals(foundArtists);
-    boolean nearCompleteMatch = spotifyTrack.isPresent() && givenTrackTitle.equalsIgnoreCase(foundTrackTitle)
-                                && normalize(givenArtist).equals(normalize(foundArtists));
+    boolean completeMatch =
+        spotifyTrack.isPresent()
+            && givenTrackTitle.equals(foundTrackTitle)
+            && givenArtist.equals(foundArtists);
+    boolean nearCompleteMatch =
+        spotifyTrack.isPresent()
+            && givenTrackTitle.equalsIgnoreCase(foundTrackTitle)
+            && normalize(givenArtist).equals(normalize(foundArtists));
     int levenshteinDistance =
-      calculateLevenshteinDistance(normalize(givenTrackTitle), normalize(foundTrackTitle)) +
-      calculateLevenshteinDistance(normalize(givenArtist), normalize(foundArtists));
+        calculateLevenshteinDistance(normalize(givenTrackTitle), normalize(foundTrackTitle))
+            + calculateLevenshteinDistance(normalize(givenArtist), normalize(foundArtists));
     final String starRating;
     final int starRatingValue;
     if (completeMatch) {
@@ -188,24 +201,30 @@ public class SearchAlgoComparer {
       starRatingValue = 0;
       starRating = "❌❌❌❌❌";
     }
-    return new AlgoResult(foundTrackTitle, foundArtists, albumCover, starRating, starRatingValue, levenshteinDistance);
+    return new AlgoResult(
+        foundTrackTitle,
+        foundArtists,
+        albumCover,
+        starRating,
+        starRatingValue,
+        levenshteinDistance);
   }
 
   private record AlgoResult(
-    String trackTitle,
-    String artists,
-    URI albumCover,
-    String starRating,
-    int starRatingValue,
-    int levenshteinDistance) {
-  }
+      String trackTitle,
+      String artists,
+      URI albumCover,
+      String starRating,
+      int starRatingValue,
+      int levenshteinDistance) {}
 
   private static String normalize(String artist) {
-    return artist.trim().toLowerCase(Locale.ROOT)
-      .replace(",", " ")
-      .replace("&", " ")
-      .replaceAll("\\s+", " ");
-
+    return artist
+        .trim()
+        .toLowerCase(Locale.ROOT)
+        .replace(",", " ")
+        .replace("&", " ")
+        .replaceAll("\\s+", " ");
   }
 
   private static void storeInFile(String string) {
@@ -240,10 +259,11 @@ public class SearchAlgoComparer {
         } else if (j == 0) {
           dp[i][j] = i;
         } else {
-          dp[i][j] = min(dp[i - 1][j - 1]
-                         + costOfSubstitution(first.charAt(i - 1), second.charAt(j - 1)),
-            dp[i - 1][j] + 1,
-            dp[i][j - 1] + 1);
+          dp[i][j] =
+              min(
+                  dp[i - 1][j - 1] + costOfSubstitution(first.charAt(i - 1), second.charAt(j - 1)),
+                  dp[i - 1][j] + 1,
+                  dp[i][j - 1] + 1);
         }
       }
     }
@@ -251,14 +271,11 @@ public class SearchAlgoComparer {
     return dp[first.length()][second.length()];
   }
 
-
   public static int costOfSubstitution(char a, char b) {
     return a == b ? 0 : 1;
   }
 
   public static int min(int... numbers) {
-    return Arrays.stream(numbers)
-      .min().orElse(Integer.MAX_VALUE);
+    return Arrays.stream(numbers).min().orElse(Integer.MAX_VALUE);
   }
-
 }

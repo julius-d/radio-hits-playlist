@@ -44,13 +44,7 @@ class Statistic {
     return startTime;
   }
 
-  public record PlaylistRefreshResult(
-    String streamName, int amountOfTracks
-  ) {
-  }
+  public record PlaylistRefreshResult(String streamName, int amountOfTracks) {}
 
-  public record SoundgraphResult(
-    String name, int amountOfTracks
-  ) {
-  }
+  public record SoundgraphResult(String name, int amountOfTracks) {}
 }

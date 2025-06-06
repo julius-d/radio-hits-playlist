@@ -1,17 +1,16 @@
 package com.github.juliusd.radiohitsplaylist.spotify;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.github.juliusd.radiohitsplaylist.Track;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import se.michaelthelin.spotify.SpotifyApi;
-
-import java.util.Optional;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @WireMockTest
 class TrackFinderTest {
@@ -28,9 +27,12 @@ class TrackFinderTest {
 
   @Test
   void searchesForSingleArtistWhenNoExactMatch() {
-    wireMock.register(stubFor(get(urlPathEqualTo("/v1/search"))
-      .willReturn(okJson(
-        """
+    wireMock.register(
+        stubFor(
+            get(urlPathEqualTo("/v1/search"))
+                .willReturn(
+                    okJson(
+                        """
           {
             "tracks": {
               "limit": 2,
@@ -43,10 +45,13 @@ class TrackFinderTest {
           }
           """))));
 
-    wireMock.register(stubFor(get(urlPathEqualTo("/v1/search"))
-      .withQueryParam("q", equalTo("artist:\"Udo Lindenberg\" track:\"Komet\""))
-      .willReturn(okJson(
-        """
+    wireMock.register(
+        stubFor(
+            get(urlPathEqualTo("/v1/search"))
+                .withQueryParam("q", equalTo("artist:\"Udo Lindenberg\" track:\"Komet\""))
+                .willReturn(
+                    okJson(
+                        """
           {
             "tracks": {
               "limit": 2,
@@ -155,31 +160,36 @@ class TrackFinderTest {
             }
           }"""))));
 
+    Optional<SpotifyTrack> spotifyTrack =
+        trackFinder.findSpotifyTrack(new Track("Komet", "Udo Lindenberg & Apache 207"));
 
-    Optional<SpotifyTrack> spotifyTrack = trackFinder.findSpotifyTrack(new Track("Komet", "Udo Lindenberg & Apache 207"));
-
-    verify(getRequestedFor(urlPathEqualTo("/v1/search"))
-      .withQueryParam("q", equalTo("artist:\"Udo Lindenberg & Apache 207\" track:\"Komet\""))
-      .withQueryParam("market", equalTo("DE"))
-      .withQueryParam("limit", equalTo("2"))
-      .withQueryParam("type", equalTo("track"))
-    );
-    verify(getRequestedFor(urlPathEqualTo("/v1/search"))
-      .withQueryParam("q", equalTo("artist:\"Udo Lindenberg\" track:\"Komet\""))
-      .withQueryParam("market", equalTo("DE"))
-      .withQueryParam("limit", equalTo("2"))
-      .withQueryParam("type", equalTo("track"))
-    );
+    verify(
+        getRequestedFor(urlPathEqualTo("/v1/search"))
+            .withQueryParam("q", equalTo("artist:\"Udo Lindenberg & Apache 207\" track:\"Komet\""))
+            .withQueryParam("market", equalTo("DE"))
+            .withQueryParam("limit", equalTo("2"))
+            .withQueryParam("type", equalTo("track")));
+    verify(
+        getRequestedFor(urlPathEqualTo("/v1/search"))
+            .withQueryParam("q", equalTo("artist:\"Udo Lindenberg\" track:\"Komet\""))
+            .withQueryParam("market", equalTo("DE"))
+            .withQueryParam("limit", equalTo("2"))
+            .withQueryParam("type", equalTo("track")));
     verify(2, getRequestedFor(urlPathEqualTo("/v1/search")));
 
-    assertThat(spotifyTrack.map(SpotifyTrack::uri)).asString().contains("spotify:track:7oQepKHmXDaPC3rgeLRvQu");
+    assertThat(spotifyTrack.map(SpotifyTrack::uri))
+        .asString()
+        .contains("spotify:track:7oQepKHmXDaPC3rgeLRvQu");
   }
 
   @Test
   void searchWithUnquotedQuery() {
-    wireMock.register(stubFor(get(urlPathEqualTo("/v1/search"))
-      .willReturn(okJson(
-        """
+    wireMock.register(
+        stubFor(
+            get(urlPathEqualTo("/v1/search"))
+                .willReturn(
+                    okJson(
+                        """
           {
             "tracks": {
               "limit": 2,
@@ -192,10 +202,13 @@ class TrackFinderTest {
           }
           """))));
 
-    wireMock.register(stubFor(get(urlPathEqualTo("/v1/search"))
-      .withQueryParam("q", equalTo("artist:Lil Nas X track:Star Walkin'"))
-      .willReturn(okJson(
-        """
+    wireMock.register(
+        stubFor(
+            get(urlPathEqualTo("/v1/search"))
+                .withQueryParam("q", equalTo("artist:Lil Nas X track:Star Walkin'"))
+                .willReturn(
+                    okJson(
+                        """
           {
             "tracks": {
               "limit": 2,
@@ -285,38 +298,39 @@ class TrackFinderTest {
           }
           """))));
 
-    Optional<SpotifyTrack> spotifyTrack = trackFinder.findSpotifyTrack(new Track("Star Walkin'", "Lil Nas X"));
+    Optional<SpotifyTrack> spotifyTrack =
+        trackFinder.findSpotifyTrack(new Track("Star Walkin'", "Lil Nas X"));
 
-    verify(getRequestedFor(urlPathEqualTo("/v1/search"))
-      .withQueryParam("q", equalTo("artist:\"Lil Nas X\" track:\"Star Walkin'\""))
-      .withQueryParam("market", equalTo("DE"))
-      .withQueryParam("limit", equalTo("2"))
-      .withQueryParam("type", equalTo("track"))
-    );
+    verify(
+        getRequestedFor(urlPathEqualTo("/v1/search"))
+            .withQueryParam("q", equalTo("artist:\"Lil Nas X\" track:\"Star Walkin'\""))
+            .withQueryParam("market", equalTo("DE"))
+            .withQueryParam("limit", equalTo("2"))
+            .withQueryParam("type", equalTo("track")));
 
-    verify(getRequestedFor(urlPathEqualTo("/v1/search"))
-      .withQueryParam("q", equalTo("artist:Lil Nas X track:Star Walkin'"))
-      .withQueryParam("market", equalTo("DE"))
-      .withQueryParam("limit", equalTo("2"))
-      .withQueryParam("type", equalTo("track"))
-    );
+    verify(
+        getRequestedFor(urlPathEqualTo("/v1/search"))
+            .withQueryParam("q", equalTo("artist:Lil Nas X track:Star Walkin'"))
+            .withQueryParam("market", equalTo("DE"))
+            .withQueryParam("limit", equalTo("2"))
+            .withQueryParam("type", equalTo("track")));
 
     verify(2, getRequestedFor(urlPathEqualTo("/v1/search")));
 
-
-    assertThat(spotifyTrack.map(SpotifyTrack::uri)).asString().contains("spotify:track:38T0tPVZHcPZyhtOcCP7pF");
+    assertThat(spotifyTrack.map(SpotifyTrack::uri))
+        .asString()
+        .contains("spotify:track:38T0tPVZHcPZyhtOcCP7pF");
   }
 
   private static SpotifyApi buildSpotifyApiForLocalhost(int port) {
     return new SpotifyApi.Builder()
-      .setScheme("http")
-      .setHost("localhost")
-      .setPort(port)
-      .setRefreshToken("spotifyRefreshToken")
-      .setClientId("123")
-      .setClientSecret("clientSecret")
-      .setAccessToken("myAccessToken")
-      .build();
+        .setScheme("http")
+        .setHost("localhost")
+        .setPort(port)
+        .setRefreshToken("spotifyRefreshToken")
+        .setClientId("123")
+        .setClientSecret("clientSecret")
+        .setAccessToken("myAccessToken")
+        .build();
   }
-
 }

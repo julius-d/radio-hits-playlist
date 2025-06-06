@@ -52,5 +52,4 @@ class GotifyNotifier implements Notifier {
       gotifyClient.sendMessage(config.gotifyApiToken(), message);
     }
   }
-
 }
