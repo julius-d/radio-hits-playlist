@@ -213,4 +213,32 @@ class SoundgraphServiceTest {
                         URI.create("spotify:track:track3"));
     }
 
+    @Test
+    void shouldLoadArtistTopTracks() throws Exception {
+        // given
+        List<SoundgraphSong> artistTracks = List.of(
+                new SoundgraphSong(URI.create("spotify:track:artist_track1"), false),
+                new SoundgraphSong(URI.create("spotify:track:artist_track2"), true),
+                new SoundgraphSong(URI.create("spotify:track:artist_track3"), false));
+
+        when(soundgraphSpotifyWrapper.getArtistTopTracks("artist_id"))
+                .thenReturn(artistTracks);
+
+        // when
+        List<SoundgraphSong> loadedTracks = soundgraphService.processSoundgraphConfig(
+                new SoundgraphConfig(
+                        "Test Configuration",
+                        "target_playlist_id",
+                        new SoundgraphConfig.Pipe(List.of(
+                                new SoundgraphConfig.LoadArtistTopTracksStep("artist_id", "Test Artist")))));
+
+        // then
+        assertThat(loadedTracks).hasSize(3)
+                .extracting(SoundgraphSong::uri)
+                .containsExactly(
+                        URI.create("spotify:track:artist_track1"),
+                        URI.create("spotify:track:artist_track2"),
+                        URI.create("spotify:track:artist_track3"));
+    }
+
 }

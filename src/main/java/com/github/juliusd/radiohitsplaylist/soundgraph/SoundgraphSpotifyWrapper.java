@@ -72,6 +72,28 @@ public class SoundgraphSpotifyWrapper {
         return tracks;
     }
 
+    public List<SoundgraphSong> getArtistTopTracks(String artistId)
+            throws IOException, SpotifyWebApiException, ParseException {
+        try {
+            List<SoundgraphSong> tracks = new ArrayList<>();
+
+            Track[] topTracks = spotifyApi.getArtistsTopTracks(artistId, CountryCode.DE)
+                    .build()
+                    .execute();
+
+            for (Track track : topTracks) {
+                tracks.add(new SoundgraphSong(
+                        URI.create(track.getUri()),
+                        track.getIsExplicit()));
+            }
+
+            return tracks;
+        } catch (Exception e) {
+            log("Error loading top tracks for artist " + artistId + ": " + e.getMessage());
+            throw new RuntimeException("Error loading top tracks for artist " + artistId, e);
+        }
+    }
+
     public void updatePlaylist(String playlistId, List<SoundgraphSong> tracks)
             throws IOException, SpotifyWebApiException, ParseException {
         // Only clear and add if there are tracks

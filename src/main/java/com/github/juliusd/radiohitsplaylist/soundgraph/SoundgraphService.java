@@ -66,6 +66,8 @@ public class SoundgraphService {
                 tracks = processDedupStep(tracks);
             } else if (step instanceof SoundgraphConfig.FilterOutExplicitStep) {
                 tracks = processFilterOutExplicitStep(tracks);
+            } else if (step instanceof SoundgraphConfig.LoadArtistTopTracksStep) {
+                tracks = spotifyWrapper.getArtistTopTracks(((SoundgraphConfig.LoadArtistTopTracksStep) step).artistId());
             }
         }
         

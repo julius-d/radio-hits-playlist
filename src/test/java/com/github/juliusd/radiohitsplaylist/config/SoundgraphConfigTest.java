@@ -58,4 +58,46 @@ class SoundgraphConfigTest {
         assertThat(thirdStep).isInstanceOf(SoundgraphConfig.LimitStep.class);
         assertThat(((SoundgraphConfig.LimitStep) thirdStep).value()).isEqualTo(150);
     }
+
+    @Test
+    void shouldParseArtistTopTracksConfig() throws Exception {
+        // given
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        String yamlConfig = """
+            name: "Artist Top Tracks Test"
+            targetPlaylist: "target_playlist_id"
+            pipe:
+              steps:
+                - type: "loadArtistTopTracks"
+                  artistId: "artist_id_1"
+                  name: "Test Artist"
+                - type: "shuffle"
+                - type: "limit"
+                  value: 10
+            """;
+
+        // when
+        SoundgraphConfig config = mapper.readValue(yamlConfig, SoundgraphConfig.class);
+
+        // then
+        assertThat(config.name()).isEqualTo("Artist Top Tracks Test");
+        assertThat(config.targetPlaylistId()).isEqualTo("target_playlist_id");
+        assertThat(config.pipe().steps()).hasSize(3);
+
+        // Verify first step (loadArtistTopTracks)
+        SoundgraphConfig.Step firstStep = config.pipe().steps().get(0);
+        assertThat(firstStep).isInstanceOf(SoundgraphConfig.LoadArtistTopTracksStep.class);
+        SoundgraphConfig.LoadArtistTopTracksStep artistStep = (SoundgraphConfig.LoadArtistTopTracksStep) firstStep;
+        assertThat(artistStep.artistId()).isEqualTo("artist_id_1");
+        assertThat(artistStep.name()).isEqualTo("Test Artist");
+
+        // Verify second step (shuffle)
+        SoundgraphConfig.Step secondStep = config.pipe().steps().get(1);
+        assertThat(secondStep).isInstanceOf(SoundgraphConfig.ShuffleStep.class);
+
+        // Verify third step (limit)
+        SoundgraphConfig.Step thirdStep = config.pipe().steps().get(2);
+        assertThat(thirdStep).isInstanceOf(SoundgraphConfig.LimitStep.class);
+        assertThat(((SoundgraphConfig.LimitStep) thirdStep).value()).isEqualTo(10);
+    }
 } 
