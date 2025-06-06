@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.List;
 
 public record SoundgraphConfig(
+    @JsonProperty("name") String name,
     @JsonProperty("targetPlaylist") String targetPlaylistId,
     @JsonProperty("pipe") Pipe pipe
 ) {
@@ -28,7 +29,8 @@ public record SoundgraphConfig(
     ) {}
 
     public record LoadPlaylistStep(
-        @JsonProperty("playlistId") String playlistId
+        @JsonProperty("playlistId") String playlistId,
+        @JsonProperty("name") String name
     ) implements Step {
         @Override
         public String type() {
@@ -37,7 +39,8 @@ public record SoundgraphConfig(
     }
 
     public record LoadAlbumStep(
-        @JsonProperty("albumId") String albumId
+        @JsonProperty("albumId") String albumId,
+        @JsonProperty("name") String name
     ) implements Step {
         @Override
         public String type() {

@@ -45,17 +45,20 @@ reCreateBundesmuxPlaylistTasks:
     descriptionPrefix: my other prefix7
 soundgraphTasks:
   # Simple example with a single playlist
-  - targetPlaylist: 6mN4kL7pQ9rT2v5x8yB3hJ
+  - name: "Simple Playlist Mix"
+    targetPlaylist: 6mN4kL7pQ9rT2v5x8yB3hJ
     pipe:
       steps:
         - type: loadPlaylist
           playlistId: source_playlist_1
+          name: "My Playlist"
         - type: limit
           value: 100
         - type: shuffle
 
   # Complex example combining multiple sources
-  - targetPlaylist: 9wZ4yB7mN2kL5pQ8tR3vX6
+  - name: "Mixed Sources Playlist"
+    targetPlaylist: 9wZ4yB7mN2kL5pQ8tR3vX6
     pipe:
       steps:
         - type: combine
@@ -63,12 +66,14 @@ soundgraphTasks:
             - steps:
                 - type: loadPlaylist
                   playlistId: 4hJ8kM2nP5qR7tV9wX3yB6
+                  name: "Source Playlist"
                 - type: shuffle
                 - type: limit
                   value: 100
             - steps:
                 - type: loadAlbum
                   albumId: source_album_1
+                  name: "Source Album"
                 - type: shuffle
                 - type: limit
                   value: 50
@@ -77,7 +82,8 @@ soundgraphTasks:
           value: 150
 
   # Comprehensive example showing all available steps
-  - targetPlaylist: 7xK9mNp2QrL5vY8tH3jF4d
+  - name: "Complete Playlist Mix"
+    targetPlaylist: 7xK9mNp2QrL5vY8tH3jF4d
     pipe:
       steps:
         - type: combine
@@ -86,6 +92,7 @@ soundgraphTasks:
             - steps:
                 - type: loadPlaylist
                   playlistId: 2bM5nR8sT9vX4cL7hJ3kP6
+                  name: "Main Playlist"
                 - type: dedup
                 - type: filterOutExplicit
                 - type: limit
@@ -94,6 +101,7 @@ soundgraphTasks:
             - steps:
                 - type: loadAlbum
                   albumId: source_album_1
+                  name: "Featured Album"
                 - type: shuffle
                 - type: limit
                   value: 30
@@ -108,10 +116,11 @@ soundgraphTasks:
 
 | Step                | Description                                | Required Parameters                    |
 |---------------------|--------------------------------------------|----------------------------------------|
-| `loadPlaylist`      | Loads tracks from a Spotify playlist       | `playlistId` (string)                  |
-| `loadAlbum`         | Loads tracks from a Spotify album          | `albumId` (string)                     |
+| `loadPlaylist`      | Loads tracks from a Spotify playlist       | `playlistId`, `name`                   |
+| `loadAlbum`         | Loads tracks from a Spotify album          | `albumId`, `name`                       |
 | `combine`           | Combines multiple sources of tracks        | `sources` (array of pipe configurations)|
 | `shuffle`           | Randomizes the order of tracks             | None                                    |
 | `limit`             | Limits the number of tracks                | `value` (integer)                       |
 | `dedup`             | Removes duplicate tracks                   | None                                    |
 | `filterOutExplicit` | Removes tracks marked as explicit          | None                                    |
+

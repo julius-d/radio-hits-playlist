@@ -42,9 +42,10 @@ class SoundgraphServiceTest {
         // when
         List<SoundgraphSong> limitedTracks = soundgraphService.processSoundgraphConfig(
                 new SoundgraphConfig(
+                        "Test Configuration",
                         "target_playlist_id",
                         new SoundgraphConfig.Pipe(List.of(
-                                new SoundgraphConfig.LoadPlaylistStep("source_playlist_id"),
+                                new SoundgraphConfig.LoadPlaylistStep("source_playlist_id", "Test Playlist"),
                                 new SoundgraphConfig.LimitStep(3)))));
 
         // then
@@ -68,9 +69,10 @@ class SoundgraphServiceTest {
         // when
         List<SoundgraphSong> limitedTracks = soundgraphService.processSoundgraphConfig(
                 new SoundgraphConfig(
+                        "Test Configuration",
                         "target_playlist_id",
                         new SoundgraphConfig.Pipe(List.of(
-                                new SoundgraphConfig.LoadPlaylistStep("source_playlist_id"),
+                                new SoundgraphConfig.LoadPlaylistStep("source_playlist_id", "Test Playlist"),
                                 new SoundgraphConfig.LimitStep(5)))));
 
         // then
@@ -95,9 +97,10 @@ class SoundgraphServiceTest {
         // when
         List<SoundgraphSong> filteredTracks = soundgraphService.processSoundgraphConfig(
                 new SoundgraphConfig(
+                        "Test Configuration",
                         "target_playlist_id",
                         new SoundgraphConfig.Pipe(List.of(
-                                new SoundgraphConfig.LoadPlaylistStep("source_playlist_id"),
+                                new SoundgraphConfig.LoadPlaylistStep("source_playlist_id", "Test Playlist"),
                                 new SoundgraphConfig.FilterOutExplicitStep()))));
 
         // then
@@ -127,13 +130,14 @@ class SoundgraphServiceTest {
         // when
         List<SoundgraphSong> combinedTracks = soundgraphService.processSoundgraphConfig(
                 new SoundgraphConfig(
+                        "Test Configuration",
                         "target_playlist_id",
                         new SoundgraphConfig.Pipe(List.of(
                                 new SoundgraphConfig.CombineStep(List.of(
                                         new SoundgraphConfig.Pipe(List.of(
-                                                new SoundgraphConfig.LoadPlaylistStep("source_playlist_1"))),
+                                                new SoundgraphConfig.LoadPlaylistStep("source_playlist_1", "Source Playlist 1"))),
                                         new SoundgraphConfig.Pipe(List.of(
-                                                new SoundgraphConfig.LoadPlaylistStep("source_playlist_2")))))))));
+                                                new SoundgraphConfig.LoadPlaylistStep("source_playlist_2", "Source Playlist 2")))))))));
 
         // then
         assertThat(combinedTracks).hasSize(5).extracting(SoundgraphSong::uri)
@@ -161,9 +165,10 @@ class SoundgraphServiceTest {
         // when
         List<SoundgraphSong> shuffledTracks = soundgraphService.processSoundgraphConfig(
                 new SoundgraphConfig(
+                        "Test Configuration",
                         "target_playlist_id",
                         new SoundgraphConfig.Pipe(List.of(
-                                new SoundgraphConfig.LoadPlaylistStep("source_playlist_id"),
+                                new SoundgraphConfig.LoadPlaylistStep("source_playlist_id", "Test Playlist"),
                                 new SoundgraphConfig.ShuffleStep()))));
 
         // then
@@ -193,9 +198,10 @@ class SoundgraphServiceTest {
         // when
         List<SoundgraphSong> dedupedTracks = soundgraphService.processSoundgraphConfig(
                 new SoundgraphConfig(
+                        "Test Configuration",
                         "target_playlist_id",
                         new SoundgraphConfig.Pipe(List.of(
-                                new SoundgraphConfig.LoadAlbumStep("source_album_id"),
+                                new SoundgraphConfig.LoadAlbumStep("source_album_id", "Test Album"),
                                 new SoundgraphConfig.DedupStep()))));
 
         // then

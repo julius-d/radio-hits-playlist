@@ -1,3 +1,4 @@
+name: "Test Configuration"
 targetPlaylist: "your_target_playlist_id"
 pipe:
   steps:
@@ -6,12 +7,14 @@ pipe:
         - steps:
             - type: loadPlaylist
               playlistId: "source_playlist_1"
+              name: "My Playlist"
             - type: shuffle
             - type: limit
               value: 100
         - steps:
             - type: loadAlbum
               albumId: "source_album_1"
+              name: "My Album"
             - type: shuffle
             - type: limit
               value: 50

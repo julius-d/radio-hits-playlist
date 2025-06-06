@@ -253,6 +253,7 @@ class SoundgraphTest {
         // given
         String configYaml = //language=yaml
             """
+            name: "Test Configuration"
             targetPlaylist: "target_playlist_id"
             pipe:
               steps:
@@ -261,11 +262,13 @@ class SoundgraphTest {
                     - steps:
                         - type: loadPlaylist
                           playlistId: "source_playlist_1"
+                          name: "Source Playlist 1"
                         - type: limit
                           value: 2
                     - steps:
                         - type: loadAlbum
                           albumId: "source_album_1"
+                          name: "Source Album 1"
                         - type: limit
                           value: 1
                 - type: shuffle
@@ -301,11 +304,13 @@ class SoundgraphTest {
         // given
         String configYaml = //language=yaml
             """
+            name: "Single Playlist Configuration"
             targetPlaylist: "target_playlist_id"
             pipe:
               steps:
                 - type: loadPlaylist
                   playlistId: "source_playlist_1"
+                  name: "Source Playlist 1"
                 - type: limit
                   value: 100
                 - type: shuffle
@@ -333,11 +338,13 @@ class SoundgraphTest {
         // given
         String configYaml = //language=yaml
             """
+            name: "Dedup Configuration"
             targetPlaylist: "target_playlist_id"
             pipe:
               steps:
                 - type: loadPlaylist
                   playlistId: "source_playlist_1"
+                  name: "Source Playlist 1"
                 - type: dedup
             """;
 
@@ -540,11 +547,13 @@ class SoundgraphTest {
         // given
         String configYaml = //language=yaml
             """
+            name: "Filter Explicit Configuration"
             targetPlaylist: "target_playlist_id"
             pipe:
               steps:
                 - type: loadPlaylist
                   playlistId: "source_playlist_1"
+                  name: "Source Playlist 1"
                 - type: filterOutExplicit
             """;
 
