@@ -3,6 +3,8 @@ package com.github.juliusd.radiohitsplaylist.soundgraph;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.reflect.TypeToken;
+import com.neovisionaries.i18n.CountryCode;
+
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.specification.Episode;
@@ -10,6 +12,8 @@ import se.michaelthelin.spotify.model_objects.specification.PlaylistTrack;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import se.michaelthelin.spotify.model_objects.specification.TrackSimplified;
 import org.apache.hc.core5.http.ParseException;
+
+import static com.github.juliusd.radiohitsplaylist.Logger.log;
 
 import java.io.IOException;
 import java.net.URI;
@@ -24,44 +28,52 @@ public class SoundgraphSpotifyWrapper {
         this.spotifyApi = spotifyApi;
     }
 
-    public List<SoundgraphSong> getPlaylistTracks(String playlistId) throws IOException, SpotifyWebApiException, ParseException {
-        List<SoundgraphSong> tracks = new ArrayList<>();
-        
-        PlaylistTrack[] playlistTracks = spotifyApi.getPlaylistsItems(playlistId)
-                .build()
-                .execute()
-                .getItems();
-        
-        for (PlaylistTrack playlistTrack : playlistTracks) {
-            if (playlistTrack.getTrack() instanceof Track track) {
-                tracks.add(new SoundgraphSong(URI.create(track.getUri()), track.getIsExplicit()));
-            } else if (playlistTrack.getTrack() instanceof Episode episode) {
-                tracks.add(new SoundgraphSong(URI.create(episode.getUri()), episode.getExplicit()));
+    public List<SoundgraphSong> getPlaylistTracks(String playlistId)
+            throws IOException, SpotifyWebApiException, ParseException {
+        try {
+            List<SoundgraphSong> tracks = new ArrayList<>();
+
+            PlaylistTrack[] playlistTracks = spotifyApi.getPlaylistsItems(playlistId)
+                    .market(CountryCode.DE)
+                    .build()
+                    .execute()
+                    .getItems();
+
+            for (PlaylistTrack playlistTrack : playlistTracks) {
+                if (playlistTrack.getTrack() instanceof Track track) {
+                    tracks.add(new SoundgraphSong(URI.create(track.getUri()), track.getIsExplicit()));
+                } else if (playlistTrack.getTrack() instanceof Episode episode) {
+                    tracks.add(new SoundgraphSong(URI.create(episode.getUri()), episode.getExplicit()));
+                }
             }
+            return tracks;
+        } catch (Exception e) {
+            log("Error loading tracks from playlist " + playlistId + ": " + e.getMessage());
+            throw new RuntimeException("Error loading tracks from playlist " + playlistId, e);
         }
-        
-        return tracks;
     }
 
-    public List<SoundgraphSong> getAlbumTracks(String albumId) throws IOException, SpotifyWebApiException, ParseException {
+    public List<SoundgraphSong> getAlbumTracks(String albumId)
+            throws IOException, SpotifyWebApiException, ParseException {
         List<SoundgraphSong> tracks = new ArrayList<>();
-        
+
         TrackSimplified[] albumTracks = spotifyApi.getAlbumsTracks(albumId)
+                .market(CountryCode.DE)
                 .build()
                 .execute()
                 .getItems();
-        
+
         for (TrackSimplified track : albumTracks) {
             tracks.add(new SoundgraphSong(
-                URI.create(track.getUri()), 
-                track.getIsExplicit())
-            );
+                    URI.create(track.getUri()),
+                    track.getIsExplicit()));
         }
-        
+
         return tracks;
     }
 
-    public void updatePlaylist(String playlistId, List<SoundgraphSong> tracks) throws IOException, SpotifyWebApiException, ParseException {
+    public void updatePlaylist(String playlistId, List<SoundgraphSong> tracks)
+            throws IOException, SpotifyWebApiException, ParseException {
         // Only clear and add if there are tracks
         if (tracks.isEmpty()) {
             return;
@@ -87,7 +99,7 @@ public class SoundgraphSpotifyWrapper {
                 List<String> chunk = trackUris.subList(i, Math.min(i + 100, trackUris.size()));
                 JsonArray chunkUris = new Gson().toJsonTree(chunk, new TypeToken<List<String>>() {
                 }.getType()).getAsJsonArray();
-                
+
                 spotifyApi.addItemsToPlaylist(playlistId, chunkUris)
                         .build()
                         .execute();
