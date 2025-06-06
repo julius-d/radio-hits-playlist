@@ -118,6 +118,7 @@ soundgraphTasks:
 |---------------------|--------------------------------------------|----------------------------------------|
 | `loadPlaylist`      | Loads tracks from a Spotify playlist       | `playlistId`, `name`                   |
 | `loadAlbum`         | Loads tracks from a Spotify album          | `albumId`, `name`                       |
+| `loadArtistTopTracks` | Loads top tracks from a Spotify artist   | `artistId`, `name`                     |
 | `combine`           | Combines multiple sources of tracks        | `sources` (array of pipe configurations)|
 | `shuffle`           | Randomizes the order of tracks             | None                                    |
 | `limit`             | Limits the number of tracks                | `value` (integer)                       |
