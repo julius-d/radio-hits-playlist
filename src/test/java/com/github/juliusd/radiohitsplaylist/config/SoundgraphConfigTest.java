@@ -65,7 +65,7 @@ class SoundgraphConfigTest {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         String yamlConfig = """
             name: "Artist Top Tracks Test"
-            targetPlaylist: "target_playlist_id"
+            targetPlaylistId: "target_playlist_id"
             pipe:
               steps:
                 - type: "loadArtistTopTracks"
@@ -107,7 +107,7 @@ class SoundgraphConfigTest {
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         String yamlConfig = """
             name: "Filter Artists From Test"
-            targetPlaylist: "target_playlist_id"
+            targetPlaylistId: "target_playlist_id"
             pipe:
               steps:
                 - type: "loadPlaylist"

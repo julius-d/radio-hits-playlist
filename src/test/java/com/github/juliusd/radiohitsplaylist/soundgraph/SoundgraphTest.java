@@ -254,7 +254,7 @@ class SoundgraphTest {
         String configYaml = //language=yaml
             """
             name: "Test Configuration"
-            targetPlaylist: "target_playlist_id"
+            targetPlaylistId: "target_playlist_id"
             pipe:
               steps:
                 - type: combine
@@ -305,7 +305,7 @@ class SoundgraphTest {
         String configYaml = //language=yaml
             """
             name: "Single Playlist Configuration"
-            targetPlaylist: "target_playlist_id"
+            targetPlaylistId: "target_playlist_id"
             pipe:
               steps:
                 - type: loadPlaylist
@@ -339,7 +339,7 @@ class SoundgraphTest {
         String configYaml = //language=yaml
             """
             name: "Dedup Configuration"
-            targetPlaylist: "target_playlist_id"
+            targetPlaylistId: "target_playlist_id"
             pipe:
               steps:
                 - type: loadPlaylist
@@ -548,7 +548,7 @@ class SoundgraphTest {
         String configYaml = //language=yaml
             """
             name: "Filter Explicit Configuration"
-            targetPlaylist: "target_playlist_id"
+            targetPlaylistId: "target_playlist_id"
             pipe:
               steps:
                 - type: loadPlaylist

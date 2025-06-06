@@ -54,7 +54,7 @@ class ConfigLoaderTest {
           descriptionPrefix: my other prefix7
       soundgraphTasks:
         - name: My Soundgraph Playlist
-          targetPlaylist: targetPlaylistId10
+          targetPlaylistId: targetPlaylistId10
           pipe:
             steps:
               - type: combine

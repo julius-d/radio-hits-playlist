@@ -46,7 +46,7 @@ reCreateBundesmuxPlaylistTasks:
 soundgraphTasks:
   # Simple example with a single playlist
   - name: "Simple Playlist Mix"
-    targetPlaylist: 6mN4kL7pQ9rT2v5x8yB3hJ
+    targetPlaylistId: 6mN4kL7pQ9rT2v5x8yB3hJ
     pipe:
       steps:
         - type: loadPlaylist
@@ -58,7 +58,7 @@ soundgraphTasks:
 
   # Complex example combining multiple sources
   - name: "Mixed Sources Playlist"
-    targetPlaylist: 9wZ4yB7mN2kL5pQ8tR3vX6
+    targetPlaylistId: 9wZ4yB7mN2kL5pQ8tR3vX6
     pipe:
       steps:
         - type: combine
@@ -83,7 +83,7 @@ soundgraphTasks:
 
   # Comprehensive example showing all available steps
   - name: "Complete Playlist Mix"
-    targetPlaylist: 7xK9mNp2QrL5vY8tH3jF4d
+    targetPlaylistId: 7xK9mNp2QrL5vY8tH3jF4d
     pipe:
       steps:
         - type: combine

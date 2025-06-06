@@ -1,5 +1,5 @@
 name: "Test Configuration"
-targetPlaylist: "your_target_playlist_id"
+targetPlaylistId: "your_target_playlist_id"
 pipe:
   steps:
     - type: combine
