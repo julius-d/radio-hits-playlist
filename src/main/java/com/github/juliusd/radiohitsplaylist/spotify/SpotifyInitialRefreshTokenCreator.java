@@ -20,7 +20,7 @@ public class SpotifyInitialRefreshTokenCreator {
 
   public void authorizationCodeUri() {
     AuthorizationCodeUriRequest authorizationCodeUriRequest = spotifyApi.authorizationCodeUri()
-      .scope("playlist-modify-public,playlist-modify-private,playlist-read-private,playlist-modify-public")
+      .scope("playlist-modify-public,playlist-modify-private,playlist-read-private,playlist-modify-public,playlist-read-collaborative")
       .build();
     var uri = authorizationCodeUriRequest.execute();
 
@@ -45,7 +45,7 @@ public class SpotifyInitialRefreshTokenCreator {
 
     var spotifyAuthorization = new SpotifyInitialRefreshTokenCreator(spotifyApi);
     spotifyAuthorization.authorizationCodeUri();
-    spotifyAuthorization.createAccessToken("code from url");
+    spotifyAuthorization.createAccessToken("AQBKIno7PMV1_ECR94DNxXxkPWgBU-7inX4YShy331cPbOlap1xSCQCFOEC-dkPU5S24mFafq2-qD8R_FJ64DCmlCEPtcpwjwZHcO7aDHxKv2yjTF4VrVE0borHXlfRURfKf8TsNojxljnEUv8Xd2xNCLnjb0xH0fXYFRggYMAnJMm8QAHdTObv_d8NyOMzyGszfF7XEUCqAg6EYE1GAIKfC2fGohNVVbyXL0s9sWaY2HnAjcWPj3l9f61H9XxBPs3DXkus86BY0IxwcLwVLtQP5kRxOP61YJwFNcl8yyXVDYt1jDzrmIFrFqU14P-5AGmoF3zLJIriCQDM8sWEG9eUQ9w");
   }
 
 }
