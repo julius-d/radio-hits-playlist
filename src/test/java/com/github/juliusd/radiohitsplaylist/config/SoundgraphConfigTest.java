@@ -100,4 +100,50 @@ class SoundgraphConfigTest {
         assertThat(thirdStep).isInstanceOf(SoundgraphConfig.LimitStep.class);
         assertThat(((SoundgraphConfig.LimitStep) thirdStep).value()).isEqualTo(10);
     }
+
+    @Test
+    void shouldParseFilterArtistsFromConfig() throws Exception {
+        // given
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        String yamlConfig = """
+            name: "Filter Artists From Test"
+            targetPlaylist: "target_playlist_id"
+            pipe:
+              steps:
+                - type: "loadPlaylist"
+                  playlistId: "main_playlist_id"
+                  name: "Main Playlist"
+                - type: "filterArtistsFrom"
+                  denylist:
+                    steps:
+                      - type: "loadPlaylist"
+                        playlistId: "empty_denylist_id"
+                        name: "Empty Denylist"
+            """;
+
+        // when
+        SoundgraphConfig config = mapper.readValue(yamlConfig, SoundgraphConfig.class);
+
+        // then
+        assertThat(config.name()).isEqualTo("Filter Artists From Test");
+        assertThat(config.targetPlaylistId()).isEqualTo("target_playlist_id");
+        assertThat(config.pipe().steps()).hasSize(2);
+
+        // Verify first step (loadPlaylist)
+        SoundgraphConfig.Step firstStep = config.pipe().steps().get(0);
+        assertThat(firstStep).isInstanceOf(SoundgraphConfig.LoadPlaylistStep.class);
+        SoundgraphConfig.LoadPlaylistStep loadPlaylistStep = (SoundgraphConfig.LoadPlaylistStep) firstStep;
+        assertThat(loadPlaylistStep.playlistId()).isEqualTo("main_playlist_id");
+        assertThat(loadPlaylistStep.name()).isEqualTo("Main Playlist");
+
+        // Verify second step (filterArtistsFrom)
+        SoundgraphConfig.Step secondStep = config.pipe().steps().get(1);
+        assertThat(secondStep).isInstanceOf(SoundgraphConfig.FilterArtistsFromStep.class);
+        SoundgraphConfig.FilterArtistsFromStep filterArtistsFromStep = (SoundgraphConfig.FilterArtistsFromStep) secondStep;
+        assertThat(filterArtistsFromStep.denylist().steps()).hasSize(1);
+        assertThat(filterArtistsFromStep.denylist().steps().get(0)).isInstanceOf(SoundgraphConfig.LoadPlaylistStep.class);
+        SoundgraphConfig.LoadPlaylistStep denylistStep = (SoundgraphConfig.LoadPlaylistStep) filterArtistsFromStep.denylist().steps().get(0);
+        assertThat(denylistStep.playlistId()).isEqualTo("empty_denylist_id");
+        assertThat(denylistStep.name()).isEqualTo("Empty Denylist");
+    }
 } 

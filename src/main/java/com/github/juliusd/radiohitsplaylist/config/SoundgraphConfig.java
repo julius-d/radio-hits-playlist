@@ -19,9 +19,10 @@ public record SoundgraphConfig(
         @JsonSubTypes.Type(value = LimitStep.class, name = "limit"),
         @JsonSubTypes.Type(value = DedupStep.class, name = "dedup"),
         @JsonSubTypes.Type(value = FilterOutExplicitStep.class, name = "filterOutExplicit"),
-        @JsonSubTypes.Type(value = LoadArtistTopTracksStep.class, name = "loadArtistTopTracks")
+        @JsonSubTypes.Type(value = LoadArtistTopTracksStep.class, name = "loadArtistTopTracks"),
+        @JsonSubTypes.Type(value = FilterArtistsFromStep.class, name = "filterArtistsFrom")
     })
-    public sealed interface Step permits LoadPlaylistStep, LoadAlbumStep, CombineStep, ShuffleStep, LimitStep, DedupStep, FilterOutExplicitStep, LoadArtistTopTracksStep {
+    public sealed interface Step permits LoadPlaylistStep, LoadAlbumStep, CombineStep, ShuffleStep, LimitStep, DedupStep, FilterOutExplicitStep, LoadArtistTopTracksStep, FilterArtistsFromStep {
         String type();
     }
 
@@ -97,4 +98,13 @@ public record SoundgraphConfig(
             return "loadArtistTopTracks";
         }
     }
-} 
+
+    public record FilterArtistsFromStep(
+        @JsonProperty("denylist") Pipe denylist
+    ) implements Step {
+        @Override
+        public String type() {
+            return "filterArtistsFrom";
+        }
+    }
+}

@@ -105,6 +105,13 @@ soundgraphTasks:
                 - type: shuffle
                 - type: limit
                   value: 30
+        # Filter out artists from a denylist
+        - type: filterArtistsFrom
+          denylist:
+            steps:
+              - type: loadPlaylist
+                playlistId: artists_to_avoid_playlist
+                name: "Artists to Avoid"
         # Final processing steps
         - type: shuffle
         - type: dedup
@@ -124,4 +131,5 @@ soundgraphTasks:
 | `limit`             | Limits the number of tracks                | `value` (integer)                       |
 | `dedup`             | Removes duplicate tracks                   | None                                    |
 | `filterOutExplicit` | Removes tracks marked as explicit          | None                                    |
+| `filterArtistsFrom` | Filters out tracks from artists in denylist| `denylist` (pipe configuration)         |
 

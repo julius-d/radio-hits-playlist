@@ -68,6 +68,8 @@ public class SoundgraphService {
                 tracks = processFilterOutExplicitStep(tracks);
             } else if (step instanceof SoundgraphConfig.LoadArtistTopTracksStep) {
                 tracks = spotifyWrapper.getArtistTopTracks(((SoundgraphConfig.LoadArtistTopTracksStep) step).artistId());
+            } else if (step instanceof SoundgraphConfig.FilterArtistsFromStep) {
+                tracks = processFilterArtistsFromStep(tracks, (SoundgraphConfig.FilterArtistsFromStep) step);
             }
         }
         
@@ -95,6 +97,21 @@ public class SoundgraphService {
     private List<SoundgraphSong> processFilterOutExplicitStep(List<SoundgraphSong> tracks) {
         return tracks.stream()
                 .filter(song -> !song.explicit())
+                .collect(Collectors.toList());
+    }
+
+    private List<SoundgraphSong> processFilterArtistsFromStep(List<SoundgraphSong> tracks, SoundgraphConfig.FilterArtistsFromStep step) throws IOException, SpotifyWebApiException, ParseException {
+        // Get the denylist tracks to extract artist names
+        List<SoundgraphSong> denylistTracks = processPipe(step.denylist());
+        
+        // Extract all artist names from the denylist
+        Set<String> denylistArtists = denylistTracks.stream()
+                .flatMap(song -> song.artists().stream())
+                .collect(Collectors.toSet());
+        
+        // Filter out tracks that have any artist in the denylist
+        return tracks.stream()
+                .filter(song -> song.artists().stream().noneMatch(denylistArtists::contains))
                 .collect(Collectors.toList());
     }
 } 

@@ -241,4 +241,75 @@ class SoundgraphServiceTest {
                         URI.create("spotify:track:artist_track3"));
     }
 
+    @Test
+    void shouldFilterArtistsFromDenylist() throws Exception {
+        // given
+        List<SoundgraphSong> mainPlaylistTracks = List.of(
+                new SoundgraphSong(URI.create("spotify:track:track1"), false, "Track 1", List.of("Artist 1")),
+                new SoundgraphSong(URI.create("spotify:track:track2"), false, "Track 2", List.of("Artist 2")),
+                new SoundgraphSong(URI.create("spotify:track:track3"), false, "Track 3", List.of("Artist 3")),
+                new SoundgraphSong(URI.create("spotify:track:track4"), false, "Track 4", List.of("Artist 1", "Artist 4")), // multi-artist with denied artist
+                new SoundgraphSong(URI.create("spotify:track:track5"), false, "Track 5", List.of("Artist 5")));
+
+        List<SoundgraphSong> denylistTracks = List.of(
+                new SoundgraphSong(URI.create("spotify:track:denied1"), false, "Denied Track 1", List.of("Artist 1")),
+                new SoundgraphSong(URI.create("spotify:track:denied2"), false, "Denied Track 2", List.of("Artist 3")));
+
+        when(soundgraphSpotifyWrapper.getPlaylistTracks("main_playlist_id"))
+                .thenReturn(mainPlaylistTracks);
+        when(soundgraphSpotifyWrapper.getPlaylistTracks("denylist_playlist_id"))
+                .thenReturn(denylistTracks);
+
+        // when
+        List<SoundgraphSong> filteredTracks = soundgraphService.processSoundgraphConfig(
+                new SoundgraphConfig(
+                        "Test Configuration",
+                        "target_playlist_id",
+                        new SoundgraphConfig.Pipe(List.of(
+                                new SoundgraphConfig.LoadPlaylistStep("main_playlist_id", "Main Playlist"),
+                                new SoundgraphConfig.FilterArtistsFromStep(
+                                        new SoundgraphConfig.Pipe(List.of(
+                                                new SoundgraphConfig.LoadPlaylistStep("denylist_playlist_id", "Denylist Playlist"))))))));
+
+        // then
+        assertThat(filteredTracks).hasSize(2)
+                .extracting(SoundgraphSong::uri)
+                .containsExactly(
+                        URI.create("spotify:track:track2"),
+                        URI.create("spotify:track:track5"));
+    }
+
+    @Test
+    void shouldHandleEmptyDenylist() throws Exception {
+        // given
+        List<SoundgraphSong> mainPlaylistTracks = List.of(
+                new SoundgraphSong(URI.create("spotify:track:track1"), false, "Track 1", List.of("Artist 1")),
+                new SoundgraphSong(URI.create("spotify:track:track2"), false, "Track 2", List.of("Artist 2")));
+
+        List<SoundgraphSong> emptyDenylist = List.of();
+
+        when(soundgraphSpotifyWrapper.getPlaylistTracks("main_playlist_id"))
+                .thenReturn(mainPlaylistTracks);
+        when(soundgraphSpotifyWrapper.getPlaylistTracks("empty_denylist_id"))
+                .thenReturn(emptyDenylist);
+
+        // when
+        List<SoundgraphSong> filteredTracks = soundgraphService.processSoundgraphConfig(
+                new SoundgraphConfig(
+                        "Test Configuration",
+                        "target_playlist_id",
+                        new SoundgraphConfig.Pipe(List.of(
+                                new SoundgraphConfig.LoadPlaylistStep("main_playlist_id", "Main Playlist"),
+                                new SoundgraphConfig.FilterArtistsFromStep(
+                                        new SoundgraphConfig.Pipe(List.of(
+                                                new SoundgraphConfig.LoadPlaylistStep("empty_denylist_id", "Empty Denylist"))))))));
+
+        // then
+        assertThat(filteredTracks).hasSize(2)
+                .extracting(SoundgraphSong::uri)
+                .containsExactly(
+                        URI.create("spotify:track:track1"),
+                        URI.create("spotify:track:track2"));
+    }
+
 }
