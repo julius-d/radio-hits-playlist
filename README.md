@@ -45,7 +45,7 @@ reCreateBundesmuxPlaylistTasks:
     descriptionPrefix: my other prefix7
 soundgraphTasks:
   # Simple example with a single playlist
-  - targetPlaylist: targetPlaylistId10
+  - targetPlaylist: 6mN4kL7pQ9rT2v5x8yB3hJ
     pipe:
       steps:
         - type: loadPlaylist
@@ -55,14 +55,14 @@ soundgraphTasks:
         - type: shuffle
 
   # Complex example combining multiple sources
-  - targetPlaylist: targetPlaylistId11
+  - targetPlaylist: 9wZ4yB7mN2kL5pQ8tR3vX6
     pipe:
       steps:
         - type: combine
           sources:
             - steps:
                 - type: loadPlaylist
-                  playlistId: source_playlist_1
+                  playlistId: 4hJ8kM2nP5qR7tV9wX3yB6
                 - type: shuffle
                 - type: limit
                   value: 100
@@ -77,7 +77,7 @@ soundgraphTasks:
           value: 150
 
   # Comprehensive example showing all available steps
-  - targetPlaylist: targetPlaylistId12
+  - targetPlaylist: 7xK9mNp2QrL5vY8tH3jF4d
     pipe:
       steps:
         - type: combine
@@ -85,7 +85,7 @@ soundgraphTasks:
             # First source: Load from playlist, remove duplicates, filter explicit content
             - steps:
                 - type: loadPlaylist
-                  playlistId: source_playlist_1
+                  playlistId: 2bM5nR8sT9vX4cL7hJ3kP6
                 - type: dedup
                 - type: filterOutExplicit
                 - type: limit
