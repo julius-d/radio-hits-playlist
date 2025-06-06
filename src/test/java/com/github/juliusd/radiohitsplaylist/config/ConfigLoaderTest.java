@@ -53,7 +53,8 @@ class ConfigLoaderTest {
           streamName: myBundesStream2
           descriptionPrefix: my other prefix7
       soundgraphTasks:
-        - targetPlaylist: targetPlaylistId10
+        - name: My Soundgraph Playlist
+          targetPlaylist: targetPlaylistId10
           pipe:
             steps:
               - type: combine
@@ -61,12 +62,14 @@ class ConfigLoaderTest {
                   - steps:
                       - type: loadPlaylist
                         playlistId: source_playlist_1
+                        name: Top Hits Playlist
                       - type: shuffle
                       - type: limit
                         value: 100
                   - steps:
                       - type: loadAlbum
                         albumId: source_album_1
+                        name: Greatest Hits Album
                       - type: shuffle
                       - type: limit
                         value: 50
@@ -85,17 +88,18 @@ class ConfigLoaderTest {
     
     // Create expected SoundgraphConfig
     var soundgraphConfig = new SoundgraphConfig(
+        "My Soundgraph Playlist",
         "targetPlaylistId10",
         new SoundgraphConfig.Pipe(List.of(
             new SoundgraphConfig.CombineStep(
                 List.of(
                     new SoundgraphConfig.Pipe(List.of(
-                        new SoundgraphConfig.LoadPlaylistStep("source_playlist_1"),
+                        new SoundgraphConfig.LoadPlaylistStep("source_playlist_1", "Top Hits Playlist"),
                         new SoundgraphConfig.ShuffleStep(),
                         new SoundgraphConfig.LimitStep(100)
                     )),
                     new SoundgraphConfig.Pipe(List.of(
-                        new SoundgraphConfig.LoadAlbumStep("source_album_1"),
+                        new SoundgraphConfig.LoadAlbumStep("source_album_1", "Greatest Hits Album"),
                         new SoundgraphConfig.ShuffleStep(),
                         new SoundgraphConfig.LimitStep(50)
                     ))
