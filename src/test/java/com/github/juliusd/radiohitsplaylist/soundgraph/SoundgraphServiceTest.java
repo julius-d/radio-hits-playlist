@@ -439,4 +439,225 @@ class SoundgraphServiceTest {
         .extracting(SoundgraphSong::uri)
         .containsExactly(URI.create("spotify:track:track1"), URI.create("spotify:track:track2"));
   }
+
+  @Test
+  void shouldSeparateConsecutiveTracksFromSameArtist() throws Exception {
+    // given - tracks with consecutive songs from same artists
+    List<SoundgraphSong> inputTracks =
+        List.of(
+            new SoundgraphSong(
+                URI.create("spotify:track:track1"), false, "Track 1", List.of("Artist A")),
+            new SoundgraphSong(
+                URI.create("spotify:track:track2"), false, "Track 2", List.of("Artist A")),
+            new SoundgraphSong(
+                URI.create("spotify:track:track3"), false, "Track 3", List.of("Artist B")),
+            new SoundgraphSong(
+                URI.create("spotify:track:track4"), false, "Track 4", List.of("Artist C")),
+            new SoundgraphSong(
+                URI.create("spotify:track:track5"), false, "Track 5", List.of("Artist A")));
+
+    when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id")).thenReturn(inputTracks);
+
+    // when
+    List<SoundgraphSong> separatedTracks =
+        soundgraphService.processSoundgraphConfig(
+            new SoundgraphConfig(
+                "Test Configuration",
+                "target_playlist_id",
+                new SoundgraphConfig.Pipe(
+                    List.of(
+                        new SoundgraphConfig.LoadPlaylistStep(
+                            "source_playlist_id", "Test Playlist"),
+                        new SoundgraphConfig.ArtistSeparationStep()))));
+
+    // then - verify no consecutive tracks from same artist
+    assertThat(separatedTracks).hasSize(5);
+    for (int i = 0; i < separatedTracks.size() - 1; i++) {
+      SoundgraphSong current = separatedTracks.get(i);
+      SoundgraphSong next = separatedTracks.get(i + 1);
+
+      // Check that no consecutive tracks share artists
+      boolean sharesArtist =
+          current.artists().stream().anyMatch(artist -> next.artists().contains(artist));
+      assertThat(sharesArtist)
+          .as(
+              "Track %d (%s) and track %d (%s) should not share artists",
+              i, current.artists(), i + 1, next.artists())
+          .isFalse();
+    }
+  }
+
+  @Test
+  void shouldHandleMultiArtistTracksInSeparation() throws Exception {
+    // given - tracks with multiple artists
+    List<SoundgraphSong> inputTracks =
+        List.of(
+            new SoundgraphSong(
+                URI.create("spotify:track:track1"),
+                false,
+                "Track 1",
+                List.of("Artist A", "Artist B")),
+            new SoundgraphSong(
+                URI.create("spotify:track:track2"),
+                false,
+                "Track 2",
+                List.of("Artist A", "Artist C")),
+            new SoundgraphSong(
+                URI.create("spotify:track:track3"), false, "Track 3", List.of("Artist D")),
+            new SoundgraphSong(
+                URI.create("spotify:track:track4"), false, "Track 4", List.of("Artist E")));
+
+    when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id")).thenReturn(inputTracks);
+
+    // when
+    List<SoundgraphSong> separatedTracks =
+        soundgraphService.processSoundgraphConfig(
+            new SoundgraphConfig(
+                "Test Configuration",
+                "target_playlist_id",
+                new SoundgraphConfig.Pipe(
+                    List.of(
+                        new SoundgraphConfig.LoadPlaylistStep(
+                            "source_playlist_id", "Test Playlist"),
+                        new SoundgraphConfig.ArtistSeparationStep()))));
+
+    // then - verify no consecutive tracks share any artist
+    assertThat(separatedTracks).hasSize(4);
+    for (int i = 0; i < separatedTracks.size() - 1; i++) {
+      SoundgraphSong current = separatedTracks.get(i);
+      SoundgraphSong next = separatedTracks.get(i + 1);
+
+      boolean sharesArtist =
+          current.artists().stream().anyMatch(artist -> next.artists().contains(artist));
+      assertThat(sharesArtist).isFalse();
+    }
+  }
+
+  @Test
+  void shouldHandleEmptyListInArtistSeparation() throws Exception {
+    // given
+    List<SoundgraphSong> emptyTracks = List.of();
+    when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id")).thenReturn(emptyTracks);
+
+    // when
+    List<SoundgraphSong> separatedTracks =
+        soundgraphService.processSoundgraphConfig(
+            new SoundgraphConfig(
+                "Test Configuration",
+                "target_playlist_id",
+                new SoundgraphConfig.Pipe(
+                    List.of(
+                        new SoundgraphConfig.LoadPlaylistStep(
+                            "source_playlist_id", "Test Playlist"),
+                        new SoundgraphConfig.ArtistSeparationStep()))));
+
+    // then
+    assertThat(separatedTracks).isEmpty();
+  }
+
+  @Test
+  void shouldHandleSingleTrackInArtistSeparation() throws Exception {
+    // given
+    List<SoundgraphSong> singleTrack =
+        List.of(
+            new SoundgraphSong(
+                URI.create("spotify:track:track1"), false, "Track 1", List.of("Artist A")));
+
+    when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id")).thenReturn(singleTrack);
+
+    // when
+    List<SoundgraphSong> separatedTracks =
+        soundgraphService.processSoundgraphConfig(
+            new SoundgraphConfig(
+                "Test Configuration",
+                "target_playlist_id",
+                new SoundgraphConfig.Pipe(
+                    List.of(
+                        new SoundgraphConfig.LoadPlaylistStep(
+                            "source_playlist_id", "Test Playlist"),
+                        new SoundgraphConfig.ArtistSeparationStep()))));
+
+    // then
+    assertThat(separatedTracks).hasSize(1);
+    assertThat(separatedTracks.get(0).uri()).isEqualTo(URI.create("spotify:track:track1"));
+  }
+
+  @Test
+  void shouldHandleAllTracksFromSameArtist() throws Exception {
+    // given - all tracks from same artist (should just return as is)
+    List<SoundgraphSong> sameArtistTracks =
+        List.of(
+            new SoundgraphSong(
+                URI.create("spotify:track:track1"), false, "Track 1", List.of("Artist A")),
+            new SoundgraphSong(
+                URI.create("spotify:track:track2"), false, "Track 2", List.of("Artist A")),
+            new SoundgraphSong(
+                URI.create("spotify:track:track3"), false, "Track 3", List.of("Artist A")));
+
+    when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id"))
+        .thenReturn(sameArtistTracks);
+
+    // when
+    List<SoundgraphSong> separatedTracks =
+        soundgraphService.processSoundgraphConfig(
+            new SoundgraphConfig(
+                "Test Configuration",
+                "target_playlist_id",
+                new SoundgraphConfig.Pipe(
+                    List.of(
+                        new SoundgraphConfig.LoadPlaylistStep(
+                            "source_playlist_id", "Test Playlist"),
+                        new SoundgraphConfig.ArtistSeparationStep()))));
+
+    // then - should maintain all tracks even if from same artist
+    assertThat(separatedTracks)
+        .hasSize(3)
+        .extracting(SoundgraphSong::uri)
+        .containsExactly(
+            URI.create("spotify:track:track1"),
+            URI.create("spotify:track:track2"),
+            URI.create("spotify:track:track3"));
+  }
+
+  @Test
+  void shouldNotChangeOrderWhenTracksAlreadyFromDifferentArtists() throws Exception {
+    // given - tracks already from different artists
+    List<SoundgraphSong> inputTracks =
+        List.of(
+            new SoundgraphSong(
+                URI.create("spotify:track:track1"), false, "Track 1", List.of("Artist A")),
+            new SoundgraphSong(
+                URI.create("spotify:track:track2"), false, "Track 2", List.of("Artist B")),
+            new SoundgraphSong(
+                URI.create("spotify:track:track3"), false, "Track 3", List.of("Artist C")),
+            new SoundgraphSong(
+                URI.create("spotify:track:track4"), false, "Track 4", List.of("Artist D")),
+            new SoundgraphSong(
+                URI.create("spotify:track:track5"), false, "Track 5", List.of("Artist E")));
+
+    when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id")).thenReturn(inputTracks);
+
+    // when
+    List<SoundgraphSong> separatedTracks =
+        soundgraphService.processSoundgraphConfig(
+            new SoundgraphConfig(
+                "Test Configuration",
+                "target_playlist_id",
+                new SoundgraphConfig.Pipe(
+                    List.of(
+                        new SoundgraphConfig.LoadPlaylistStep(
+                            "source_playlist_id", "Test Playlist"),
+                        new SoundgraphConfig.ArtistSeparationStep()))));
+
+    // then - order should remain exactly the same
+    assertThat(separatedTracks)
+        .hasSize(5)
+        .extracting(SoundgraphSong::uri)
+        .containsExactly(
+            URI.create("spotify:track:track1"),
+            URI.create("spotify:track:track2"),
+            URI.create("spotify:track:track3"),
+            URI.create("spotify:track:track4"),
+            URI.create("spotify:track:track5"));
+  }
 }

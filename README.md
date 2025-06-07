@@ -116,6 +116,7 @@ soundgraphTasks:
         - type: shuffle
         - type: dedup
         - type: filterOutExplicit
+        - type: artistSeparation
         - type: limit
           value: 100
 ```
@@ -132,4 +133,16 @@ soundgraphTasks:
 | `dedup`             | Removes duplicate tracks                   | None                                    |
 | `filterOutExplicit` | Removes tracks marked as explicit          | None                                    |
 | `filterArtistsFrom` | Filters out tracks from artists in denylist| `denylist` (pipe configuration)         |
+| `artistSeparation`  | Ensures no consecutive tracks share artists | None                                    |
 
+## Step Details
+
+### `artistSeparation`
+The `artistSeparation` step reorders tracks to ensure that no two consecutive songs are from the same artist(s). This creates a better listening experience by providing variety and preventing artist clustering in the playlist. The step works by:
+
+- Maintaining all original tracks (no tracks are removed)
+- Intelligently reordering to separate consecutive tracks from the same artist
+- Handling multi-artist tracks (if any artist is shared between consecutive tracks, they will be separated)
+- When all remaining tracks are from the same artist, it continues placement to avoid infinite loops
+
+This step is particularly useful after shuffle operations or when combining multiple sources that might result in artist clustering.

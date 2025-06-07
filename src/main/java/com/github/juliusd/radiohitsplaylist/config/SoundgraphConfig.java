@@ -19,7 +19,8 @@ public record SoundgraphConfig(
     @JsonSubTypes.Type(value = DedupStep.class, name = "dedup"),
     @JsonSubTypes.Type(value = FilterOutExplicitStep.class, name = "filterOutExplicit"),
     @JsonSubTypes.Type(value = LoadArtistTopTracksStep.class, name = "loadArtistTopTracks"),
-    @JsonSubTypes.Type(value = FilterArtistsFromStep.class, name = "filterArtistsFrom")
+    @JsonSubTypes.Type(value = FilterArtistsFromStep.class, name = "filterArtistsFrom"),
+    @JsonSubTypes.Type(value = ArtistSeparationStep.class, name = "artistSeparation")
   })
   public sealed interface Step
       permits LoadPlaylistStep,
@@ -30,7 +31,8 @@ public record SoundgraphConfig(
           DedupStep,
           FilterOutExplicitStep,
           LoadArtistTopTracksStep,
-          FilterArtistsFromStep {
+          FilterArtistsFromStep,
+          ArtistSeparationStep {
     String type();
   }
 
@@ -101,6 +103,13 @@ public record SoundgraphConfig(
     @Override
     public String type() {
       return "filterArtistsFrom";
+    }
+  }
+
+  public record ArtistSeparationStep() implements Step {
+    @Override
+    public String type() {
+      return "artistSeparation";
     }
   }
 }

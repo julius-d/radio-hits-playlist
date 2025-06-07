@@ -74,6 +74,8 @@ public class SoundgraphService {
       } else if (step instanceof SoundgraphConfig.FilterArtistsFromStep) {
         tracks =
             processFilterArtistsFromStep(tracks, (SoundgraphConfig.FilterArtistsFromStep) step);
+      } else if (step instanceof SoundgraphConfig.ArtistSeparationStep) {
+        tracks = processArtistSeparationStep(tracks);
       }
     }
 
@@ -114,5 +116,48 @@ public class SoundgraphService {
     return tracks.stream()
         .filter(song -> song.artists().stream().noneMatch(denylistArtists::contains))
         .collect(Collectors.toList());
+  }
+
+  private List<SoundgraphSong> processArtistSeparationStep(List<SoundgraphSong> tracks) {
+    if (tracks.size() <= 1) {
+      return tracks;
+    }
+
+    List<SoundgraphSong> result = new ArrayList<>();
+    List<SoundgraphSong> remaining = new ArrayList<>(tracks);
+
+    // Add the first track
+    result.add(remaining.remove(0));
+    while (!remaining.isEmpty()) {
+      SoundgraphSong lastTrack = result.get(result.size() - 1);
+      Set<String> lastArtists = new HashSet<>(lastTrack.artists());
+
+      // Find the first track that doesn't share any artist with the last track
+      SoundgraphSong nextTrack = null;
+      int nextIndex = -1;
+
+      for (int i = 0; i < remaining.size(); i++) {
+        SoundgraphSong candidate = remaining.get(i);
+        boolean sharesArtist = candidate.artists().stream().anyMatch(lastArtists::contains);
+
+        if (!sharesArtist) {
+          nextTrack = candidate;
+          nextIndex = i;
+          break;
+        }
+      }
+
+      // If we found a track with different artists, use it
+      if (nextTrack != null) {
+        result.add(nextTrack);
+        remaining.remove(nextIndex);
+      } else {
+        // If all remaining tracks share artists with the last track,
+        // just take the next one in line to avoid infinite loop
+        result.add(remaining.remove(0));
+      }
+    }
+
+    return result;
   }
 }
