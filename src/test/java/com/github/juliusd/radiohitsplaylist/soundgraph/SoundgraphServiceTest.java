@@ -424,9 +424,12 @@ class SoundgraphServiceTest {
                             "source_playlist_id", "Test Playlist"),
                         new SoundgraphConfig.ArtistSeparationStep()))));
 
-    // then - verify no consecutive tracks share any artist
-    assertThat(separatedTracks).hasSize(4);
+    // then
     noConsecutiveTracks(separatedTracks);
+    assertThat(separatedTracks)
+        .hasSize(4)
+        .extracting(SoundgraphSong::uri)
+        .containsExactly(TRACK_1_URI, TRACK_3_URI, TRACK_2_URI, TRACK_4_URI);
   }
 
   @Test
