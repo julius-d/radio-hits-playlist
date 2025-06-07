@@ -120,7 +120,7 @@ soundgraphTasks:
         - type: limit
           value: 100
 ```
-# Available Steps Reference
+# Available Soundgraph Tasks Steps Reference 🎵
 
 | Step                | Description                                | Required Parameters                    |
 |---------------------|--------------------------------------------|----------------------------------------|
@@ -136,6 +136,43 @@ soundgraphTasks:
 | `artistSeparation`  | Ensures no consecutive tracks share artists | None                                    |
 
 ## Step Details
+
+### `combine`
+The `combine` step merges tracks from multiple sources using an interleaving strategy. This step allows you to create sophisticated playlists by blending content from different playlists, albums, and artists. The step works by:
+
+- **Interleaving strategy**: Takes one track from each source in sequence, then repeats the cycle
+- **Flexible sources**: Each source can be a complete pipe with its own processing steps
+- **Handles unequal source sizes**: Continues adding tracks from remaining sources when shorter sources are exhausted
+
+#### Interleaving Pattern:
+If you have 3 sources with tracks:
+- Source 1: [A1, A2, A3]
+- Source 2: [B1, B2]
+- Source 3: [C1, C2, C3, C4]
+
+The result will be: [A1, B1, C1, A2, B2, C2, A3, C3, C4]
+
+#### Usage Example:
+```yaml
+- type: combine
+  sources:
+    - steps:
+        - type: loadPlaylist
+          playlistId: "recent_hits_playlist"
+          name: "Recent Hits"
+        - type: filterOutExplicit
+    - steps:
+        - type: loadPlaylist
+          playlistId: "classic_rock_playlist"
+          name: "Classic Rock"
+        - type: shuffle
+    - steps:
+        - type: loadArtistTopTracks
+          artistId: "discovery_artist_id"
+          name: "Discovery Artist"
+        - type: limit
+          value: 10
+```
 
 ### `artistSeparation`
 The `artistSeparation` step reorders tracks to ensure that no two consecutive songs are from the same artist(s). This creates a better listening experience by providing variety and preventing artist clustering in the playlist. The step works by:
