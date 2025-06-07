@@ -15,6 +15,24 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class SoundgraphServiceTest {
 
+  // Test track URI constants
+  private static final URI TRACK_1_URI = URI.create("spotify:track:track1");
+  private static final URI TRACK_2_URI = URI.create("spotify:track:track2");
+  private static final URI TRACK_3_URI = URI.create("spotify:track:track3");
+  private static final URI TRACK_4_URI = URI.create("spotify:track:track4");
+  private static final URI TRACK_5_URI = URI.create("spotify:track:track5");
+
+  // Source tracks for combination tests
+  private static final URI SOURCE1_TRACK1_URI = URI.create("spotify:track:source1_track1");
+  private static final URI SOURCE1_TRACK2_URI = URI.create("spotify:track:source1_track2");
+  private static final URI SOURCE2_TRACK1_URI = URI.create("spotify:track:source2_track1");
+  private static final URI SOURCE2_TRACK2_URI = URI.create("spotify:track:source2_track2");
+  private static final URI SOURCE2_TRACK3_URI = URI.create("spotify:track:source2_track3");
+
+  // Denied tracks for filtering tests
+  private static final URI DENIED1_URI = URI.create("spotify:track:denied1");
+  private static final URI DENIED2_URI = URI.create("spotify:track:denied2");
+
   private SoundgraphService soundgraphService;
   @Mock private SoundgraphSpotifyWrapper soundgraphSpotifyWrapper;
 
@@ -28,16 +46,11 @@ class SoundgraphServiceTest {
     // given
     List<SoundgraphSong> inputTracks =
         List.of(
-            new SoundgraphSong(
-                URI.create("spotify:track:track1"), false, "Track 1", List.of("Artist 1")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track2"), false, "Track 2", List.of("Artist 2")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track3"), false, "Track 3", List.of("Artist 3")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track4"), false, "Track 4", List.of("Artist 4")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track5"), false, "Track 5", List.of("Artist 5")));
+            new SoundgraphSong(TRACK_1_URI, false, "Track 1", List.of("Artist 1")),
+            new SoundgraphSong(TRACK_2_URI, false, "Track 2", List.of("Artist 2")),
+            new SoundgraphSong(TRACK_3_URI, false, "Track 3", List.of("Artist 3")),
+            new SoundgraphSong(TRACK_4_URI, false, "Track 4", List.of("Artist 4")),
+            new SoundgraphSong(TRACK_5_URI, false, "Track 5", List.of("Artist 5")));
 
     when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id")).thenReturn(inputTracks);
 
@@ -57,10 +70,7 @@ class SoundgraphServiceTest {
     assertThat(limitedTracks)
         .hasSize(3)
         .extracting(SoundgraphSong::uri)
-        .containsExactly(
-            URI.create("spotify:track:track1"),
-            URI.create("spotify:track:track2"),
-            URI.create("spotify:track:track3"));
+        .containsExactly(TRACK_1_URI, TRACK_2_URI, TRACK_3_URI);
   }
 
   @Test
@@ -68,10 +78,8 @@ class SoundgraphServiceTest {
     // given
     List<SoundgraphSong> inputTracks =
         List.of(
-            new SoundgraphSong(
-                URI.create("spotify:track:track1"), false, "Track 1", List.of("Artist 1")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track2"), false, "Track 2", List.of("Artist 2")));
+            new SoundgraphSong(TRACK_1_URI, false, "Track 1", List.of("Artist 1")),
+            new SoundgraphSong(TRACK_2_URI, false, "Track 2", List.of("Artist 2")));
 
     when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id")).thenReturn(inputTracks);
 
@@ -91,7 +99,7 @@ class SoundgraphServiceTest {
     assertThat(limitedTracks)
         .hasSize(2)
         .extracting(SoundgraphSong::uri)
-        .containsExactly(URI.create("spotify:track:track1"), URI.create("spotify:track:track2"));
+        .containsExactly(TRACK_1_URI, TRACK_2_URI);
   }
 
   @Test
@@ -99,14 +107,10 @@ class SoundgraphServiceTest {
     // given
     List<SoundgraphSong> inputTracks =
         List.of(
-            new SoundgraphSong(
-                URI.create("spotify:track:track1"), true, "Explicit Track 1", List.of("Artist 1")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track2"), false, "Clean Track 2", List.of("Artist 2")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track3"), true, "Explicit Track 3", List.of("Artist 3")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track4"), false, "Clean Track 4", List.of("Artist 4")));
+            new SoundgraphSong(TRACK_1_URI, true, "Explicit Track 1", List.of("Artist 1")),
+            new SoundgraphSong(TRACK_2_URI, false, "Clean Track 2", List.of("Artist 2")),
+            new SoundgraphSong(TRACK_3_URI, true, "Explicit Track 3", List.of("Artist 3")),
+            new SoundgraphSong(TRACK_4_URI, false, "Clean Track 4", List.of("Artist 4")));
 
     when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id")).thenReturn(inputTracks);
 
@@ -126,7 +130,7 @@ class SoundgraphServiceTest {
     assertThat(filteredTracks)
         .hasSize(2)
         .extracting(SoundgraphSong::uri)
-        .containsExactly(URI.create("spotify:track:track2"), URI.create("spotify:track:track4"));
+        .containsExactly(TRACK_2_URI, TRACK_4_URI);
   }
 
   @Test
@@ -134,34 +138,14 @@ class SoundgraphServiceTest {
     // given
     List<SoundgraphSong> source1Tracks =
         List.of(
-            new SoundgraphSong(
-                URI.create("spotify:track:source1_track1"),
-                false,
-                "Source 1 Track 1",
-                List.of("Artist 1")),
-            new SoundgraphSong(
-                URI.create("spotify:track:source1_track2"),
-                false,
-                "Source 1 Track 2",
-                List.of("Artist 2")));
+            new SoundgraphSong(SOURCE1_TRACK1_URI, false, "Source 1 Track 1", List.of("Artist 1")),
+            new SoundgraphSong(SOURCE1_TRACK2_URI, false, "Source 1 Track 2", List.of("Artist 2")));
 
     List<SoundgraphSong> source2Tracks =
         List.of(
-            new SoundgraphSong(
-                URI.create("spotify:track:source2_track1"),
-                false,
-                "Source 2 Track 1",
-                List.of("Artist 3")),
-            new SoundgraphSong(
-                URI.create("spotify:track:source2_track2"),
-                false,
-                "Source 2 Track 2",
-                List.of("Artist 4")),
-            new SoundgraphSong(
-                URI.create("spotify:track:source2_track3"),
-                false,
-                "Source 2 Track 3",
-                List.of("Artist 5")));
+            new SoundgraphSong(SOURCE2_TRACK1_URI, false, "Source 2 Track 1", List.of("Artist 3")),
+            new SoundgraphSong(SOURCE2_TRACK2_URI, false, "Source 2 Track 2", List.of("Artist 4")),
+            new SoundgraphSong(SOURCE2_TRACK3_URI, false, "Source 2 Track 3", List.of("Artist 5")));
 
     when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_1")).thenReturn(source1Tracks);
     when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_2")).thenReturn(source2Tracks);
@@ -190,11 +174,11 @@ class SoundgraphServiceTest {
         .hasSize(5)
         .extracting(SoundgraphSong::uri)
         .containsExactly(
-            URI.create("spotify:track:source1_track1"),
-            URI.create("spotify:track:source2_track1"),
-            URI.create("spotify:track:source1_track2"),
-            URI.create("spotify:track:source2_track2"),
-            URI.create("spotify:track:source2_track3"));
+            SOURCE1_TRACK1_URI,
+            SOURCE2_TRACK1_URI,
+            SOURCE1_TRACK2_URI,
+            SOURCE2_TRACK2_URI,
+            SOURCE2_TRACK3_URI);
   }
 
   @Test
@@ -202,16 +186,11 @@ class SoundgraphServiceTest {
     // given
     List<SoundgraphSong> inputTracks =
         List.of(
-            new SoundgraphSong(
-                URI.create("spotify:track:track1"), false, "Track 1", List.of("Artist 1")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track2"), false, "Track 2", List.of("Artist 2")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track3"), false, "Track 3", List.of("Artist 3")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track4"), false, "Track 4", List.of("Artist 4")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track5"), false, "Track 5", List.of("Artist 5")));
+            new SoundgraphSong(TRACK_1_URI, false, "Track 1", List.of("Artist 1")),
+            new SoundgraphSong(TRACK_2_URI, false, "Track 2", List.of("Artist 2")),
+            new SoundgraphSong(TRACK_3_URI, false, "Track 3", List.of("Artist 3")),
+            new SoundgraphSong(TRACK_4_URI, false, "Track 4", List.of("Artist 4")),
+            new SoundgraphSong(TRACK_5_URI, false, "Track 5", List.of("Artist 5")));
 
     when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id")).thenReturn(inputTracks);
 
@@ -231,12 +210,7 @@ class SoundgraphServiceTest {
     assertThat(shuffledTracks)
         .hasSize(5)
         .extracting(SoundgraphSong::uri)
-        .containsExactlyInAnyOrder(
-            URI.create("spotify:track:track1"),
-            URI.create("spotify:track:track2"),
-            URI.create("spotify:track:track3"),
-            URI.create("spotify:track:track4"),
-            URI.create("spotify:track:track5"));
+        .containsExactlyInAnyOrder(TRACK_1_URI, TRACK_2_URI, TRACK_3_URI, TRACK_4_URI, TRACK_5_URI);
   }
 
   @Test
@@ -244,31 +218,13 @@ class SoundgraphServiceTest {
     // given
     List<SoundgraphSong> albumTracks =
         List.of(
+            new SoundgraphSong(TRACK_1_URI, false, "Album Track 1", List.of("Album Artist")),
             new SoundgraphSong(
-                URI.create("spotify:track:track1"),
-                false,
-                "Album Track 1",
-                List.of("Album Artist")),
+                TRACK_1_URI, false, "Album Track 1", List.of("Album Artist")), // duplicate
+            new SoundgraphSong(TRACK_2_URI, false, "Album Track 2", List.of("Album Artist")),
+            new SoundgraphSong(TRACK_3_URI, false, "Album Track 3", List.of("Album Artist")),
             new SoundgraphSong(
-                URI.create("spotify:track:track1"),
-                false,
-                "Album Track 1",
-                List.of("Album Artist")), // duplicate
-            new SoundgraphSong(
-                URI.create("spotify:track:track2"),
-                false,
-                "Album Track 2",
-                List.of("Album Artist")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track3"),
-                false,
-                "Album Track 3",
-                List.of("Album Artist")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track3"),
-                false,
-                "Album Track 3",
-                List.of("Album Artist"))); // duplicate
+                TRACK_3_URI, false, "Album Track 3", List.of("Album Artist"))); // duplicate
 
     when(soundgraphSpotifyWrapper.getAlbumTracks("source_album_id")).thenReturn(albumTracks);
 
@@ -287,10 +243,7 @@ class SoundgraphServiceTest {
     assertThat(dedupedTracks)
         .hasSize(3)
         .extracting(SoundgraphSong::uri)
-        .containsExactly(
-            URI.create("spotify:track:track1"),
-            URI.create("spotify:track:track2"),
-            URI.create("spotify:track:track3"));
+        .containsExactly(TRACK_1_URI, TRACK_2_URI, TRACK_3_URI);
   }
 
   @Test
@@ -298,21 +251,9 @@ class SoundgraphServiceTest {
     // given
     List<SoundgraphSong> artistTracks =
         List.of(
-            new SoundgraphSong(
-                URI.create("spotify:track:artist_track1"),
-                false,
-                "Top Track 1",
-                List.of("Test Artist")),
-            new SoundgraphSong(
-                URI.create("spotify:track:artist_track2"),
-                true,
-                "Top Track 2",
-                List.of("Test Artist")),
-            new SoundgraphSong(
-                URI.create("spotify:track:artist_track3"),
-                false,
-                "Top Track 3",
-                List.of("Test Artist")));
+            new SoundgraphSong(TRACK_1_URI, false, "Top Track 1", List.of("Test Artist")),
+            new SoundgraphSong(TRACK_2_URI, true, "Top Track 2", List.of("Test Artist")),
+            new SoundgraphSong(TRACK_3_URI, false, "Top Track 3", List.of("Test Artist")));
 
     when(soundgraphSpotifyWrapper.getArtistTopTracks("artist_id")).thenReturn(artistTracks);
 
@@ -331,10 +272,7 @@ class SoundgraphServiceTest {
     assertThat(loadedTracks)
         .hasSize(3)
         .extracting(SoundgraphSong::uri)
-        .containsExactly(
-            URI.create("spotify:track:artist_track1"),
-            URI.create("spotify:track:artist_track2"),
-            URI.create("spotify:track:artist_track3"));
+        .containsExactly(TRACK_1_URI, TRACK_2_URI, TRACK_3_URI);
   }
 
   @Test
@@ -342,26 +280,20 @@ class SoundgraphServiceTest {
     // given
     List<SoundgraphSong> mainPlaylistTracks =
         List.of(
+            new SoundgraphSong(TRACK_1_URI, false, "Track 1", List.of("Artist 1")),
+            new SoundgraphSong(TRACK_2_URI, false, "Track 2", List.of("Artist 2")),
+            new SoundgraphSong(TRACK_3_URI, false, "Track 3", List.of("Artist 3")),
             new SoundgraphSong(
-                URI.create("spotify:track:track1"), false, "Track 1", List.of("Artist 1")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track2"), false, "Track 2", List.of("Artist 2")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track3"), false, "Track 3", List.of("Artist 3")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track4"),
+                TRACK_4_URI,
                 false,
                 "Track 4",
                 List.of("Artist 1", "Artist 4")), // multi-artist with denied artist
-            new SoundgraphSong(
-                URI.create("spotify:track:track5"), false, "Track 5", List.of("Artist 5")));
+            new SoundgraphSong(TRACK_5_URI, false, "Track 5", List.of("Artist 5")));
 
     List<SoundgraphSong> denylistTracks =
         List.of(
-            new SoundgraphSong(
-                URI.create("spotify:track:denied1"), false, "Denied Track 1", List.of("Artist 1")),
-            new SoundgraphSong(
-                URI.create("spotify:track:denied2"), false, "Denied Track 2", List.of("Artist 3")));
+            new SoundgraphSong(DENIED1_URI, false, "Denied Track 1", List.of("Artist 1")),
+            new SoundgraphSong(DENIED2_URI, false, "Denied Track 2", List.of("Artist 3")));
 
     when(soundgraphSpotifyWrapper.getPlaylistTracks("main_playlist_id"))
         .thenReturn(mainPlaylistTracks);
@@ -387,7 +319,7 @@ class SoundgraphServiceTest {
     assertThat(filteredTracks)
         .hasSize(2)
         .extracting(SoundgraphSong::uri)
-        .containsExactly(URI.create("spotify:track:track2"), URI.create("spotify:track:track5"));
+        .containsExactly(TRACK_2_URI, TRACK_5_URI);
   }
 
   @Test
@@ -395,10 +327,8 @@ class SoundgraphServiceTest {
     // given
     List<SoundgraphSong> mainPlaylistTracks =
         List.of(
-            new SoundgraphSong(
-                URI.create("spotify:track:track1"), false, "Track 1", List.of("Artist 1")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track2"), false, "Track 2", List.of("Artist 2")));
+            new SoundgraphSong(TRACK_1_URI, false, "Track 1", List.of("Artist 1")),
+            new SoundgraphSong(TRACK_2_URI, false, "Track 2", List.of("Artist 2")));
 
     List<SoundgraphSong> emptyDenylist = List.of();
 
@@ -425,7 +355,7 @@ class SoundgraphServiceTest {
     assertThat(filteredTracks)
         .hasSize(2)
         .extracting(SoundgraphSong::uri)
-        .containsExactly(URI.create("spotify:track:track1"), URI.create("spotify:track:track2"));
+        .containsExactly(TRACK_1_URI, TRACK_2_URI);
   }
 
   @Test
@@ -433,16 +363,11 @@ class SoundgraphServiceTest {
     // given - tracks with consecutive songs from same artists
     List<SoundgraphSong> inputTracks =
         List.of(
-            new SoundgraphSong(
-                URI.create("spotify:track:track1"), false, "Track 1", List.of("Artist A")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track2"), false, "Track 2", List.of("Artist A")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track3"), false, "Track 3", List.of("Artist B")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track4"), false, "Track 4", List.of("Artist C")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track5"), false, "Track 5", List.of("Artist A")));
+            new SoundgraphSong(TRACK_1_URI, false, "Track 1", List.of("Artist A")),
+            new SoundgraphSong(TRACK_2_URI, false, "Track 2", List.of("Artist A")),
+            new SoundgraphSong(TRACK_3_URI, false, "Track 3", List.of("Artist B")),
+            new SoundgraphSong(TRACK_4_URI, false, "Track 4", List.of("Artist C")),
+            new SoundgraphSong(TRACK_5_URI, false, "Track 5", List.of("Artist A")));
 
     when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id")).thenReturn(inputTracks);
 
@@ -480,20 +405,10 @@ class SoundgraphServiceTest {
     // given - tracks with multiple artists
     List<SoundgraphSong> inputTracks =
         List.of(
-            new SoundgraphSong(
-                URI.create("spotify:track:track1"),
-                false,
-                "Track 1",
-                List.of("Artist A", "Artist B")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track2"),
-                false,
-                "Track 2",
-                List.of("Artist A", "Artist C")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track3"), false, "Track 3", List.of("Artist D")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track4"), false, "Track 4", List.of("Artist E")));
+            new SoundgraphSong(TRACK_1_URI, false, "Track 1", List.of("Artist A", "Artist B")),
+            new SoundgraphSong(TRACK_2_URI, false, "Track 2", List.of("Artist A", "Artist C")),
+            new SoundgraphSong(TRACK_3_URI, false, "Track 3", List.of("Artist D")),
+            new SoundgraphSong(TRACK_4_URI, false, "Track 4", List.of("Artist E")));
 
     when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id")).thenReturn(inputTracks);
 
@@ -547,9 +462,7 @@ class SoundgraphServiceTest {
   void shouldHandleSingleTrackInArtistSeparation() throws Exception {
     // given
     List<SoundgraphSong> singleTrack =
-        List.of(
-            new SoundgraphSong(
-                URI.create("spotify:track:track1"), false, "Track 1", List.of("Artist A")));
+        List.of(new SoundgraphSong(TRACK_1_URI, false, "Track 1", List.of("Artist A")));
 
     when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id")).thenReturn(singleTrack);
 
@@ -567,7 +480,7 @@ class SoundgraphServiceTest {
 
     // then
     assertThat(separatedTracks).hasSize(1);
-    assertThat(separatedTracks.get(0).uri()).isEqualTo(URI.create("spotify:track:track1"));
+    assertThat(separatedTracks.get(0).uri()).isEqualTo(TRACK_1_URI);
   }
 
   @Test
@@ -575,12 +488,9 @@ class SoundgraphServiceTest {
     // given - all tracks from same artist (should just return as is)
     List<SoundgraphSong> sameArtistTracks =
         List.of(
-            new SoundgraphSong(
-                URI.create("spotify:track:track1"), false, "Track 1", List.of("Artist A")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track2"), false, "Track 2", List.of("Artist A")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track3"), false, "Track 3", List.of("Artist A")));
+            new SoundgraphSong(TRACK_1_URI, false, "Track 1", List.of("Artist A")),
+            new SoundgraphSong(TRACK_2_URI, false, "Track 2", List.of("Artist A")),
+            new SoundgraphSong(TRACK_3_URI, false, "Track 3", List.of("Artist A")));
 
     when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id"))
         .thenReturn(sameArtistTracks);
@@ -601,10 +511,7 @@ class SoundgraphServiceTest {
     assertThat(separatedTracks)
         .hasSize(3)
         .extracting(SoundgraphSong::uri)
-        .containsExactly(
-            URI.create("spotify:track:track1"),
-            URI.create("spotify:track:track2"),
-            URI.create("spotify:track:track3"));
+        .containsExactly(TRACK_1_URI, TRACK_2_URI, TRACK_3_URI);
   }
 
   @Test
@@ -612,16 +519,11 @@ class SoundgraphServiceTest {
     // given - tracks already from different artists
     List<SoundgraphSong> inputTracks =
         List.of(
-            new SoundgraphSong(
-                URI.create("spotify:track:track1"), false, "Track 1", List.of("Artist A")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track2"), false, "Track 2", List.of("Artist B")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track3"), false, "Track 3", List.of("Artist C")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track4"), false, "Track 4", List.of("Artist D")),
-            new SoundgraphSong(
-                URI.create("spotify:track:track5"), false, "Track 5", List.of("Artist E")));
+            new SoundgraphSong(TRACK_1_URI, false, "Track 1", List.of("Artist A")),
+            new SoundgraphSong(TRACK_2_URI, false, "Track 2", List.of("Artist B")),
+            new SoundgraphSong(TRACK_3_URI, false, "Track 3", List.of("Artist C")),
+            new SoundgraphSong(TRACK_4_URI, false, "Track 4", List.of("Artist D")),
+            new SoundgraphSong(TRACK_5_URI, false, "Track 5", List.of("Artist E")));
 
     when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id")).thenReturn(inputTracks);
 
@@ -641,11 +543,6 @@ class SoundgraphServiceTest {
     assertThat(separatedTracks)
         .hasSize(5)
         .extracting(SoundgraphSong::uri)
-        .containsExactly(
-            URI.create("spotify:track:track1"),
-            URI.create("spotify:track:track2"),
-            URI.create("spotify:track:track3"),
-            URI.create("spotify:track:track4"),
-            URI.create("spotify:track:track5"));
+        .containsExactly(TRACK_1_URI, TRACK_2_URI, TRACK_3_URI, TRACK_4_URI, TRACK_5_URI);
   }
 }
