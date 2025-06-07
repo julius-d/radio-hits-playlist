@@ -100,25 +100,13 @@ class SoundgraphServiceTest {
     List<SoundgraphSong> inputTracks =
         List.of(
             new SoundgraphSong(
-                URI.create("spotify:track:track1"),
-                true,
-                "Explicit Track 1",
-                List.of("Artist 1")), // explicit
+                URI.create("spotify:track:track1"), true, "Explicit Track 1", List.of("Artist 1")),
             new SoundgraphSong(
-                URI.create("spotify:track:track2"),
-                false,
-                "Clean Track 2",
-                List.of("Artist 2")), // non-explicit
+                URI.create("spotify:track:track2"), false, "Clean Track 2", List.of("Artist 2")),
             new SoundgraphSong(
-                URI.create("spotify:track:track3"),
-                true,
-                "Explicit Track 3",
-                List.of("Artist 3")), // explicit
+                URI.create("spotify:track:track3"), true, "Explicit Track 3", List.of("Artist 3")),
             new SoundgraphSong(
-                URI.create("spotify:track:track4"),
-                false,
-                "Clean Track 4",
-                List.of("Artist 4"))); // non-explicit
+                URI.create("spotify:track:track4"), false, "Clean Track 4", List.of("Artist 4")));
 
     when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id")).thenReturn(inputTracks);
 
