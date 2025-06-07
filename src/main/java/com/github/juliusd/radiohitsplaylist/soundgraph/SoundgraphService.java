@@ -51,29 +51,24 @@ public class SoundgraphService {
     List<SoundgraphSong> tracks = new ArrayList<>();
 
     for (SoundgraphConfig.Step step : pipe.steps()) {
-      if (step instanceof SoundgraphConfig.LoadPlaylistStep) {
-        tracks =
-            spotifyWrapper.getPlaylistTracks(
-                ((SoundgraphConfig.LoadPlaylistStep) step).playlistId());
-      } else if (step instanceof SoundgraphConfig.LoadAlbumStep) {
-        tracks = spotifyWrapper.getAlbumTracks(((SoundgraphConfig.LoadAlbumStep) step).albumId());
-      } else if (step instanceof SoundgraphConfig.CombineStep) {
-        tracks = processCombineStep((SoundgraphConfig.CombineStep) step);
+      if (step instanceof SoundgraphConfig.LoadPlaylistStep loadPlaylistStep) {
+        tracks = spotifyWrapper.getPlaylistTracks(loadPlaylistStep.playlistId());
+      } else if (step instanceof SoundgraphConfig.LoadAlbumStep loadAlbumStep) {
+        tracks = spotifyWrapper.getAlbumTracks(loadAlbumStep.albumId());
+      } else if (step instanceof SoundgraphConfig.CombineStep combineStep) {
+        tracks = processCombineStep(combineStep);
       } else if (step instanceof SoundgraphConfig.ShuffleStep) {
         tracks = processShuffleStep(tracks);
-      } else if (step instanceof SoundgraphConfig.LimitStep) {
-        tracks = processLimitStep(tracks, ((SoundgraphConfig.LimitStep) step).value());
+      } else if (step instanceof SoundgraphConfig.LimitStep limitStep) {
+        tracks = processLimitStep(tracks, limitStep.value());
       } else if (step instanceof SoundgraphConfig.DedupStep) {
         tracks = processDedupStep(tracks);
       } else if (step instanceof SoundgraphConfig.FilterOutExplicitStep) {
         tracks = processFilterOutExplicitStep(tracks);
-      } else if (step instanceof SoundgraphConfig.LoadArtistTopTracksStep) {
-        tracks =
-            spotifyWrapper.getArtistTopTracks(
-                ((SoundgraphConfig.LoadArtistTopTracksStep) step).artistId());
-      } else if (step instanceof SoundgraphConfig.FilterArtistsFromStep) {
-        tracks =
-            processFilterArtistsFromStep(tracks, (SoundgraphConfig.FilterArtistsFromStep) step);
+      } else if (step instanceof SoundgraphConfig.LoadArtistTopTracksStep loadArtistTopTracksStep) {
+        tracks = spotifyWrapper.getArtistTopTracks(loadArtistTopTracksStep.artistId());
+      } else if (step instanceof SoundgraphConfig.FilterArtistsFromStep filterArtistsFromStep) {
+        tracks = processFilterArtistsFromStep(tracks, filterArtistsFromStep);
       } else if (step instanceof SoundgraphConfig.ArtistSeparationStep) {
         tracks = processArtistSeparationStep(tracks);
       }
