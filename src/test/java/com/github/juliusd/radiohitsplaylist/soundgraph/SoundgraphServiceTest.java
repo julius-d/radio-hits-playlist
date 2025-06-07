@@ -426,6 +426,42 @@ class SoundgraphServiceTest {
 
     // then - verify no consecutive tracks share any artist
     assertThat(separatedTracks).hasSize(4);
+    noConsecutiveTracks(separatedTracks);
+  }
+
+  @Test
+  void shouldHandleSameArtistAtEndInSeparation() throws Exception {
+    // given - tracks with multiple artists
+    List<SoundgraphSong> inputTracks =
+        List.of(
+            new SoundgraphSong(TRACK_1_URI, false, "Track 1", List.of("Artist A")),
+            new SoundgraphSong(TRACK_2_URI, false, "Track 2", List.of("Artist B")),
+            new SoundgraphSong(TRACK_3_URI, false, "Track 3", List.of("Artist C")),
+            new SoundgraphSong(TRACK_4_URI, false, "Track 4", List.of("Artist C")));
+
+    when(soundgraphSpotifyWrapper.getPlaylistTracks("source_playlist_id")).thenReturn(inputTracks);
+
+    // when
+    List<SoundgraphSong> separatedTracks =
+        soundgraphService.processSoundgraphConfig(
+            new SoundgraphConfig(
+                "Test Configuration",
+                "target_playlist_id",
+                new SoundgraphConfig.Pipe(
+                    List.of(
+                        new SoundgraphConfig.LoadPlaylistStep(
+                            "source_playlist_id", "Test Playlist"),
+                        new SoundgraphConfig.ArtistSeparationStep()))));
+
+    // then
+    noConsecutiveTracks(separatedTracks);
+    assertThat(separatedTracks)
+        .hasSize(4)
+        .extracting(SoundgraphSong::uri)
+        .containsExactly(TRACK_1_URI, TRACK_3_URI, TRACK_2_URI, TRACK_4_URI);
+  }
+
+  private void noConsecutiveTracks(List<SoundgraphSong> separatedTracks) {
     for (int i = 0; i < separatedTracks.size() - 1; i++) {
       SoundgraphSong current = separatedTracks.get(i);
       SoundgraphSong next = separatedTracks.get(i + 1);

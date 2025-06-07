@@ -118,11 +118,25 @@ public class SoundgraphService {
       return tracks;
     }
 
+    // Phase 1: Forward pass - standard greedy algorithm
+    List<SoundgraphSong> result = greedyArtistSeparation(tracks);
+    // Phase 2: Backward pass - resolve conflicts by working from the end
+    return reverse(greedyArtistSeparation(reverse(result)));
+  }
+
+  private List<SoundgraphSong> reverse(List<SoundgraphSong> tracks) {
+    List<SoundgraphSong> reversed = new ArrayList<>(tracks);
+    Collections.reverse(reversed);
+    return reversed;
+  }
+
+  private List<SoundgraphSong> greedyArtistSeparation(List<SoundgraphSong> tracks) {
     List<SoundgraphSong> result = new ArrayList<>();
     List<SoundgraphSong> remaining = new ArrayList<>(tracks);
 
     // Add the first track
     result.add(remaining.remove(0));
+
     while (!remaining.isEmpty()) {
       SoundgraphSong lastTrack = result.get(result.size() - 1);
       Set<String> lastArtists = new HashSet<>(lastTrack.artists());
