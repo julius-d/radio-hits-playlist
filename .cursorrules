@@ -1,0 +1,19 @@
+# Cursor Rules for Java Maven Project
+
+## Code Formatting and Testing
+- After making any changes to Java code, always run `mvn spotless:apply` to format the code according to Google Java Format
+- After applying formatting, run `mvn test` to ensure all tests still pass
+- If tests fail, investigate and fix the issues before proceeding
+- Apply these rules automatically for any Java file modifications in the src/ directory
+
+## Workflow
+1. Make code changes
+2. Run `mvn spotless:apply` to format code
+3. Run `mvn test` to verify tests pass
+4. If tests fail, debug and fix issues
+5. Only consider the changes complete when both formatting and tests are successful
+
+## Additional Notes
+- The project uses Google Java Format style with spotless plugin version 2.43.0
+- Always ensure code is properly formatted before committing
+- Maintain test coverage and ensure all existing tests continue to pass 
