@@ -8,6 +8,7 @@ import java.util.List;
 public record SoundgraphConfig(
     @JsonProperty("name") String name,
     @JsonProperty("targetPlaylistId") String targetPlaylistId,
+    @JsonProperty("descriptionPrefix") String descriptionPrefix,
     @JsonProperty("pipe") Pipe pipe) {
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
   @JsonSubTypes({

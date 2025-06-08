@@ -60,6 +60,7 @@ class SoundgraphServiceTest {
             new SoundgraphConfig(
                 "Test Configuration",
                 "target_playlist_id",
+                "Test Description",
                 new SoundgraphConfig.Pipe(
                     List.of(
                         new SoundgraphConfig.LoadPlaylistStep(
@@ -89,6 +90,7 @@ class SoundgraphServiceTest {
             new SoundgraphConfig(
                 "Test Configuration",
                 "target_playlist_id",
+                "Test Description",
                 new SoundgraphConfig.Pipe(
                     List.of(
                         new SoundgraphConfig.LoadPlaylistStep(
@@ -120,6 +122,7 @@ class SoundgraphServiceTest {
             new SoundgraphConfig(
                 "Test Configuration",
                 "target_playlist_id",
+                "Test Description",
                 new SoundgraphConfig.Pipe(
                     List.of(
                         new SoundgraphConfig.LoadPlaylistStep(
@@ -156,6 +159,7 @@ class SoundgraphServiceTest {
             new SoundgraphConfig(
                 "Test Configuration",
                 "target_playlist_id",
+                "Test Description",
                 new SoundgraphConfig.Pipe(
                     List.of(
                         new SoundgraphConfig.CombineStep(
@@ -200,6 +204,7 @@ class SoundgraphServiceTest {
             new SoundgraphConfig(
                 "Test Configuration",
                 "target_playlist_id",
+                "Test Description",
                 new SoundgraphConfig.Pipe(
                     List.of(
                         new SoundgraphConfig.LoadPlaylistStep(
@@ -234,6 +239,7 @@ class SoundgraphServiceTest {
             new SoundgraphConfig(
                 "Test Configuration",
                 "target_playlist_id",
+                "Test Description",
                 new SoundgraphConfig.Pipe(
                     List.of(
                         new SoundgraphConfig.LoadAlbumStep("source_album_id", "Test Album"),
@@ -263,6 +269,7 @@ class SoundgraphServiceTest {
             new SoundgraphConfig(
                 "Test Configuration",
                 "target_playlist_id",
+                "Test Description",
                 new SoundgraphConfig.Pipe(
                     List.of(
                         new SoundgraphConfig.LoadArtistTopTracksStep(
@@ -306,6 +313,7 @@ class SoundgraphServiceTest {
             new SoundgraphConfig(
                 "Test Configuration",
                 "target_playlist_id",
+                "Test Description",
                 new SoundgraphConfig.Pipe(
                     List.of(
                         new SoundgraphConfig.LoadPlaylistStep("main_playlist_id", "Main Playlist"),
@@ -342,6 +350,7 @@ class SoundgraphServiceTest {
             new SoundgraphConfig(
                 "Test Configuration",
                 "target_playlist_id",
+                "Test Description",
                 new SoundgraphConfig.Pipe(
                     List.of(
                         new SoundgraphConfig.LoadPlaylistStep("main_playlist_id", "Main Playlist"),
@@ -377,6 +386,7 @@ class SoundgraphServiceTest {
             new SoundgraphConfig(
                 "Test Configuration",
                 "target_playlist_id",
+                "Test Description",
                 new SoundgraphConfig.Pipe(
                     List.of(
                         new SoundgraphConfig.LoadPlaylistStep(
@@ -418,6 +428,7 @@ class SoundgraphServiceTest {
             new SoundgraphConfig(
                 "Test Configuration",
                 "target_playlist_id",
+                "Test Description",
                 new SoundgraphConfig.Pipe(
                     List.of(
                         new SoundgraphConfig.LoadPlaylistStep(
@@ -450,6 +461,7 @@ class SoundgraphServiceTest {
             new SoundgraphConfig(
                 "Test Configuration",
                 "target_playlist_id",
+                "Test Description",
                 new SoundgraphConfig.Pipe(
                     List.of(
                         new SoundgraphConfig.LoadPlaylistStep(
@@ -487,6 +499,7 @@ class SoundgraphServiceTest {
             new SoundgraphConfig(
                 "Test Configuration",
                 "target_playlist_id",
+                "Test Description",
                 new SoundgraphConfig.Pipe(
                     List.of(
                         new SoundgraphConfig.LoadPlaylistStep(
@@ -511,6 +524,7 @@ class SoundgraphServiceTest {
             new SoundgraphConfig(
                 "Test Configuration",
                 "target_playlist_id",
+                "Test Description",
                 new SoundgraphConfig.Pipe(
                     List.of(
                         new SoundgraphConfig.LoadPlaylistStep(
@@ -540,6 +554,7 @@ class SoundgraphServiceTest {
             new SoundgraphConfig(
                 "Test Configuration",
                 "target_playlist_id",
+                "Test Description",
                 new SoundgraphConfig.Pipe(
                     List.of(
                         new SoundgraphConfig.LoadPlaylistStep(
@@ -572,6 +587,7 @@ class SoundgraphServiceTest {
             new SoundgraphConfig(
                 "Test Configuration",
                 "target_playlist_id",
+                "Test Description",
                 new SoundgraphConfig.Pipe(
                     List.of(
                         new SoundgraphConfig.LoadPlaylistStep(

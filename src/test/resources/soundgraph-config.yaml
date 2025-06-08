@@ -1,5 +1,6 @@
 name: "Test Configuration"
 targetPlaylistId: "your_target_playlist_id"
+descriptionPrefix: "Test playlist updated on"
 pipe:
   steps:
     - type: combine

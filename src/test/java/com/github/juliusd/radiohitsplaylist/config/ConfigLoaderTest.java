@@ -54,6 +54,7 @@ class ConfigLoaderTest {
       soundgraphTasks:
         - name: My Soundgraph Playlist
           targetPlaylistId: targetPlaylistId10
+          descriptionPrefix: My Soundgraph Description
           pipe:
             steps:
               - type: combine
@@ -90,6 +91,7 @@ class ConfigLoaderTest {
         new SoundgraphConfig(
             "My Soundgraph Playlist",
             "targetPlaylistId10",
+            "My Soundgraph Description",
             new SoundgraphConfig.Pipe(
                 List.of(
                     new SoundgraphConfig.CombineStep(

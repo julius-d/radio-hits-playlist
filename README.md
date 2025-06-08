@@ -47,6 +47,7 @@ soundgraphTasks:
   # Simple example with a single playlist
   - name: "Simple Playlist Mix"
     targetPlaylistId: 6mN4kL7pQ9rT2v5x8yB3hJ
+    descriptionPrefix: "Simple mix updated on"
     pipe:
       steps:
         - type: loadPlaylist
@@ -59,6 +60,7 @@ soundgraphTasks:
   # Complex example combining multiple sources
   - name: "Mixed Sources Playlist"
     targetPlaylistId: 9wZ4yB7mN2kL5pQ8tR3vX6
+    descriptionPrefix: "Mixed sources updated on"
     pipe:
       steps:
         - type: combine
@@ -84,6 +86,7 @@ soundgraphTasks:
   # Comprehensive example showing all available steps
   - name: "Complete Playlist Mix"
     targetPlaylistId: 7xK9mNp2QrL5vY8tH3jF4d
+    descriptionPrefix: "Complete mix updated on"
     pipe:
       steps:
         - type: combine

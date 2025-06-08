@@ -7,12 +7,16 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.reflect.TypeToken;
 import com.neovisionaries.i18n.CountryCode;
+import java.io.IOException;
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import se.michaelthelin.spotify.SpotifyApi;
+import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
 import se.michaelthelin.spotify.model_objects.specification.Episode;
 import se.michaelthelin.spotify.model_objects.specification.PlaylistTrack;
@@ -113,6 +117,12 @@ public class SoundgraphSpotifyWrapper {
 
   public void updatePlaylist(String playlistId, List<SoundgraphSong> tracks)
       throws SpotifyException {
+    updatePlaylist(playlistId, tracks, null);
+  }
+
+  public void updatePlaylist(
+      String playlistId, List<SoundgraphSong> tracks, String descriptionPrefix)
+      throws SpotifyException {
     try {
       // Only clear and add if there are tracks
       if (tracks.isEmpty()) {
@@ -144,9 +154,27 @@ public class SoundgraphSpotifyWrapper {
           spotifyApi.addItemsToPlaylist(playlistId, chunkUris).build().execute();
         }
       }
+
+      // Update description if prefix is provided
+      if (descriptionPrefix != null && !descriptionPrefix.trim().isEmpty()) {
+        updateDescription(playlistId, descriptionPrefix);
+      }
     } catch (Exception e) {
       log("Error updating playlist " + playlistId + ": " + e.getMessage());
       throw new SpotifyException("Error updating playlist " + playlistId, e);
+    }
+  }
+
+  private void updateDescription(String playlistId, String descriptionPrefix) {
+    try {
+      String today = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+      spotifyApi
+          .changePlaylistsDetails(playlistId)
+          .description(descriptionPrefix.trim() + " " + today)
+          .build()
+          .execute();
+    } catch (IOException | SpotifyWebApiException | org.apache.hc.core5.http.ParseException e) {
+      throw new SpotifyException(e);
     }
   }
 }

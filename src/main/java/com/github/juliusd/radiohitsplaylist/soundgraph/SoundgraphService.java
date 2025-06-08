@@ -17,7 +17,7 @@ public class SoundgraphService {
   public List<SoundgraphSong> processSoundgraphConfig(SoundgraphConfig config)
       throws IOException, SpotifyWebApiException, ParseException {
     List<SoundgraphSong> tracks = processPipe(config.pipe());
-    spotifyWrapper.updatePlaylist(config.targetPlaylistId(), tracks);
+    spotifyWrapper.updatePlaylist(config.targetPlaylistId(), tracks, config.descriptionPrefix());
     return tracks;
   }
 
