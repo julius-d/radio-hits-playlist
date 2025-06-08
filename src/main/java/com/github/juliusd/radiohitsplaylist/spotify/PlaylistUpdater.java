@@ -23,19 +23,9 @@ public class PlaylistUpdater {
   }
 
   public void update(List<Track> tracks, String playlistId, String descriptionPrefix) {
-    var limitedTracks = limitTrack(tracks);
-    var spotifyTrackUris = findSpotifyTrackIds(limitedTracks);
+    var spotifyTrackUris = findSpotifyTrackIds(tracks);
     storeOnPlayList(spotifyTrackUris, playlistId);
     updateDescription(playlistId, descriptionPrefix);
-  }
-
-  /**
-   * A max of 100 tracks can be replaced with one call. See also <a
-   * href="https://developer.spotify.com/documentation/web-api/reference/reorder-or-replace-playlists-tracks">spotify
-   * API docu</a>
-   */
-  private List<Track> limitTrack(List<Track> tracks) {
-    return tracks.stream().limit(100).toList();
   }
 
   private void updateDescription(String playlistId, String descriptionPrefix) {
@@ -53,13 +43,32 @@ public class PlaylistUpdater {
 
   private void storeOnPlayList(List<URI> spotifyTrackUris, String playlistId) {
     try {
+      if (spotifyTrackUris.isEmpty()) {
+        return;
+      }
+
+      List<String> trackUris = spotifyTrackUris.stream().map(URI::toString).toList();
+
+      List<String> firstChunk = trackUris.subList(0, Math.min(100, trackUris.size()));
       JsonArray uris =
           new Gson()
-              .toJsonTree(
-                  spotifyTrackUris.stream().map(URI::toString).toList(),
-                  new TypeToken<List<String>>() {}.getType())
+              .toJsonTree(firstChunk, new TypeToken<List<String>>() {}.getType())
               .getAsJsonArray();
-      String result = spotifyApi.replacePlaylistsItems(playlistId, uris).build().execute();
+
+      spotifyApi.replacePlaylistsItems(playlistId, uris).build().execute();
+
+      // Add remaining tracks in chunks of 100
+      if (trackUris.size() > 100) {
+        for (int i = 100; i < trackUris.size(); i += 100) {
+          List<String> chunk = trackUris.subList(i, Math.min(i + 100, trackUris.size()));
+          JsonArray chunkUris =
+              new Gson()
+                  .toJsonTree(chunk, new TypeToken<List<String>>() {}.getType())
+                  .getAsJsonArray();
+
+          spotifyApi.addItemsToPlaylist(playlistId, chunkUris).build().execute();
+        }
+      }
     } catch (IOException | SpotifyWebApiException | ParseException e) {
       throw new SpotifyException(e);
     }
