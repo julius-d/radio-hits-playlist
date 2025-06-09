@@ -291,7 +291,7 @@ class SoundgraphServiceTest {
             new SoundgraphSong(TRACK_2_URI, true, "Album Track 2", List.of("Test Artist")),
             new SoundgraphSong(TRACK_3_URI, false, "Album Track 3", List.of("Test Artist")));
 
-    when(soundgraphSpotifyWrapper.getArtistNewestAlbumTracks("artist_id", List.of("album")))
+    when(soundgraphSpotifyWrapper.getArtistNewestAlbumTracks("artist_id", List.of(AlbumType.ALBUM)))
         .thenReturn(albumTracks);
 
     // when
@@ -304,7 +304,7 @@ class SoundgraphServiceTest {
                 new SoundgraphConfig.Pipe(
                     List.of(
                         new SoundgraphConfig.LoadArtistNewestAlbumStep(
-                            "artist_id", "Test Artist", List.of("album"))))));
+                            "artist_id", "Test Artist", List.of(AlbumType.ALBUM))))));
 
     // then
     assertThat(loadedTracks)

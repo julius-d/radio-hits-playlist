@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import java.io.InputStream;
+import com.github.juliusd.radiohitsplaylist.soundgraph.AlbumType;
 import org.junit.jupiter.api.Test;
 
 class SoundgraphConfigTest {
@@ -13,13 +13,41 @@ class SoundgraphConfigTest {
   void shouldParseYamlConfig() throws Exception {
     // given
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-    InputStream yamlStream = getClass().getResourceAsStream("/soundgraph-config.yaml");
+    String yamlConfig =
+        """
+            name: "Test Configuration"
+            targetPlaylistId: "target_playlist_id"
+            descriptionPrefix: "Test Description"
+            pipe:
+              steps:
+                - type: combine
+                  sources:
+                    - steps:
+                        - type: loadPlaylist
+                          playlistId: source_playlist_1
+                          name: "My Playlist"
+                        - type: shuffle
+                        - type: limit
+                          value: 100
+                    - steps:
+                        - type: loadAlbum
+                          albumId: source_album_1
+                          name: "My Album"
+                        - type: shuffle
+                        - type: limit
+                          value: 50
+                - type: shuffle
+                - type: limit
+                  value: 150
+            """;
 
     // when
-    SoundgraphConfig config = mapper.readValue(yamlStream, SoundgraphConfig.class);
+    SoundgraphConfig config = mapper.readValue(yamlConfig, SoundgraphConfig.class);
 
     // then
-    assertThat(config.targetPlaylistId()).isEqualTo("your_target_playlist_id");
+    assertThat(config.name()).isEqualTo("Test Configuration");
+    assertThat(config.targetPlaylistId()).isEqualTo("target_playlist_id");
+    assertThat(config.descriptionPrefix()).isEqualTo("Test Description");
     assertThat(config.pipe().steps()).hasSize(3);
 
     // Verify first step (combine)
@@ -218,6 +246,7 @@ class SoundgraphConfigTest {
     assertThat(artistStep.artistId()).isEqualTo("artist_id_1");
     assertThat(artistStep.name()).isEqualTo("Test Artist");
     assertThat(artistStep.albumTypes())
-        .containsExactly("album", "single", "compilation", "appears_on");
+        .containsExactly(
+            AlbumType.ALBUM, AlbumType.SINGLE, AlbumType.COMPILATION, AlbumType.APPEARS_ON);
   }
 }

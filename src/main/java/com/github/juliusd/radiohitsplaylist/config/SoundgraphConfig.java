@@ -3,6 +3,7 @@ package com.github.juliusd.radiohitsplaylist.config;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.github.juliusd.radiohitsplaylist.soundgraph.AlbumType;
 import java.util.List;
 
 public record SoundgraphConfig(
@@ -119,7 +120,7 @@ public record SoundgraphConfig(
   public record LoadArtistNewestAlbumStep(
       @JsonProperty("artistId") String artistId,
       @JsonProperty("name") String name,
-      @JsonProperty("albumTypes") List<String> albumTypes)
+      @JsonProperty("albumTypes") List<AlbumType> albumTypes)
       implements Step {
 
     @Override

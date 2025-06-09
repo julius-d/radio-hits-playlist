@@ -117,24 +117,24 @@ public class SoundgraphSpotifyWrapper {
     }
   }
 
-  public List<SoundgraphSong> getArtistNewestAlbumTracks(String artistId, List<String> albumTypes)
-      throws SpotifyException {
+  public List<SoundgraphSong> getArtistNewestAlbumTracks(
+      String artistId, List<AlbumType> albumTypes) throws SpotifyException {
     try {
       // Default to "album" if no album types provided
-      List<String> types =
-          (albumTypes == null || albumTypes.isEmpty()) ? List.of("album") : albumTypes;
+      List<AlbumType> types =
+          (albumTypes == null || albumTypes.isEmpty()) ? List.of(AlbumType.ALBUM) : albumTypes;
 
-      // Convert strings to AlbumGroup enums
+      // Convert AlbumType enums to Spotify AlbumGroup enums
       String albumTypesAsString =
           types.stream()
               .map(
-                  type -> {
-                    try {
-                      return AlbumGroup.valueOf(type.toUpperCase());
-                    } catch (IllegalArgumentException e) {
-                      throw new SpotifyException("Invalid album type: " + type, e);
-                    }
-                  })
+                  it ->
+                      switch (it) {
+                        case ALBUM -> AlbumGroup.ALBUM;
+                        case SINGLE -> AlbumGroup.SINGLE;
+                        case COMPILATION -> AlbumGroup.COMPILATION;
+                        case APPEARS_ON -> AlbumGroup.APPEARS_ON;
+                      })
               .map(AlbumGroup::getGroup)
               .distinct()
               .sorted()
