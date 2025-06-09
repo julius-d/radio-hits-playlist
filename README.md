@@ -130,6 +130,7 @@ soundgraphTasks:
 | `loadPlaylist`      | Loads tracks from a Spotify playlist       | `playlistId`, `name`                   |
 | `loadAlbum`         | Loads tracks from a Spotify album          | `albumId`, `name`                       |
 | `loadArtistTopTracks` | Loads top tracks from a Spotify artist   | `artistId`, `name`                     |
+| `loadArtistNewestAlbum` | Loads tracks from an artist's newest album/release | `artistId`, `name`; Optional: `albumTypes` |
 | `combine`           | Combines multiple sources of tracks        | `sources` (array of pipe configurations)|
 | `shuffle`           | Randomizes the order of tracks             | None                                    |
 | `limit`             | Limits the number of tracks                | `value` (integer)                       |
@@ -155,27 +156,6 @@ If you have 3 sources with tracks:
 
 The result will be: [A1, B1, C1, A2, B2, C2, A3, C3, C4]
 
-#### Usage Example:
-```yaml
-- type: combine
-  sources:
-    - steps:
-        - type: loadPlaylist
-          playlistId: "recent_hits_playlist"
-          name: "Recent Hits"
-        - type: filterOutExplicit
-    - steps:
-        - type: loadPlaylist
-          playlistId: "classic_rock_playlist"
-          name: "Classic Rock"
-        - type: shuffle
-    - steps:
-        - type: loadArtistTopTracks
-          artistId: "discovery_artist_id"
-          name: "Discovery Artist"
-        - type: limit
-          value: 10
-```
 
 ### `artistSeparation`
 The `artistSeparation` step reorders tracks to ensure that no two consecutive songs are from the same artist(s). This creates a better listening experience by providing variety and preventing artist clustering in the playlist. The step works by:
@@ -186,3 +166,22 @@ The `artistSeparation` step reorders tracks to ensure that no two consecutive so
 - When all remaining tracks are from the same artist, it continues placement to avoid infinite loops
 
 This step is particularly useful after shuffle operations or when combining multiple sources that might result in artist clustering.
+
+### `loadArtistNewestAlbum`
+The `loadArtistNewestAlbum` step loads all tracks from an artist's newest album or release. 
+This step allows you to automatically include the latest content from your favorite artists without manually tracking their new releases.
+
+#### Parameters:
+- `artistId` (required): The Spotify artist ID
+- `name` (required): A descriptive name for the step (used for logging)
+- `albumTypes` (optional): Array of album types to consider. Defaults to `["album"]`
+
+#### Supported Album Types:
+- `"album"` - Full-length albums
+- `"single"` - Singles and individual tracks  
+- `"compilation"` - Compilation albums
+- `"appears_on"` - Tracks that appear on compilations and various artist collections
+
+#### Notes:
+- Returns empty list if no matching albums are found
+- Newest release is determined by Spotify's release date sorting

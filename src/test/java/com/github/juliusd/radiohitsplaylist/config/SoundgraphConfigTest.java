@@ -156,4 +156,68 @@ class SoundgraphConfigTest {
     assertThat(denylistStep.playlistId()).isEqualTo("empty_denylist_id");
     assertThat(denylistStep.name()).isEqualTo("Empty Denylist");
   }
+
+  @Test
+  void shouldParseLoadArtistNewestAlbumConfigWithDefaultAlbumTypes() throws Exception {
+    // given
+    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    String yamlConfig =
+        """
+            name: "Artist Newest Album Default Test"
+            targetPlaylistId: "target_playlist_id"
+            pipe:
+              steps:
+                - type: "loadArtistNewestAlbum"
+                  artistId: "artist_id_1"
+                  name: "Test Artist"
+            """;
+
+    // when
+    SoundgraphConfig config = mapper.readValue(yamlConfig, SoundgraphConfig.class);
+
+    // then
+    assertThat(config.pipe().steps()).hasSize(1);
+
+    // Verify step uses default album types
+    SoundgraphConfig.Step step = config.pipe().steps().get(0);
+    assertThat(step).isInstanceOf(SoundgraphConfig.LoadArtistNewestAlbumStep.class);
+    SoundgraphConfig.LoadArtistNewestAlbumStep artistStep =
+        (SoundgraphConfig.LoadArtistNewestAlbumStep) step;
+    assertThat(artistStep.artistId()).isEqualTo("artist_id_1");
+    assertThat(artistStep.name()).isEqualTo("Test Artist");
+    assertThat(artistStep.albumTypes()).isNull();
+  }
+
+  @Test
+  void shouldParseLoadArtistNewestAlbumConfig() throws Exception {
+    // given
+    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    String yamlConfig =
+        """
+            name: "Artist Newest Album Valid Types Test"
+            targetPlaylistId: "target_playlist_id"
+            pipe:
+              steps:
+                - type: "loadArtistNewestAlbum"
+                  artistId: "artist_id_1"
+                  name: "Test Artist"
+                  albumTypes: ["album", "single", "compilation", "appears_on"]
+            """;
+
+    // when
+    SoundgraphConfig config = mapper.readValue(yamlConfig, SoundgraphConfig.class);
+
+    // then
+    assertThat(config.pipe().steps()).hasSize(1);
+
+    // Verify step uses all valid album types
+    SoundgraphConfig.Step step = config.pipe().steps().get(0);
+    assertThat(step).isInstanceOf(SoundgraphConfig.LoadArtistNewestAlbumStep.class);
+    SoundgraphConfig.LoadArtistNewestAlbumStep artistStep =
+        (SoundgraphConfig.LoadArtistNewestAlbumStep) step;
+    assertThat(artistStep.artistId()).isEqualTo("artist_id_1");
+    assertThat(artistStep.name()).isEqualTo("Test Artist");
+    assertThat(artistStep.albumTypes())
+        .containsExactly("album", "single", "compilation", "appears_on");
+  }
 }

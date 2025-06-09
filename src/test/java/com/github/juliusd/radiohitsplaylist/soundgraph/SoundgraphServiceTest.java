@@ -283,6 +283,37 @@ class SoundgraphServiceTest {
   }
 
   @Test
+  void shouldLoadArtistNewestAlbumTracks() throws Exception {
+    // given
+    List<SoundgraphSong> albumTracks =
+        List.of(
+            new SoundgraphSong(TRACK_1_URI, false, "Album Track 1", List.of("Test Artist")),
+            new SoundgraphSong(TRACK_2_URI, true, "Album Track 2", List.of("Test Artist")),
+            new SoundgraphSong(TRACK_3_URI, false, "Album Track 3", List.of("Test Artist")));
+
+    when(soundgraphSpotifyWrapper.getArtistNewestAlbumTracks("artist_id", List.of("album")))
+        .thenReturn(albumTracks);
+
+    // when
+    List<SoundgraphSong> loadedTracks =
+        soundgraphService.processSoundgraphConfig(
+            new SoundgraphConfig(
+                "Test Configuration",
+                "target_playlist_id",
+                "Test Description",
+                new SoundgraphConfig.Pipe(
+                    List.of(
+                        new SoundgraphConfig.LoadArtistNewestAlbumStep(
+                            "artist_id", "Test Artist", List.of("album"))))));
+
+    // then
+    assertThat(loadedTracks)
+        .hasSize(3)
+        .extracting(SoundgraphSong::uri)
+        .containsExactly(TRACK_1_URI, TRACK_2_URI, TRACK_3_URI);
+  }
+
+  @Test
   void shouldFilterArtistsFromDenylist() throws Exception {
     // given
     List<SoundgraphSong> mainPlaylistTracks =

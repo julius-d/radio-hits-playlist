@@ -16,7 +16,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import se.michaelthelin.spotify.SpotifyApi;
+import se.michaelthelin.spotify.enums.AlbumGroup;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
+import se.michaelthelin.spotify.model_objects.specification.AlbumSimplified;
 import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
 import se.michaelthelin.spotify.model_objects.specification.Episode;
 import se.michaelthelin.spotify.model_objects.specification.PlaylistTrack;
@@ -112,6 +114,62 @@ public class SoundgraphSpotifyWrapper {
     } catch (Exception e) {
       log("Error loading top tracks for artist " + artistId + ": " + e.getMessage());
       throw new SpotifyException("Error loading top tracks for artist " + artistId, e);
+    }
+  }
+
+  public List<SoundgraphSong> getArtistNewestAlbumTracks(String artistId, List<String> albumTypes)
+      throws SpotifyException {
+    try {
+      // Default to "album" if no album types provided
+      List<String> types =
+          (albumTypes == null || albumTypes.isEmpty()) ? List.of("album") : albumTypes;
+
+      // Convert strings to AlbumGroup enums
+      String albumTypesAsString =
+          types.stream()
+              .map(
+                  type -> {
+                    try {
+                      return AlbumGroup.valueOf(type.toUpperCase());
+                    } catch (IllegalArgumentException e) {
+                      throw new SpotifyException("Invalid album type: " + type, e);
+                    }
+                  })
+              .map(AlbumGroup::getGroup)
+              .distinct()
+              .sorted()
+              .collect(Collectors.joining(","));
+
+      // Get artist's albums, sorted by release date (newest first)
+      AlbumSimplified[] albums =
+          spotifyApi
+              .getArtistsAlbums(artistId)
+              .album_type(albumTypesAsString)
+              .market(CountryCode.DE)
+              .limit(1)
+              .build()
+              .execute()
+              .getItems();
+
+      if (albums.length == 0) {
+        log("No albums found for artist " + artistId + " with types " + types);
+        return new ArrayList<>();
+      }
+
+      // Get tracks from the newest album
+      String newestAlbumId = albums[0].getId();
+      log(
+          "Loading tracks from newest album: "
+              + albums[0].getName()
+              + " (ID: "
+              + newestAlbumId
+              + ")");
+
+      return getAlbumTracks(newestAlbumId);
+
+    } catch (Exception e) {
+      log("Error loading newest album tracks for artist " + artistId + ": " + e.getMessage());
+      throw new SpotifyException("Error loading newest album tracks for artist " + artistId, e);
     }
   }
 

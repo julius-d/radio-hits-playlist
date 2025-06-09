@@ -71,6 +71,11 @@ public class SoundgraphService {
         tracks = processFilterArtistsFromStep(tracks, filterArtistsFromStep);
       } else if (step instanceof SoundgraphConfig.ArtistSeparationStep) {
         tracks = processArtistSeparationStep(tracks);
+      } else if (step
+          instanceof SoundgraphConfig.LoadArtistNewestAlbumStep loadArtistNewestAlbumStep) {
+        tracks =
+            spotifyWrapper.getArtistNewestAlbumTracks(
+                loadArtistNewestAlbumStep.artistId(), loadArtistNewestAlbumStep.albumTypes());
       }
     }
 

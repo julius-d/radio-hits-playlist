@@ -21,7 +21,8 @@ public record SoundgraphConfig(
     @JsonSubTypes.Type(value = FilterOutExplicitStep.class, name = "filterOutExplicit"),
     @JsonSubTypes.Type(value = LoadArtistTopTracksStep.class, name = "loadArtistTopTracks"),
     @JsonSubTypes.Type(value = FilterArtistsFromStep.class, name = "filterArtistsFrom"),
-    @JsonSubTypes.Type(value = ArtistSeparationStep.class, name = "artistSeparation")
+    @JsonSubTypes.Type(value = ArtistSeparationStep.class, name = "artistSeparation"),
+    @JsonSubTypes.Type(value = LoadArtistNewestAlbumStep.class, name = "loadArtistNewestAlbum")
   })
   public sealed interface Step
       permits LoadPlaylistStep,
@@ -33,7 +34,8 @@ public record SoundgraphConfig(
           FilterOutExplicitStep,
           LoadArtistTopTracksStep,
           FilterArtistsFromStep,
-          ArtistSeparationStep {
+          ArtistSeparationStep,
+          LoadArtistNewestAlbumStep {
     String type();
   }
 
@@ -111,6 +113,18 @@ public record SoundgraphConfig(
     @Override
     public String type() {
       return "artistSeparation";
+    }
+  }
+
+  public record LoadArtistNewestAlbumStep(
+      @JsonProperty("artistId") String artistId,
+      @JsonProperty("name") String name,
+      @JsonProperty("albumTypes") List<String> albumTypes)
+      implements Step {
+
+    @Override
+    public String type() {
+      return "loadArtistNewestAlbum";
     }
   }
 }
