@@ -9,9 +9,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.apache.hc.core5.http.ParseException;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
+import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
 
 public class TrackFinderAlternative {
 
@@ -42,7 +44,7 @@ public class TrackFinderAlternative {
     String plainQuery = track.artist() + " " + track.title();
     querries.add(plainQuery);
     for (String query : querries) {
-      var searchResult = execSearch(query);
+      var searchResult = execSearch(query, track);
       if (searchResult.isPresent()) {
         return searchResult.map(SpotifyTrackMapper::toSpotifyTrack);
       }
@@ -51,13 +53,61 @@ public class TrackFinderAlternative {
   }
 
   private Optional<se.michaelthelin.spotify.model_objects.specification.Track> execSearch(
-      String q) {
+      String q, Track originalTrack) {
     try {
       var searchTracksRequest = spotifyApi.searchTracks(q).market(CountryCode.DE).limit(2).build();
       var trackPaging = searchTracksRequest.execute();
+
+      for (var spotifyTrack : trackPaging.getItems()) {
+        if (isExactMatch(spotifyTrack, originalTrack)) {
+          return Optional.of(spotifyTrack);
+        }
+      }
+
       return Arrays.stream(trackPaging.getItems()).findFirst();
     } catch (IOException | SpotifyWebApiException | ParseException e) {
       throw new SpotifyException("Failed to search for " + q, e);
     }
+  }
+
+  private boolean isExactMatch(
+      se.michaelthelin.spotify.model_objects.specification.Track spotifyTrack, Track wantedTrack) {
+    String foundTitle = normalizeTitle(spotifyTrack.getName());
+    String wantedTitle = normalizeTitle(wantedTrack.title());
+
+    if (!foundTitle.equals(wantedTitle)) {
+      return false;
+    }
+
+    String wantedArtists = normalizeArtist(wantedTrack.artist());
+    String foundArtists =
+        normalizeArtist(
+            Arrays.stream(spotifyTrack.getArtists())
+                .map(ArtistSimplified::getName)
+                .collect(Collectors.joining(" ")));
+
+    return foundArtists.equals(wantedArtists);
+  }
+
+  private String normalizeTitle(String title) {
+    return title.toLowerCase().trim();
+  }
+
+  private String normalizeArtist(String artist) {
+    return artist
+        .toLowerCase()
+        .replaceAll(",", " ")
+        .replaceAll("&", " ")
+        .replaceAll(" x ", " ")
+        .replaceAll(" X ", " ")
+        .replaceAll(" x ", " ")
+        .replaceAll(" feat ", " ")
+        .replaceAll(" featuring ", " ")
+        .replaceAll(" ft ", " ")
+        .replaceAll(" ft. ", " ")
+        .replaceAll(" feat. ", " ")
+        .replaceAll(" featuring. ", " ")
+        .replaceAll("\\s+", " ")
+        .trim();
   }
 }
