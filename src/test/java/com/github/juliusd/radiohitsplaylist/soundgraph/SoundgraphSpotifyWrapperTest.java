@@ -141,7 +141,13 @@ class SoundgraphSpotifyWrapperTest {
                           "release_date": "2024-01-01",
                           "total_tracks": 10,
                           "type": "album",
-                          "album_group": "album"
+                          "album_group": "album",
+                          "artists": [
+                            {
+                              "id": "artist1",
+                              "name": "Test Artist"
+                            }
+                          ]
                         },
                         {
                           "album_type": "album",
@@ -150,7 +156,13 @@ class SoundgraphSpotifyWrapperTest {
                           "release_date": "2024-02-01",
                           "total_tracks": 10,
                           "type": "album",
-                          "album_group": "album"
+                          "album_group": "album",
+                          "artists": [
+                            {
+                              "id": "artist1",
+                              "name": "Test Artist"
+                            }
+                          ]
                         }
                       ],
                       "limit": 50,
@@ -180,7 +192,13 @@ class SoundgraphSpotifyWrapperTest {
                           "release_date": "2023-01-01",
                           "total_tracks": 10,
                           "type": "album",
-                          "album_group": "album"
+                          "album_group": "album",
+                          "artists": [
+                            {
+                              "id": "artist1",
+                              "name": "Test Artist"
+                            }
+                          ]
                         },
                         {
                           "album_type": "album",
@@ -189,7 +207,13 @@ class SoundgraphSpotifyWrapperTest {
                           "release_date": "2024-01-01",
                           "total_tracks": 10,
                           "type": "album",
-                          "album_group": "album"
+                          "album_group": "album",
+                          "artists": [
+                            {
+                              "id": "artist1",
+                              "name": "Test Artist"
+                            }
+                          ]
                         }
                       ],
                       "limit": 50,
@@ -239,7 +263,13 @@ class SoundgraphSpotifyWrapperTest {
                           "release_date": "2023-01-01",
                           "total_tracks": 10,
                           "type": "album",
-                          "album_group": "album"
+                          "album_group": "album",
+                          "artists": [
+                            {
+                              "id": "artist1",
+                              "name": "Test Artist"
+                            }
+                          ]
                         },
                         {
                           "album_type": "single",
@@ -248,7 +278,13 @@ class SoundgraphSpotifyWrapperTest {
                           "release_date": "2024-01-01",
                           "total_tracks": 2,
                           "type": "single",
-                          "album_group": "single"
+                          "album_group": "single",
+                          "artists": [
+                            {
+                              "id": "artist1",
+                              "name": "Test Artist"
+                            }
+                          ]
                         }
                       ],
                       "limit": 50,
@@ -332,7 +368,13 @@ class SoundgraphSpotifyWrapperTest {
                           "release_date": "2023-01-01",
                           "total_tracks": 10,
                           "type": "album",
-                          "album_group": "album"
+                          "album_group": "album",
+                          "artists": [
+                            {
+                              "id": "artist1",
+                              "name": "Test Artist"
+                            }
+                          ]
                         },
                         {
                           "album_type": "album",
@@ -341,7 +383,13 @@ class SoundgraphSpotifyWrapperTest {
                           "release_date": "2023-06-01",
                           "total_tracks": 10,
                           "type": "album",
-                          "album_group": "album"
+                          "album_group": "album",
+                          "artists": [
+                            {
+                              "id": "artist1",
+                              "name": "Test Artist"
+                            }
+                          ]
                         }
                       ],
                       "limit": 50,
@@ -372,7 +420,13 @@ class SoundgraphSpotifyWrapperTest {
                           "release_date": "2024-01-01",
                           "total_tracks": 10,
                           "type": "album",
-                          "album_group": "album"
+                          "album_group": "album",
+                          "artists": [
+                            {
+                              "id": "artist1",
+                              "name": "Test Artist"
+                            }
+                          ]
                         }
                       ],
                       "limit": 50,
