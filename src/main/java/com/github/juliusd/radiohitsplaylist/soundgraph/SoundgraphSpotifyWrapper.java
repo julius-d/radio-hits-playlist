@@ -185,6 +185,12 @@ public class SoundgraphSpotifyWrapper {
               + newestAlbumId
               + ", Type: "
               + newestAlbum.getAlbumGroup().name()
+              + ", Release Date: "
+              + newestAlbum.getReleaseDate()
+              + ", Artist: "
+              + String.join(", ", Arrays.stream(newestAlbum.getArtists())
+                    .map(ArtistSimplified::getName)
+                    .toList())
               + ")");
 
       return getAlbumTracks(newestAlbumId);
