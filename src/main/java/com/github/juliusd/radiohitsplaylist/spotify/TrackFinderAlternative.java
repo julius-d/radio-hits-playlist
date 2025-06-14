@@ -41,7 +41,7 @@ public class TrackFinderAlternative {
     }
     String unquotedQuery = "artist:" + track.artist() + " track:" + track.title();
     querries.add(unquotedQuery);
-    String plainQuery = track.artist() + " " + track.title();
+    String plainQuery = buildPlainQuery(track);
     querries.add(plainQuery);
     for (String query : querries) {
       var searchResult = execSearch(query, track);
@@ -52,10 +52,18 @@ public class TrackFinderAlternative {
     return Optional.empty();
   }
 
+  private String buildPlainQuery(Track track) {
+    if (!track.title().trim().contains(" ") && track.artist().trim().contains(" ")) {
+      return track.title() + " - " + track.artist();
+    } else {
+      return track.artist() + " " + track.title();
+    }
+  }
+
   private Optional<se.michaelthelin.spotify.model_objects.specification.Track> execSearch(
       String q, Track originalTrack) {
     try {
-      var searchTracksRequest = spotifyApi.searchTracks(q).market(CountryCode.DE).limit(2).build();
+      var searchTracksRequest = spotifyApi.searchTracks(q).market(CountryCode.DE).limit(3).build();
       var trackPaging = searchTracksRequest.execute();
 
       for (var spotifyTrack : trackPaging.getItems()) {
