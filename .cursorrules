@@ -17,3 +17,4 @@
 - The project uses Google Java Format style with spotless plugin version 2.43.0
 - Always ensure code is properly formatted before committing
 - Maintain test coverage and ensure all existing tests continue to pass 
+- Use assertJ for assertions in unit tests
