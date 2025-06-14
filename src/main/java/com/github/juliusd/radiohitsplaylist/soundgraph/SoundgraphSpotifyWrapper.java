@@ -124,45 +124,55 @@ public class SoundgraphSpotifyWrapper {
       List<AlbumType> types =
           (albumTypes == null || albumTypes.isEmpty()) ? List.of(AlbumType.ALBUM) : albumTypes;
 
-      // Convert AlbumType enums to Spotify AlbumGroup enums
-      String albumTypesAsString =
-          types.stream()
-              .map(
-                  it ->
-                      switch (it) {
-                        case ALBUM -> AlbumGroup.ALBUM;
-                        case SINGLE -> AlbumGroup.SINGLE;
-                        case COMPILATION -> AlbumGroup.COMPILATION;
-                        case APPEARS_ON -> AlbumGroup.APPEARS_ON;
-                      })
-              .map(AlbumGroup::getGroup)
-              .distinct()
-              .sorted()
-              .collect(Collectors.joining(","));
+      var wantedSpotifyAlbumGroups =
+          types.stream().map(this::mapToSpotifyAlbumGroup).collect(Collectors.toList());
 
-      // Get artist's albums, sorted by release date (newest first)
-      AlbumSimplified[] albums =
+      // Get all albums using pagination
+      var response =
           spotifyApi
               .getArtistsAlbums(artistId)
-              .album_type(albumTypesAsString)
               .market(CountryCode.DE)
-              .limit(1)
+              .limit(50)
+              .offset(0)
               .build()
-              .execute()
-              .getItems();
+              .execute();
 
-      if (albums.length == 0) {
-        log("No albums found for artist " + artistId + " with types " + types);
-        return new ArrayList<>();
+      var allAlbums = new ArrayList<AlbumSimplified>();
+      allAlbums.addAll(Arrays.asList(response.getItems()));
+
+      while (response.getNext() != null) {
+        response =
+            spotifyApi
+                .getArtistsAlbums(artistId)
+                .market(CountryCode.DE)
+                .limit(50)
+                .offset(allAlbums.size())
+                .build()
+                .execute();
+
+        allAlbums.addAll(Arrays.asList(response.getItems()));
       }
 
+      if (allAlbums.isEmpty()) {
+        log("No albums found for artist " + artistId + " with types " + types);
+        return List.of();
+      }
+
+      AlbumSimplified newestAlbum =
+          allAlbums.stream()
+              .filter(album -> wantedSpotifyAlbumGroups.contains(album.getAlbumGroup()))
+              .max((a1, a2) -> a1.getReleaseDate().compareTo(a2.getReleaseDate()))
+              .orElseThrow(() -> new IllegalStateException("Could not determine newest album"));
+
       // Get tracks from the newest album
-      String newestAlbumId = albums[0].getId();
+      String newestAlbumId = newestAlbum.getId();
       log(
           "Loading tracks from newest album: "
-              + albums[0].getName()
+              + newestAlbum.getName()
               + " (ID: "
               + newestAlbumId
+              + ", Type: "
+              + newestAlbum.getAlbumGroup().name()
               + ")");
 
       return getAlbumTracks(newestAlbumId);
@@ -171,6 +181,15 @@ public class SoundgraphSpotifyWrapper {
       log("Error loading newest album tracks for artist " + artistId + ": " + e.getMessage());
       throw new SpotifyException("Error loading newest album tracks for artist " + artistId, e);
     }
+  }
+
+  private AlbumGroup mapToSpotifyAlbumGroup(AlbumType it) {
+    return switch (it) {
+      case ALBUM -> AlbumGroup.ALBUM;
+      case SINGLE -> AlbumGroup.SINGLE;
+      case COMPILATION -> AlbumGroup.COMPILATION;
+      case APPEARS_ON -> AlbumGroup.APPEARS_ON;
+    };
   }
 
   public void updatePlaylist(String playlistId, List<SoundgraphSong> tracks)
