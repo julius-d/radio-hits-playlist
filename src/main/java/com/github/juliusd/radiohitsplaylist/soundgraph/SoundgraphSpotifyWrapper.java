@@ -118,7 +118,8 @@ public class SoundgraphSpotifyWrapper {
   }
 
   public List<SoundgraphSong> getArtistNewestAlbumTracks(
-      String artistId, List<AlbumType> albumTypes) throws SpotifyException {
+      String artistId, List<AlbumType> albumTypes, List<String> excludingAlbumsWithTitleContaining)
+      throws SpotifyException {
     try {
       // Default to "album" if no album types provided
       List<AlbumType> types =
@@ -161,6 +162,17 @@ public class SoundgraphSpotifyWrapper {
       AlbumSimplified newestAlbum =
           allAlbums.stream()
               .filter(album -> wantedSpotifyAlbumGroups.contains(album.getAlbumGroup()))
+              .filter(
+                  album -> {
+                    if (excludingAlbumsWithTitleContaining == null
+                        || excludingAlbumsWithTitleContaining.isEmpty()) {
+                      return true;
+                    }
+                    String albumName = album.getName().toLowerCase();
+                    return excludingAlbumsWithTitleContaining.stream()
+                        .map(String::toLowerCase)
+                        .noneMatch(albumName::contains);
+                  })
               .max((a1, a2) -> a1.getReleaseDate().compareTo(a2.getReleaseDate()))
               .orElseThrow(() -> new IllegalStateException("Could not determine newest album"));
 

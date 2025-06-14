@@ -33,7 +33,8 @@ class SoundgraphSpotifyWrapperTest {
 
     // when
     List<SoundgraphSong> tracks =
-        soundgraphSpotifyWrapper.getArtistNewestAlbumTracks(artistId, List.of(AlbumType.ALBUM));
+        soundgraphSpotifyWrapper.getArtistNewestAlbumTracks(
+            artistId, List.of(AlbumType.ALBUM), List.of());
 
     // then
     assertThat(tracks)
@@ -50,7 +51,8 @@ class SoundgraphSpotifyWrapperTest {
 
     // when
     List<SoundgraphSong> tracks =
-        soundgraphSpotifyWrapper.getArtistNewestAlbumTracks(artistId, List.of(AlbumType.ALBUM));
+        soundgraphSpotifyWrapper.getArtistNewestAlbumTracks(
+            artistId, List.of(AlbumType.ALBUM), List.of());
 
     // then
     assertThat(tracks).isEmpty();
@@ -65,7 +67,8 @@ class SoundgraphSpotifyWrapperTest {
 
     // when
     List<SoundgraphSong> tracks =
-        soundgraphSpotifyWrapper.getArtistNewestAlbumTracks(artistId, List.of(AlbumType.ALBUM));
+        soundgraphSpotifyWrapper.getArtistNewestAlbumTracks(
+            artistId, List.of(AlbumType.ALBUM), List.of());
 
     // then
     assertThat(tracks)
@@ -83,13 +86,81 @@ class SoundgraphSpotifyWrapperTest {
 
     // when
     List<SoundgraphSong> tracks =
-        soundgraphSpotifyWrapper.getArtistNewestAlbumTracks(artistId, List.of(AlbumType.ALBUM));
+        soundgraphSpotifyWrapper.getArtistNewestAlbumTracks(
+            artistId, List.of(AlbumType.ALBUM), List.of());
 
     // then
     assertThat(tracks)
         .hasSize(2)
         .extracting(SoundgraphSong::title)
         .containsExactly("Track 1", "Track 2");
+  }
+
+  @Test
+  void shouldExcludeAlbumsWithTitleContaining() {
+    // given
+    String artistId = "artist1";
+    given2NewestAlbumsOneDeluxOnNormal(artistId);
+    givenAlbumTracksResponse("album1");
+
+    // when: Exclude albums with 'Deluxe' in the title
+    var tracks =
+        soundgraphSpotifyWrapper.getArtistNewestAlbumTracks(
+            artistId, List.of(AlbumType.ALBUM), List.of("Deluxe"));
+
+    assertThat(tracks)
+        .hasSize(2)
+        .extracting(SoundgraphSong::title)
+        .containsExactly("Track 1", "Track 2");
+
+    verify(
+        getRequestedFor(urlPathEqualTo("/v1/artists/" + artistId + "/albums"))
+            .withQueryParam("market", equalTo("DE"))
+            .withQueryParam("limit", equalTo("50"))
+            .withQueryParam("offset", equalTo("0")));
+
+    verify(getRequestedFor(urlPathEqualTo("/v1/albums/album1/tracks")));
+
+    verify(0, getRequestedFor(urlPathEqualTo("/v1/albums/album2/tracks")));
+  }
+
+  private void given2NewestAlbumsOneDeluxOnNormal(String artistId) {
+    wireMock.register(
+        get(urlPathEqualTo("/v1/artists/" + artistId + "/albums"))
+            .withQueryParam("market", equalTo("DE"))
+            .willReturn(
+                okJson(
+                    """
+                    {
+                      "href": "https://api.spotify.com/v1/artists/%s/albums",
+                      "items": [
+                        {
+                          "album_type": "album",
+                          "id": "album1",
+                          "name": "Normal Album",
+                          "release_date": "2024-01-01",
+                          "total_tracks": 10,
+                          "type": "album",
+                          "album_group": "album"
+                        },
+                        {
+                          "album_type": "album",
+                          "id": "album2",
+                          "name": "Deluxe Edition",
+                          "release_date": "2024-02-01",
+                          "total_tracks": 10,
+                          "type": "album",
+                          "album_group": "album"
+                        }
+                      ],
+                      "limit": 50,
+                      "next": null,
+                      "offset": 0,
+                      "previous": null,
+                      "total": 2
+                    }
+                    """
+                        .formatted(artistId))));
   }
 
   private void givenArtistAlbumsResponse(String artistId) {

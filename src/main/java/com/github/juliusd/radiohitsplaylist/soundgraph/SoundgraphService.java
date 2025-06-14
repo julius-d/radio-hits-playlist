@@ -75,7 +75,9 @@ public class SoundgraphService {
           instanceof SoundgraphConfig.LoadArtistNewestAlbumStep loadArtistNewestAlbumStep) {
         tracks =
             spotifyWrapper.getArtistNewestAlbumTracks(
-                loadArtistNewestAlbumStep.artistId(), loadArtistNewestAlbumStep.albumTypes());
+                loadArtistNewestAlbumStep.artistId(),
+                loadArtistNewestAlbumStep.albumTypes(),
+                loadArtistNewestAlbumStep.excludingAlbumsWithTitleContaining());
       }
     }
 

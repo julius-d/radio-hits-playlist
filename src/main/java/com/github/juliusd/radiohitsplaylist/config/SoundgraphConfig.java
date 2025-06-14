@@ -120,7 +120,9 @@ public record SoundgraphConfig(
   public record LoadArtistNewestAlbumStep(
       @JsonProperty("artistId") String artistId,
       @JsonProperty("name") String name,
-      @JsonProperty("albumTypes") List<AlbumType> albumTypes)
+      @JsonProperty("albumTypes") List<AlbumType> albumTypes,
+      @JsonProperty("excludingAlbumsWithTitleContaining")
+          List<String> excludingAlbumsWithTitleContaining)
       implements Step {
 
     @Override
