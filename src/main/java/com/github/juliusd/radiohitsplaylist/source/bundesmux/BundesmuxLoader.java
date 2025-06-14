@@ -43,6 +43,7 @@ public class BundesmuxLoader {
                           });
                 })
             .filter(track -> !track.title().equalsIgnoreCase("Coming Up"))
+            .filter(track -> !track.artist().equalsIgnoreCase("Coming Up"))
             .distinct()
             .collect(toList());
     Collections.reverse(tracks);
