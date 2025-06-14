@@ -63,7 +63,7 @@ public class TrackFinderAlternative {
   private Optional<se.michaelthelin.spotify.model_objects.specification.Track> execSearch(
       String q, Track originalTrack) {
     try {
-      var searchTracksRequest = spotifyApi.searchTracks(q).market(CountryCode.DE).limit(3).build();
+      var searchTracksRequest = spotifyApi.searchTracks(q).market(CountryCode.DE).limit(5).build();
       var trackPaging = searchTracksRequest.execute();
 
       for (var spotifyTrack : trackPaging.getItems()) {

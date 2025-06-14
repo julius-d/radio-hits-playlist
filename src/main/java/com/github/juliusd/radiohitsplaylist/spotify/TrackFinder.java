@@ -1,6 +1,5 @@
 package com.github.juliusd.radiohitsplaylist.spotify;
 
-import static com.github.juliusd.radiohitsplaylist.Logger.log;
 import static java.util.function.Predicate.not;
 
 import com.github.juliusd.radiohitsplaylist.Track;
@@ -10,10 +9,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.apache.hc.core5.http.ParseException;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
-import se.michaelthelin.spotify.exceptions.detailed.BadGatewayException;
+import se.michaelthelin.spotify.model_objects.specification.ArtistSimplified;
 
 public class TrackFinder {
 
@@ -41,39 +41,79 @@ public class TrackFinder {
     }
     String unquotedQuery = "artist:" + track.artist() + " track:" + track.title();
     querries.add(unquotedQuery);
-    String plainQuery = track.artist() + " " + track.title();
+    String plainQuery = buildPlainQuery(track);
     querries.add(plainQuery);
-    return querries.stream()
-        .reduce(
-            Optional.empty(),
-            (Optional<se.michaelthelin.spotify.model_objects.specification.Track> o, String q) ->
-                o.or(() -> execSearch(q)),
-            (track1, track2) -> track1.isPresent() ? track1 : track2)
-        .map(SpotifyTrackMapper::toSpotifyTrack);
+    for (String query : querries) {
+      var searchResult = execSearch(query, track);
+      if (searchResult.isPresent()) {
+        return searchResult.map(SpotifyTrackMapper::toSpotifyTrack);
+      }
+    }
+    return Optional.empty();
+  }
+
+  private String buildPlainQuery(Track track) {
+    if (!track.title().trim().contains(" ") && track.artist().trim().contains(" ")) {
+      return track.title() + " - " + track.artist();
+    } else {
+      return track.artist() + " " + track.title();
+    }
   }
 
   private Optional<se.michaelthelin.spotify.model_objects.specification.Track> execSearch(
-      String q) {
+      String q, Track originalTrack) {
     try {
-      return execSearchWithRetry(q, 2);
+      var searchTracksRequest = spotifyApi.searchTracks(q).market(CountryCode.DE).limit(5).build();
+      var trackPaging = searchTracksRequest.execute();
+
+      for (var spotifyTrack : trackPaging.getItems()) {
+        if (isExactMatch(spotifyTrack, originalTrack)) {
+          return Optional.of(spotifyTrack);
+        }
+      }
+
+      return Arrays.stream(trackPaging.getItems()).findFirst();
     } catch (IOException | SpotifyWebApiException | ParseException e) {
       throw new SpotifyException("Failed to search for " + q, e);
     }
   }
 
-  private Optional<se.michaelthelin.spotify.model_objects.specification.Track> execSearchWithRetry(
-      String q, int remainingRetries) throws IOException, SpotifyWebApiException, ParseException {
-    try {
-      var searchTracksRequest = spotifyApi.searchTracks(q).market(CountryCode.DE).limit(2).build();
-      var trackPaging = searchTracksRequest.execute();
-      return Arrays.stream(trackPaging.getItems()).findFirst();
-    } catch (BadGatewayException e) {
-      log("BadGatewayException: " + e.getMessage());
-      if (remainingRetries > 0) {
-        return execSearchWithRetry(q, remainingRetries - 1);
-      } else {
-        throw e;
-      }
+  private boolean isExactMatch(
+      se.michaelthelin.spotify.model_objects.specification.Track spotifyTrack, Track wantedTrack) {
+    String foundTitle = normalizeTitle(spotifyTrack.getName());
+    String wantedTitle = normalizeTitle(wantedTrack.title());
+
+    if (!foundTitle.equals(wantedTitle)) {
+      return false;
     }
+
+    String wantedArtists = normalizeArtist(wantedTrack.artist());
+    String foundArtists =
+        normalizeArtist(
+            Arrays.stream(spotifyTrack.getArtists())
+                .map(ArtistSimplified::getName)
+                .collect(Collectors.joining(" ")));
+
+    return foundArtists.equals(wantedArtists);
+  }
+
+  private String normalizeTitle(String title) {
+    return title.toLowerCase().trim();
+  }
+
+  private String normalizeArtist(String artist) {
+    return artist
+        .toLowerCase()
+        .replaceAll(",", " ")
+        .replaceAll("&", " ")
+        .replaceAll(" x ", " ")
+        .replaceAll(" feat ", " ")
+        .replaceAll(" featuring ", " ")
+        .replaceAll(" ft ", " ")
+        .replaceAll(" ft. ", " ")
+        .replaceAll(" feat. ", " ")
+        .replaceAll(" featuring. ", " ")
+        .replaceAll("\\s+", " ")
+        .trim();
   }
 }

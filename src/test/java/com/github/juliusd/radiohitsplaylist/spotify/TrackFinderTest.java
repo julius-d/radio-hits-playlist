@@ -167,13 +167,13 @@ class TrackFinderTest {
         getRequestedFor(urlPathEqualTo("/v1/search"))
             .withQueryParam("q", equalTo("artist:\"Udo Lindenberg & Apache 207\" track:\"Komet\""))
             .withQueryParam("market", equalTo("DE"))
-            .withQueryParam("limit", equalTo("2"))
+            .withQueryParam("limit", equalTo("5"))
             .withQueryParam("type", equalTo("track")));
     verify(
         getRequestedFor(urlPathEqualTo("/v1/search"))
             .withQueryParam("q", equalTo("artist:\"Udo Lindenberg\" track:\"Komet\""))
             .withQueryParam("market", equalTo("DE"))
-            .withQueryParam("limit", equalTo("2"))
+            .withQueryParam("limit", equalTo("5"))
             .withQueryParam("type", equalTo("track")));
     verify(2, getRequestedFor(urlPathEqualTo("/v1/search")));
 
@@ -305,14 +305,14 @@ class TrackFinderTest {
         getRequestedFor(urlPathEqualTo("/v1/search"))
             .withQueryParam("q", equalTo("artist:\"Lil Nas X\" track:\"Star Walkin'\""))
             .withQueryParam("market", equalTo("DE"))
-            .withQueryParam("limit", equalTo("2"))
+            .withQueryParam("limit", equalTo("5"))
             .withQueryParam("type", equalTo("track")));
 
     verify(
         getRequestedFor(urlPathEqualTo("/v1/search"))
             .withQueryParam("q", equalTo("artist:Lil Nas X track:Star Walkin'"))
             .withQueryParam("market", equalTo("DE"))
-            .withQueryParam("limit", equalTo("2"))
+            .withQueryParam("limit", equalTo("5"))
             .withQueryParam("type", equalTo("track")));
 
     verify(2, getRequestedFor(urlPathEqualTo("/v1/search")));
