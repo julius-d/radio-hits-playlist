@@ -2,6 +2,7 @@ package com.github.juliusd.radiohitsplaylist.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.github.juliusd.radiohitsplaylist.soundgraph.AlbumType;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -77,6 +78,19 @@ class ConfigLoaderTest {
               - type: filterOutExplicit
               - type: limit
                 value: 150
+        - name: Artist Newest Album Playlist
+          targetPlaylistId: targetPlaylistId11
+          descriptionPrefix: Artist Latest Tracks
+          pipe:
+            steps:
+              - type: loadArtistNewestAlbum
+                artistId: artist123
+                name: My Favorite Artist
+                albumTypes: [album, single]
+                excludingAlbumsWithTitleContaining: [Deluxe, Remastered]
+              - type: shuffle
+              - type: limit
+                value: 20
       gotify:
        notifyOnSuccess: false
        notifyOnFailure: true
@@ -86,8 +100,8 @@ class ConfigLoaderTest {
 
     Configuration configuration = new ConfigLoader().loadConfig(path.toString());
 
-    // Create expected SoundgraphConfig
-    var soundgraphConfig =
+    // Create expected SoundgraphConfigs
+    var soundgraphConfig1 =
         new SoundgraphConfig(
             "My Soundgraph Playlist",
             "targetPlaylistId10",
@@ -111,6 +125,21 @@ class ConfigLoaderTest {
                     new SoundgraphConfig.ShuffleStep(),
                     new SoundgraphConfig.FilterOutExplicitStep(),
                     new SoundgraphConfig.LimitStep(150))));
+
+    var soundgraphConfig2 =
+        new SoundgraphConfig(
+            "Artist Newest Album Playlist",
+            "targetPlaylistId11",
+            "Artist Latest Tracks",
+            new SoundgraphConfig.Pipe(
+                List.of(
+                    new SoundgraphConfig.LoadArtistNewestAlbumStep(
+                        "artist123",
+                        "My Favorite Artist",
+                        List.of(AlbumType.ALBUM, AlbumType.SINGLE),
+                        List.of("Deluxe", "Remastered")),
+                    new SoundgraphConfig.ShuffleStep(),
+                    new SoundgraphConfig.LimitStep(20))));
 
     assertThat(configuration)
         .isEqualTo(
@@ -136,7 +165,7 @@ class ConfigLoaderTest {
                         "myBundesStream1", "targetPlaylistId8", "my prefix7"),
                     new ReCreateBundesmuxPlaylistTaskConfiguration(
                         "myBundesStream2", "targetPlaylistId9", "my other prefix7")),
-                List.of(soundgraphConfig),
+                List.of(soundgraphConfig1, soundgraphConfig2),
                 new NotifierConfiguration(
                     false, true, "https://example.org/gotify", "myApiToken")));
   }

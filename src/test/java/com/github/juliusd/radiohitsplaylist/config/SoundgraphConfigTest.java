@@ -249,4 +249,39 @@ class SoundgraphConfigTest {
         .containsExactly(
             AlbumType.ALBUM, AlbumType.SINGLE, AlbumType.COMPILATION, AlbumType.APPEARS_ON);
   }
+
+  @Test
+  void shouldParseLoadArtistNewestAlbumConfigWithExclusions() throws Exception {
+    // given
+    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    String yamlConfig =
+        """
+            name: "Artist Newest Album With Exclusions Test"
+            targetPlaylistId: "target_playlist_id"
+            pipe:
+              steps:
+                - type: "loadArtistNewestAlbum"
+                  artistId: "artist_id_1"
+                  name: "Test Artist"
+                  albumTypes: ["album", "single"]
+                  excludingAlbumsWithTitleContaining: ["Deluxe", "Remastered", "Live"]
+            """;
+
+    // when
+    SoundgraphConfig config = mapper.readValue(yamlConfig, SoundgraphConfig.class);
+
+    // then
+    assertThat(config.pipe().steps()).hasSize(1);
+
+    // Verify step uses specified album types and exclusions
+    SoundgraphConfig.Step step = config.pipe().steps().get(0);
+    assertThat(step).isInstanceOf(SoundgraphConfig.LoadArtistNewestAlbumStep.class);
+    SoundgraphConfig.LoadArtistNewestAlbumStep artistStep =
+        (SoundgraphConfig.LoadArtistNewestAlbumStep) step;
+    assertThat(artistStep.artistId()).isEqualTo("artist_id_1");
+    assertThat(artistStep.name()).isEqualTo("Test Artist");
+    assertThat(artistStep.albumTypes()).containsExactly(AlbumType.ALBUM, AlbumType.SINGLE);
+    assertThat(artistStep.excludingAlbumsWithTitleContaining())
+        .containsExactly("Deluxe", "Remastered", "Live");
+  }
 }
