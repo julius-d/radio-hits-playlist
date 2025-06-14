@@ -175,6 +175,7 @@ This step allows you to automatically include the latest content from your favor
 - `artistId` (required): The Spotify artist ID
 - `name` (required): A descriptive name for the step (used for logging)
 - `albumTypes` (optional): Array of album types to consider. Defaults to `["album"]`
+- `excludingAlbumsWithTitleContaining` (optional): Array of strings. If an album's title contains any of these strings, it will be excluded from consideration. Useful for excluding "Deluxe Edition", "Remastered", etc.
 
 #### Supported Album Types:
 - `"album"` - Full-length albums
@@ -185,3 +186,4 @@ This step allows you to automatically include the latest content from your favor
 #### Notes:
 - Returns empty list if no matching albums are found
 - Newest release is determined by Spotify's release date sorting
+- When excluding albums by title, the step will select the newest non-excluded album
