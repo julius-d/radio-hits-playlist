@@ -7,6 +7,7 @@ import com.github.juliusd.radiohitsplaylist.config.Configuration;
 import com.github.juliusd.radiohitsplaylist.config.ReCreateBerlinHitRadioPlaylistTaskConfiguration;
 import com.github.juliusd.radiohitsplaylist.config.ReCreateBundesmuxPlaylistTaskConfiguration;
 import com.github.juliusd.radiohitsplaylist.config.ReCreateFamilyRadioPlaylistTaskConfiguration;
+import com.github.juliusd.radiohitsplaylist.config.ReCreateYoungPeoplePlaylistTaskConfiguration;
 import com.github.juliusd.radiohitsplaylist.monitoring.GotifyClientConfiguration;
 import com.github.juliusd.radiohitsplaylist.monitoring.NoOpNotifier;
 import com.github.juliusd.radiohitsplaylist.monitoring.Notifier;
@@ -19,6 +20,8 @@ import com.github.juliusd.radiohitsplaylist.source.bundesmux.BundesmuxClientConf
 import com.github.juliusd.radiohitsplaylist.source.bundesmux.BundesmuxLoader;
 import com.github.juliusd.radiohitsplaylist.source.family.FamilyRadioClientConfiguration;
 import com.github.juliusd.radiohitsplaylist.source.family.FamilyRadioLoader;
+import com.github.juliusd.radiohitsplaylist.source.youngpeople.YoungPeopleClientConfiguration;
+import com.github.juliusd.radiohitsplaylist.source.youngpeople.YoungPeopleLoader;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistShuffel;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistUpdater;
 import com.github.juliusd.radiohitsplaylist.spotify.SpotifyApiConfiguration;
@@ -60,6 +63,7 @@ public class Main {
     var playlistShuffel = new PlaylistShuffel(spotifyApi);
     var berlinHitRadioLoader = new BerlinHitRadioClientConfiguration().berlinHitRadioLoader();
     var familyRadioLoader = new FamilyRadioClientConfiguration().familyRadioLoader();
+    var youngPeopleLoader = new YoungPeopleClientConfiguration(configuration).youngPeopleLoader();
     var playlistUpdater =
         new PlaylistUpdater(spotifyApi, new TrackFinder(spotifyApi), trackCache, notifier);
     var soundgraphSpotifyWrapper = new SoundgraphSpotifyWrapper(spotifyApi);
@@ -85,6 +89,14 @@ public class Main {
         .forEach(
             task -> {
               refreshPlaylistFromSource(berlinHitRadioLoader, playlistUpdater, task, notifier);
+            });
+
+    configuration
+        .reCreateYoungPeoplePlaylistTasks()
+        .forEach(
+            task -> {
+              refreshYoungPeoplePlaylistFromSource(
+                  youngPeopleLoader, playlistUpdater, task, notifier);
             });
 
     if (!configuration.reCreateBundesmuxPlaylistTasks().isEmpty()) {
@@ -158,5 +170,21 @@ public class Main {
     playlistUpdater.update(tracks, configuration.playlistId(), configuration.descriptionPrefix());
     notifier.recordPlaylistRefresh(configuration.streamName(), tracks.size());
     log("Refreshed bundesmux " + configuration.streamName());
+  }
+
+  private static void refreshYoungPeoplePlaylistFromSource(
+      YoungPeopleLoader youngPeopleLoader,
+      PlaylistUpdater playlistUpdater,
+      ReCreateYoungPeoplePlaylistTaskConfiguration configuration,
+      Notifier notifier) {
+    List<Track> tracks = youngPeopleLoader.load(configuration.programName());
+    playlistUpdater.update(tracks, configuration.playlistId(), configuration.descriptionPrefix());
+    notifier.recordPlaylistRefresh("YoungPeople " + configuration.programName(), tracks.size());
+    log(
+        "Refreshed YoungPeople "
+            + configuration.programName()
+            + " with "
+            + tracks.size()
+            + " tracks");
   }
 }

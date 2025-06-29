@@ -44,6 +44,11 @@ class ConfigLoaderTest {
         - playlistId: targetPlaylistId7
           streamName: myHitStream2
           descriptionPrefix: my other prefix2
+      youngPeopleUrl: https://www.example.org/youngpeople
+      reCreateYoungPeoplePlaylistTasks:
+        - programName: program/name
+          playlistId: targetPlaylistId12
+          descriptionPrefix: Young People Prefix
       bundesmuxUrl: https://example.org/b
       reCreateBundesmuxPlaylistTasks:
         - playlistId: targetPlaylistId8
@@ -159,6 +164,10 @@ class ConfigLoaderTest {
                         "myHitStream1", "targetPlaylistId6", "my prefix2"),
                     new ReCreateBerlinHitRadioPlaylistTaskConfiguration(
                         "myHitStream2", "targetPlaylistId7", "my other prefix2")),
+                List.of(
+                    new ReCreateYoungPeoplePlaylistTaskConfiguration(
+                        "program/name", "targetPlaylistId12", "Young People Prefix")),
+                "https://www.example.org/youngpeople",
                 "https://example.org/b",
                 List.of(
                     new ReCreateBundesmuxPlaylistTaskConfiguration(
@@ -185,7 +194,9 @@ class ConfigLoaderTest {
 
     Configuration configuration = new ConfigLoader().loadConfig(path.toString());
     assertThat(configuration.reCreateFamilyRadioPlaylistTasks()).isEqualTo(Collections.emptyList());
-    assertThat(configuration.reCreateFamilyRadioPlaylistTasks()).isEqualTo(Collections.emptyList());
+    assertThat(configuration.reCreateBerlinHitRadioPlaylistTasks())
+        .isEqualTo(Collections.emptyList());
+    assertThat(configuration.reCreateYoungPeoplePlaylistTasks()).isEqualTo(Collections.emptyList());
     assertThat(configuration.reCreateBundesmuxPlaylistTasks()).isEqualTo(Collections.emptyList());
     assertThat(configuration.shuffleTasks()).isEqualTo(Collections.emptyList());
     assertThat(configuration.soundgraphTasks()).isEqualTo(Collections.emptyList());
