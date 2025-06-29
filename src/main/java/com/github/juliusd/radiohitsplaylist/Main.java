@@ -60,7 +60,8 @@ public class Main {
     var playlistShuffel = new PlaylistShuffel(spotifyApi);
     var berlinHitRadioLoader = new BerlinHitRadioClientConfiguration().berlinHitRadioLoader();
     var familyRadioLoader = new FamilyRadioClientConfiguration().familyRadioLoader();
-    var playlistUpdater = new PlaylistUpdater(spotifyApi, new TrackFinder(spotifyApi), trackCache);
+    var playlistUpdater =
+        new PlaylistUpdater(spotifyApi, new TrackFinder(spotifyApi), trackCache, notifier);
     var soundgraphSpotifyWrapper = new SoundgraphSpotifyWrapper(spotifyApi);
     var soundgraphService = new SoundgraphService(soundgraphSpotifyWrapper);
 

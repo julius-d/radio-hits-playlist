@@ -44,6 +44,11 @@ class GotifyNotifier implements Notifier {
   }
 
   @Override
+  public void recordCacheHit() {
+    statistic.recordCacheHit();
+  }
+
+  @Override
   public void runFinishedSuccessfully() {
     if (config.notifyOnSuccess()) {
       var messageText = NotificationTextBuilder.createMessageText(statistic);

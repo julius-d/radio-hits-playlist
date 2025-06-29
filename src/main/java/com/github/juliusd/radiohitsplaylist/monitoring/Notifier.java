@@ -13,6 +13,8 @@ public interface Notifier {
 
   void recordFinalCacheSize(long cacheSize);
 
+  void recordCacheHit();
+
   void runFinishedSuccessfully();
 
   void runFailed(Throwable throwable);

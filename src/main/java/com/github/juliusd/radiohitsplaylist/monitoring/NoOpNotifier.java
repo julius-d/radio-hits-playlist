@@ -20,6 +20,9 @@ public class NoOpNotifier implements Notifier {
   public void recordFinalCacheSize(long cacheSize) {}
 
   @Override
+  public void recordCacheHit() {}
+
+  @Override
   public void runFinishedSuccessfully() {}
 
   @Override

@@ -200,6 +200,30 @@ class NotificationTextBuilderTest {
         """;
       assertThat(result).isEqualTo(expected);
     }
+
+    @Test
+    void canCreateMessageTextWithCacheHits() {
+      var statistic = new Statistic();
+      statistic.recordPlaylistRefresh("myStream", 12);
+      statistic.recordInitialCacheSize(100);
+      statistic.recordFinalCacheSize(105);
+      statistic.recordCacheHit();
+      statistic.recordCacheHit();
+      statistic.recordCacheHit();
+
+      String result = NotificationTextBuilder.createMessageText(statistic);
+
+      String expected =
+          """
+        Run finished successfully after ???
+
+        Refreshed playlists (1):
+        - myStream: 12 tracks
+
+        Track cache: 105 total tracks (+5 new), 3 cache hits
+        """;
+      assertThat(result).isEqualTo(expected);
+    }
   }
 
   @Nested

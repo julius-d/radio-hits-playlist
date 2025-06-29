@@ -64,8 +64,9 @@ class NotificationTextBuilder {
     // Add cache statistics
     long finalCacheSize = statistic.getFinalCacheSize();
     long newTracksAdded = statistic.getNewTracksAdded();
+    long cacheHits = statistic.getCacheHits();
 
-    if (finalCacheSize > 0 || newTracksAdded > 0) {
+    if (finalCacheSize > 0 || newTracksAdded > 0 || cacheHits > 0) {
       if (!shuffledPlaylists.isEmpty()
           || !statistic.getRefreshedPlaylists().isEmpty()
           || !statistic.getSoundgraphResults().isEmpty()) {
@@ -74,6 +75,9 @@ class NotificationTextBuilder {
 
       messageText.append("Track cache: ").append(finalCacheSize).append(" total tracks");
       messageText.append(" (+").append(newTracksAdded).append(" new)");
+      if (cacheHits > 0) {
+        messageText.append(", ").append(cacheHits).append(" cache hits");
+      }
       messageText.append("\n");
     }
 
