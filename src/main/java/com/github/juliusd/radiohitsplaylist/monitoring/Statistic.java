@@ -11,6 +11,8 @@ class Statistic {
   private final List<PlaylistRefreshResult> refreshedPlaylists = new ArrayList<>();
   private final List<SoundgraphResult> soundgraphResults = new ArrayList<>();
   private LocalDateTime startTime;
+  private long initialCacheSize = 0;
+  private long finalCacheSize = 0;
 
   public void recordPlaylistShuffled(String playlistName) {
     shuffledPlaylists.add(playlistName);
@@ -24,6 +26,14 @@ class Statistic {
     soundgraphResults.add(new SoundgraphResult(name, amountOfTracks));
   }
 
+  public void recordInitialCacheSize(long cacheSize) {
+    this.initialCacheSize = cacheSize;
+  }
+
+  public void recordFinalCacheSize(long cacheSize) {
+    this.finalCacheSize = cacheSize;
+  }
+
   public List<String> getShuffledPlaylists() {
     return Collections.unmodifiableList(shuffledPlaylists);
   }
@@ -34,6 +44,18 @@ class Statistic {
 
   public List<SoundgraphResult> getSoundgraphResults() {
     return Collections.unmodifiableList(soundgraphResults);
+  }
+
+  public long getInitialCacheSize() {
+    return initialCacheSize;
+  }
+
+  public long getFinalCacheSize() {
+    return finalCacheSize;
+  }
+
+  public long getNewTracksAdded() {
+    return finalCacheSize - initialCacheSize;
   }
 
   public void runStarted() {

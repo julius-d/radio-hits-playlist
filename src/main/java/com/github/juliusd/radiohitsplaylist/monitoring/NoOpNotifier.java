@@ -14,6 +14,12 @@ public class NoOpNotifier implements Notifier {
   public void recordSoundgraphExecuted(String name, int amountOfTracks) {}
 
   @Override
+  public void recordInitialCacheSize(long cacheSize) {}
+
+  @Override
+  public void recordFinalCacheSize(long cacheSize) {}
+
+  @Override
   public void runFinishedSuccessfully() {}
 
   @Override

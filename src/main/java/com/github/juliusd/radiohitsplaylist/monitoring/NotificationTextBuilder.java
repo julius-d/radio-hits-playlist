@@ -61,6 +61,22 @@ class NotificationTextBuilder {
                       .append(" tracks\n"));
     }
 
+    // Add cache statistics
+    long finalCacheSize = statistic.getFinalCacheSize();
+    long newTracksAdded = statistic.getNewTracksAdded();
+
+    if (finalCacheSize > 0 || newTracksAdded > 0) {
+      if (!shuffledPlaylists.isEmpty()
+          || !statistic.getRefreshedPlaylists().isEmpty()
+          || !statistic.getSoundgraphResults().isEmpty()) {
+        messageText.append("\n");
+      }
+
+      messageText.append("Track cache: ").append(finalCacheSize).append(" total tracks");
+      messageText.append(" (+").append(newTracksAdded).append(" new)");
+      messageText.append("\n");
+    }
+
     return messageText.toString();
   }
 

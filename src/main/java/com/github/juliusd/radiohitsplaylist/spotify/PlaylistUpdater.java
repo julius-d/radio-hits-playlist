@@ -9,6 +9,8 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.apache.hc.core5.http.ParseException;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
@@ -16,10 +18,12 @@ import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 public class PlaylistUpdater {
   private final SpotifyApi spotifyApi;
   private final TrackFinder trackFinder;
+  private final TrackCache trackCache;
 
-  public PlaylistUpdater(SpotifyApi spotifyApi, TrackFinder trackFinder) {
+  public PlaylistUpdater(SpotifyApi spotifyApi, TrackFinder trackFinder, TrackCache trackCache) {
     this.spotifyApi = spotifyApi;
     this.trackFinder = trackFinder;
+    this.trackCache = trackCache;
   }
 
   public void update(List<Track> tracks, String playlistId, String descriptionPrefix) {
@@ -80,7 +84,30 @@ public class PlaylistUpdater {
 
   private List<URI> findSpotifyTrackIds(List<Track> tracks) {
     return tracks.stream()
-        .flatMap(track -> trackFinder.findSpotifyTrack(track).map(SpotifyTrack::uri).stream())
+        .map(this::findTrackInCacheOrViaSpotifyApi)
+        .flatMap(Optional::stream)
         .toList();
+  }
+
+  private Optional<URI> findTrackInCacheOrViaSpotifyApi(Track track) {
+    return trackCache
+        .findTrack(track)
+        .or(
+            () ->
+                trackFinder
+                    .findSpotifyTrack(track)
+                    .map(
+                        spotifyTrack -> {
+                          URI trackUri = spotifyTrack.uri();
+                          if (isExactMatch(track, spotifyTrack)) {
+                            trackCache.storeTrack(track, trackUri);
+                          }
+                          return trackUri;
+                        }));
+  }
+
+  private static boolean isExactMatch(Track track, SpotifyTrack spotifyTrack) {
+    return track.artist().equals(spotifyTrack.artists().stream().collect(Collectors.joining(" & ")))
+        && track.title().equals(spotifyTrack.name());
   }
 }

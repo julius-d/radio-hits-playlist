@@ -34,6 +34,16 @@ class GotifyNotifier implements Notifier {
   }
 
   @Override
+  public void recordInitialCacheSize(long cacheSize) {
+    statistic.recordInitialCacheSize(cacheSize);
+  }
+
+  @Override
+  public void recordFinalCacheSize(long cacheSize) {
+    statistic.recordFinalCacheSize(cacheSize);
+  }
+
+  @Override
   public void runFinishedSuccessfully() {
     if (config.notifyOnSuccess()) {
       var messageText = NotificationTextBuilder.createMessageText(statistic);

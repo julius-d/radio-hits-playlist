@@ -9,6 +9,10 @@ public interface Notifier {
 
   void recordSoundgraphExecuted(String name, int amountOfTracks);
 
+  void recordInitialCacheSize(long cacheSize);
+
+  void recordFinalCacheSize(long cacheSize);
+
   void runFinishedSuccessfully();
 
   void runFailed(Throwable throwable);

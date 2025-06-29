@@ -22,6 +22,7 @@ import com.github.juliusd.radiohitsplaylist.source.family.FamilyRadioLoader;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistShuffel;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistUpdater;
 import com.github.juliusd.radiohitsplaylist.spotify.SpotifyApiConfiguration;
+import com.github.juliusd.radiohitsplaylist.spotify.TrackCache;
 import com.github.juliusd.radiohitsplaylist.spotify.TrackFinder;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,7 +38,14 @@ public class Main {
     var notifier = determineNotifier(configuration);
     try {
       notifier.runStarted();
-      executePlaylistTasks(configuration, notifier);
+
+      var trackCache = new TrackCache("track_cache.db");
+      notifier.recordInitialCacheSize(trackCache.getCacheSize());
+
+      executePlaylistTasks(configuration, notifier, trackCache);
+
+      notifier.recordFinalCacheSize(trackCache.getCacheSize());
+
       notifier.runFinishedSuccessfully();
       log("Done");
     } catch (Exception e) {
@@ -46,12 +54,13 @@ public class Main {
     }
   }
 
-  private static void executePlaylistTasks(Configuration configuration, Notifier notifier) {
+  private static void executePlaylistTasks(
+      Configuration configuration, Notifier notifier, TrackCache trackCache) {
     var spotifyApi = new SpotifyApiConfiguration().spotifyApi(configuration);
     var playlistShuffel = new PlaylistShuffel(spotifyApi);
     var berlinHitRadioLoader = new BerlinHitRadioClientConfiguration().berlinHitRadioLoader();
     var familyRadioLoader = new FamilyRadioClientConfiguration().familyRadioLoader();
-    var playlistUpdater = new PlaylistUpdater(spotifyApi, new TrackFinder(spotifyApi));
+    var playlistUpdater = new PlaylistUpdater(spotifyApi, new TrackFinder(spotifyApi), trackCache);
     var soundgraphSpotifyWrapper = new SoundgraphSpotifyWrapper(spotifyApi);
     var soundgraphService = new SoundgraphService(soundgraphSpotifyWrapper);
 
