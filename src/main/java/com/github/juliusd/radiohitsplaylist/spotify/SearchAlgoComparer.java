@@ -13,6 +13,7 @@ import java.net.URI;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -121,9 +122,9 @@ public class SearchAlgoComparer {
           <td>%s</td>
           <td><b>%s</b><br>%s</td>
           <td><b>%s</b><br>%s<br>%s (%s)</td>
-          <td><img src="%s" height="60" alt="cover"></td>
+          <td><a href="%s" target="_blank"><img src="%s" height="60" alt="cover"></a></td>
           <td><b>%s</b><br>%s<br>%s (%s)</td>
-          <td><img src="%s" height="60" alt="cover"></td>
+          <td><a href="%s" target="_blank"><img src="%s" height="60" alt="cover"></a></td>
         </tr>
         """
                       .formatted(
@@ -135,11 +136,13 @@ public class SearchAlgoComparer {
                           algo1result.artists(),
                           algo1result.starRating(),
                           algo1result.levenshteinDistance(),
+                          convertSpotifyUriToWebUrl(algo1result.spotifyUri()),
                           algo1result.albumCover(),
                           algo2result.trackTitle(),
                           algo2result.artists(),
                           algo2result.starRating(),
                           algo2result.levenshteinDistance(),
+                          convertSpotifyUriToWebUrl(algo2result.spotifyUri()),
                           algo2result.albumCover()));
             }));
 
@@ -169,14 +172,19 @@ public class SearchAlgoComparer {
             .flatMap(it -> it.artists().stream())
             .collect(Collectors.joining(", "));
     URI albumCover = spotifyTrack.map(SpotifyTrack::albumCover).orElse(null);
+    URI spotifyUri = spotifyTrack.map(SpotifyTrack::uri).orElse(null);
     boolean completeMatch =
         spotifyTrack.isPresent()
             && givenTrackTitle.equals(foundTrackTitle)
             && givenArtist.equals(foundArtists);
     boolean nearCompleteMatch =
         spotifyTrack.isPresent()
-            && givenTrackTitle.equalsIgnoreCase(foundTrackTitle)
+            && normalize(givenTrackTitle).equals(normalize(foundTrackTitle))
             && normalize(givenArtist).equals(normalize(foundArtists));
+    boolean startsWithMatch =
+        spotifyTrack.isPresent()
+            && normalize(foundTrackTitle).startsWith(normalize(givenTrackTitle))
+            && normalize(foundArtists).startsWith(normalize(givenArtist));
     int levenshteinDistance =
         calculateLevenshteinDistance(normalize(givenTrackTitle), normalize(foundTrackTitle))
             + calculateLevenshteinDistance(normalize(givenArtist), normalize(foundArtists));
@@ -191,7 +199,7 @@ public class SearchAlgoComparer {
     } else if (levenshteinDistance < 2) {
       starRatingValue = 3;
       starRating = "⭐⭐⭐❌❌";
-    } else if (levenshteinDistance < 5) {
+    } else if (startsWithMatch || levenshteinDistance < 5) {
       starRatingValue = 2;
       starRating = "⭐⭐❌❌❌";
     } else if (levenshteinDistance < 10) {
@@ -205,6 +213,7 @@ public class SearchAlgoComparer {
         foundTrackTitle,
         foundArtists,
         albumCover,
+        spotifyUri,
         starRating,
         starRatingValue,
         levenshteinDistance);
@@ -214,17 +223,30 @@ public class SearchAlgoComparer {
       String trackTitle,
       String artists,
       URI albumCover,
+      URI spotifyUri,
       String starRating,
       int starRatingValue,
       int levenshteinDistance) {}
 
   private static String normalize(String artist) {
-    return artist
-        .trim()
+    return Normalizer.normalize(artist, Normalizer.Form.NFD)
+        .replaceAll("\\p{M}", "") // Remove diacritical marks
         .toLowerCase(Locale.ROOT)
+        .replace("'", "")
+        .replace("’", "")
         .replace(",", " ")
+        .replace("(", " ")
+        .replace(")", " ")
+        .replace(" - ", " ")
         .replace("&", " ")
-        .replaceAll("\\s+", " ");
+        .replace(" mit ", " ")
+        .replace(" and ", " ")
+        .replace(" x ", " ")
+        .replace(" featuring ", " ")
+        .replace(" feat. ", " ")
+        .replace(" feat ", " ")
+        .replaceAll("\\s+", " ")
+        .trim();
   }
 
   private static void storeInFile(String string) {
@@ -277,5 +299,18 @@ public class SearchAlgoComparer {
 
   public static int min(int... numbers) {
     return Arrays.stream(numbers).min().orElse(Integer.MAX_VALUE);
+  }
+
+  private static String convertSpotifyUriToWebUrl(URI spotifyUri) {
+    if (spotifyUri == null) {
+      return "#";
+    }
+    // Convert spotify:track:trackId to https://open.spotify.com/track/trackId
+    String uriString = spotifyUri.toString();
+    if (uriString.startsWith("spotify:track:")) {
+      String trackId = uriString.substring("spotify:track:".length());
+      return "https://open.spotify.com/track/" + trackId;
+    }
+    return "#";
   }
 }
