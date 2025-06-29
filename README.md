@@ -43,6 +43,11 @@ reCreateBundesmuxPlaylistTasks:
   - playlistId: targetPlaylistId9
     streamName: myBundesStream2
     descriptionPrefix: my other prefix7
+youngPeopleUrl: https://www.example.org/youngpeople
+reCreateYoungPeoplePlaylistTasks:
+  - playlistId: targetPlaylistId12
+    programName: program/name
+    descriptionPrefix: Young People Prefix
 soundgraphTasks:
   # Simple example with a single playlist
   - name: "Simple Playlist Mix"
