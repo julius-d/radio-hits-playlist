@@ -30,6 +30,10 @@ public class PlaylistUpdater {
 
   private void updateDescription(String playlistId, String descriptionPrefix) {
     try {
+      if (descriptionPrefix == null || descriptionPrefix.trim().isEmpty()) {
+        return;
+      }
+
       String today = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
       spotifyApi
           .changePlaylistsDetails(playlistId)
