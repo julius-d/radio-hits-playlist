@@ -53,7 +53,7 @@ class GotifyNotifier implements Notifier {
     if (config.notifyOnSuccess()) {
       var messageText = NotificationTextBuilder.createMessageText(statistic);
 
-      var message = new GotfiyMessage("Finished", messageText, 1);
+      var message = new GotfiyMessage("Success", messageText, 1);
       gotifyClient.sendMessage(config.gotifyApiToken(), message);
     }
   }
