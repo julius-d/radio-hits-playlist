@@ -61,9 +61,6 @@ public class Main {
       Configuration configuration, Notifier notifier, TrackCache trackCache) {
     var spotifyApi = new SpotifyApiConfiguration().spotifyApi(configuration);
     var playlistShuffel = new PlaylistShuffel(spotifyApi);
-    var berlinHitRadioLoader = new BerlinHitRadioClientConfiguration().berlinHitRadioLoader();
-    var familyRadioLoader = new FamilyRadioClientConfiguration().familyRadioLoader();
-    var youngPeopleLoader = new YoungPeopleClientConfiguration(configuration).youngPeopleLoader();
     var playlistUpdater =
         new PlaylistUpdater(spotifyApi, new TrackFinder(spotifyApi), trackCache, notifier);
     var soundgraphSpotifyWrapper = new SoundgraphSpotifyWrapper(spotifyApi);
@@ -77,31 +74,39 @@ public class Main {
                   shuffleTaskConfiguration.playlistId(), notifier);
             });
 
-    configuration
-        .reCreateFamilyRadioPlaylistTasks()
-        .forEach(
-            task -> {
-              refreshFamilyPlaylistFromSource(familyRadioLoader, playlistUpdater, task, notifier);
-            });
+    if (!configuration.reCreateFamilyRadioPlaylistTasks().isEmpty()) {
+      var familyRadioLoader = new FamilyRadioClientConfiguration().familyRadioLoader();
+      configuration
+          .reCreateFamilyRadioPlaylistTasks()
+          .forEach(
+              task -> {
+                refreshFamilyPlaylistFromSource(familyRadioLoader, playlistUpdater, task, notifier);
+              });
+    }
 
-    configuration
-        .reCreateBerlinHitRadioPlaylistTasks()
-        .forEach(
-            task -> {
-              refreshPlaylistFromSource(berlinHitRadioLoader, playlistUpdater, task, notifier);
-            });
+    if (!configuration.reCreateBerlinHitRadioPlaylistTasks().isEmpty()) {
+      var berlinHitRadioLoader = new BerlinHitRadioClientConfiguration().berlinHitRadioLoader();
+      configuration
+          .reCreateBerlinHitRadioPlaylistTasks()
+          .forEach(
+              task -> {
+                refreshPlaylistFromSource(berlinHitRadioLoader, playlistUpdater, task, notifier);
+              });
+    }
 
-    configuration
-        .reCreateYoungPeoplePlaylistTasks()
-        .forEach(
-            task -> {
-              refreshYoungPeoplePlaylistFromSource(
-                  youngPeopleLoader, playlistUpdater, task, notifier);
-            });
+    if (!configuration.reCreateYoungPeoplePlaylistTasks().isEmpty()) {
+      var youngPeopleLoader = new YoungPeopleClientConfiguration(configuration).youngPeopleLoader();
+      configuration
+          .reCreateYoungPeoplePlaylistTasks()
+          .forEach(
+              task -> {
+                refreshYoungPeoplePlaylistFromSource(
+                    youngPeopleLoader, playlistUpdater, task, notifier);
+              });
+    }
 
     if (!configuration.reCreateBundesmuxPlaylistTasks().isEmpty()) {
       var bundesmuxLoader = new BundesmuxClientConfiguration(configuration).bundesmuxLoader();
-
       configuration
           .reCreateBundesmuxPlaylistTasks()
           .forEach(
