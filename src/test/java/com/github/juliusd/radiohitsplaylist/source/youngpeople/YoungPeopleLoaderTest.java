@@ -47,7 +47,7 @@ class YoungPeopleLoaderTest {
             <tr class="play_track">
               <td class="play_time">17:05</td>
               <td class="current_track"></td>
-              <td class="trackpicture"></td>    
+              <td class="trackpicture"></td>
               <td class="trackinterpret">Armin van Buuren; JAI RYU</td>
               <td class="tracktitle">Let It Be for Love</td>
               <td class="trackbemerkung"></td>
