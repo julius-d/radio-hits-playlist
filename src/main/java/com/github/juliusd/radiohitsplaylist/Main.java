@@ -184,7 +184,7 @@ public class Main {
       Notifier notifier) {
     List<Track> tracks = youngPeopleLoader.load(configuration.programName());
     playlistUpdater.update(tracks, configuration.playlistId(), configuration.descriptionPrefix());
-    notifier.recordPlaylistRefresh("YoungPeople " + configuration.programName(), tracks.size());
+    notifier.recordPlaylistRefresh(configuration.programName(), tracks.size());
     log(
         "Refreshed YoungPeople "
             + configuration.programName()
