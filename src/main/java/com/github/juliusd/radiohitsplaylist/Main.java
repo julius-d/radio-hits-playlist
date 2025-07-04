@@ -47,7 +47,6 @@ public class Main {
       notifier.recordFinalCacheSize(trackCache.getCacheSize());
 
       notifier.runFinishedSuccessfully();
-      log("Done");
     } catch (Exception e) {
       notifier.runFailed(e);
       throw e;
