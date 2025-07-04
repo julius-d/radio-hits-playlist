@@ -8,8 +8,9 @@ import com.github.juliusd.radiohitsplaylist.config.ReCreateBerlinHitRadioPlaylis
 import com.github.juliusd.radiohitsplaylist.config.ReCreateBundesmuxPlaylistTaskConfiguration;
 import com.github.juliusd.radiohitsplaylist.config.ReCreateFamilyRadioPlaylistTaskConfiguration;
 import com.github.juliusd.radiohitsplaylist.config.ReCreateYoungPeoplePlaylistTaskConfiguration;
+import com.github.juliusd.radiohitsplaylist.monitoring.CompositeNotifier;
 import com.github.juliusd.radiohitsplaylist.monitoring.GotifyClientConfiguration;
-import com.github.juliusd.radiohitsplaylist.monitoring.NoOpNotifier;
+import com.github.juliusd.radiohitsplaylist.monitoring.LoggingNotifier;
 import com.github.juliusd.radiohitsplaylist.monitoring.Notifier;
 import com.github.juliusd.radiohitsplaylist.soundgraph.SoundgraphService;
 import com.github.juliusd.radiohitsplaylist.soundgraph.SoundgraphSong;
@@ -27,15 +28,11 @@ import com.github.juliusd.radiohitsplaylist.spotify.PlaylistUpdater;
 import com.github.juliusd.radiohitsplaylist.spotify.SpotifyApiConfiguration;
 import com.github.juliusd.radiohitsplaylist.spotify.TrackCache;
 import com.github.juliusd.radiohitsplaylist.spotify.TrackFinder;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class Main {
 
   public static void main(String[] args) {
-    log("Start");
-    log(LocalDateTime.now().toString());
-    log("Version: " + PlaylistShuffel.class.getPackage().getImplementationVersion());
 
     var configuration = new ConfigLoader().loadConfig(System.getProperty("configFilePath"));
     var notifier = determineNotifier(configuration);
@@ -138,9 +135,10 @@ public class Main {
 
   private static Notifier determineNotifier(Configuration configuration) {
     if (configuration.gotify() != null) {
-      return new GotifyClientConfiguration().notifier(configuration.gotify());
+      Notifier gotifyNotifier = new GotifyClientConfiguration().notifier(configuration.gotify());
+      return new CompositeNotifier(List.of(new LoggingNotifier(), gotifyNotifier));
     } else {
-      return new NoOpNotifier();
+      return new LoggingNotifier();
     }
   }
 
