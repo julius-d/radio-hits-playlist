@@ -45,6 +45,11 @@ public class CompositeNotifier implements Notifier {
   }
 
   @Override
+  public void recordCacheMiss() {
+    notifiers.forEach(Notifier::recordCacheMiss);
+  }
+
+  @Override
   public void runFinishedSuccessfully() {
     notifiers.forEach(Notifier::runFinishedSuccessfully);
   }

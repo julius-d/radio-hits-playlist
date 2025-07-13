@@ -224,6 +224,55 @@ class NotificationTextBuilderTest {
         """;
       assertThat(result).isEqualTo(expected);
     }
+
+    @Test
+    void canCreateMessageTextWithCacheMisses() {
+      var statistic = new Statistic();
+      statistic.recordPlaylistRefresh("myStream", 12);
+      statistic.recordInitialCacheSize(100);
+      statistic.recordFinalCacheSize(105);
+      statistic.recordCacheMiss();
+      statistic.recordCacheMiss();
+
+      String result = NotificationTextBuilder.createMessageText(statistic);
+
+      String expected =
+          """
+        Run finished successfully after ???
+
+        Refreshed playlists (1):
+        - myStream: 12 tracks
+
+        Track cache: 105 total tracks (+5 new), 2 cache misses
+        """;
+      assertThat(result).isEqualTo(expected);
+    }
+
+    @Test
+    void canCreateMessageTextWithCacheHitsAndMisses() {
+      var statistic = new Statistic();
+      statistic.recordPlaylistRefresh("myStream", 12);
+      statistic.recordInitialCacheSize(100);
+      statistic.recordFinalCacheSize(105);
+      statistic.recordCacheHit();
+      statistic.recordCacheHit();
+      statistic.recordCacheMiss();
+      statistic.recordCacheMiss();
+      statistic.recordCacheMiss();
+
+      String result = NotificationTextBuilder.createMessageText(statistic);
+
+      String expected =
+          """
+        Run finished successfully after ???
+
+        Refreshed playlists (1):
+        - myStream: 12 tracks
+
+        Track cache: 105 total tracks (+5 new), 2 cache hits, 3 cache misses
+        """;
+      assertThat(result).isEqualTo(expected);
+    }
   }
 
   @Nested

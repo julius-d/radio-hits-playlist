@@ -102,17 +102,19 @@ public class PlaylistUpdater {
               return uri;
             })
         .or(
-            () ->
-                trackFinder
-                    .findSpotifyTrack(track)
-                    .map(
-                        spotifyTrack -> {
-                          URI trackUri = spotifyTrack.uri();
-                          if (isExactMatch(track, spotifyTrack)) {
-                            trackCache.storeTrack(track, trackUri);
-                          }
-                          return trackUri;
-                        }));
+            () -> {
+              notifier.recordCacheMiss();
+              return trackFinder
+                  .findSpotifyTrack(track)
+                  .map(
+                      spotifyTrack -> {
+                        URI trackUri = spotifyTrack.uri();
+                        if (isExactMatch(track, spotifyTrack)) {
+                          trackCache.storeTrack(track, trackUri);
+                        }
+                        return trackUri;
+                      });
+            });
   }
 
   private static boolean isExactMatch(Track track, SpotifyTrack spotifyTrack) {

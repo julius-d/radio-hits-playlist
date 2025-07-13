@@ -15,6 +15,8 @@ public interface Notifier {
 
   void recordCacheHit();
 
+  void recordCacheMiss();
+
   void runFinishedSuccessfully();
 
   void runFailed(Throwable throwable);

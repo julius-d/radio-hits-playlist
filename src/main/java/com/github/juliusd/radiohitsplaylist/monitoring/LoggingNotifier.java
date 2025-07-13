@@ -46,12 +46,16 @@ public class LoggingNotifier implements Notifier {
 
     long newTracksAdded = statistic.getNewTracksAdded();
     long cacheHits = statistic.getCacheHits();
+    long cacheMisses = statistic.getCacheMisses();
 
     StringBuilder cacheMessage = new StringBuilder();
     cacheMessage.append("Track cache: ").append(cacheSize).append(" total tracks");
     cacheMessage.append(" (+").append(newTracksAdded).append(" new)");
     if (cacheHits > 0) {
       cacheMessage.append(", ").append(cacheHits).append(" cache hits");
+    }
+    if (cacheMisses > 0) {
+      cacheMessage.append(", ").append(cacheMisses).append(" cache misses");
     }
 
     log(cacheMessage.toString());
@@ -60,7 +64,11 @@ public class LoggingNotifier implements Notifier {
   @Override
   public void recordCacheHit() {
     statistic.recordCacheHit();
-    log("Cache hit");
+  }
+
+  @Override
+  public void recordCacheMiss() {
+    statistic.recordCacheMiss();
   }
 
   @Override

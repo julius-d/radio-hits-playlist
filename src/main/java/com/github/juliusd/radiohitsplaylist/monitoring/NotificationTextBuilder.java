@@ -65,8 +65,9 @@ class NotificationTextBuilder {
     long finalCacheSize = statistic.getFinalCacheSize();
     long newTracksAdded = statistic.getNewTracksAdded();
     long cacheHits = statistic.getCacheHits();
+    long cacheMisses = statistic.getCacheMisses();
 
-    if (finalCacheSize > 0 || newTracksAdded > 0 || cacheHits > 0) {
+    if (finalCacheSize > 0 || newTracksAdded > 0 || cacheHits > 0 || cacheMisses > 0) {
       if (!shuffledPlaylists.isEmpty()
           || !statistic.getRefreshedPlaylists().isEmpty()
           || !statistic.getSoundgraphResults().isEmpty()) {
@@ -77,6 +78,9 @@ class NotificationTextBuilder {
       messageText.append(" (+").append(newTracksAdded).append(" new)");
       if (cacheHits > 0) {
         messageText.append(", ").append(cacheHits).append(" cache hits");
+      }
+      if (cacheMisses > 0) {
+        messageText.append(", ").append(cacheMisses).append(" cache misses");
       }
       messageText.append("\n");
     }

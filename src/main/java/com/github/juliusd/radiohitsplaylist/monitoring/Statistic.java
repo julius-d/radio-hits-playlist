@@ -14,6 +14,7 @@ class Statistic {
   private long initialCacheSize = 0;
   private long finalCacheSize = 0;
   private long cacheHits = 0;
+  private long cacheMisses = 0;
 
   public void recordPlaylistShuffled(String playlistName) {
     shuffledPlaylists.add(playlistName);
@@ -37,6 +38,10 @@ class Statistic {
 
   public void recordCacheHit() {
     this.cacheHits++;
+  }
+
+  public void recordCacheMiss() {
+    this.cacheMisses++;
   }
 
   public List<String> getShuffledPlaylists() {
@@ -65,6 +70,10 @@ class Statistic {
 
   public long getCacheHits() {
     return cacheHits;
+  }
+
+  public long getCacheMisses() {
+    return cacheMisses;
   }
 
   public void runStarted() {
