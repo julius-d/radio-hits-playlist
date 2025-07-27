@@ -5,6 +5,7 @@ import feign.Feign;
 import feign.Logger;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
+import java.time.Clock;
 
 public class FamilyRadioClientConfiguration {
 
@@ -23,6 +24,6 @@ public class FamilyRadioClientConfiguration {
   }
 
   public FamilyRadioLoader familyRadioLoader() {
-    return new FamilyRadioLoader(familyRadioClient());
+    return new FamilyRadioLoader(familyRadioClient(), Clock.systemDefaultZone());
   }
 }

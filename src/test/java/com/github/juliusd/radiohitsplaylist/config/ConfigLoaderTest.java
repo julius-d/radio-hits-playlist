@@ -35,10 +35,14 @@ class ConfigLoaderTest {
           streamName: myStream1
           descriptionPrefix: my prefix
           channelId: 3bb7d791-128a-424f-9ef8-378bd426d833
+          earliestSongTime: 06:30
+          trackLimit: 100
         - playlistId: targetPlaylistId5
           streamName: myStream2
           descriptionPrefix: my other prefix
           channelId: 3176e7c3-d821-4554-ac10-eeb66941c256
+          earliestSongTime: 21:00
+          trackLimit: 150
       familyRadioUrl: https://www.example.org/f
       reCreateBerlinHitRadioPlaylistTasks:
         - playlistId: targetPlaylistId6
@@ -162,12 +166,16 @@ class ConfigLoaderTest {
                         "myStream1",
                         "targetPlaylistId4",
                         "my prefix",
-                        "3bb7d791-128a-424f-9ef8-378bd426d833"),
+                        "3bb7d791-128a-424f-9ef8-378bd426d833",
+                        "06:30",
+                        100),
                     new ReCreateFamilyRadioPlaylistTaskConfiguration(
                         "myStream2",
                         "targetPlaylistId5",
                         "my other prefix",
-                        "3176e7c3-d821-4554-ac10-eeb66941c256")),
+                        "3176e7c3-d821-4554-ac10-eeb66941c256",
+                        "21:00",
+                        150)),
                 "https://www.example.org/f",
                 List.of(
                     new ReCreateBerlinHitRadioPlaylistTaskConfiguration(

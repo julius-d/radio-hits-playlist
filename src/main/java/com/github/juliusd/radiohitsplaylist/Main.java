@@ -185,7 +185,11 @@ public class Main {
       PlaylistUpdater playlistUpdater,
       ReCreateFamilyRadioPlaylistTaskConfiguration configuration,
       Notifier notifier) {
-    List<Track> tracks = familyRadioLoader.load(configuration.channelId());
+    List<Track> tracks =
+        familyRadioLoader.load(
+            configuration.channelId(),
+            configuration.earliestSongTime(),
+            configuration.trackLimit());
     playlistUpdater.update(tracks, configuration.playlistId(), configuration.descriptionPrefix());
     notifier.recordPlaylistRefresh(configuration.streamName(), tracks.size());
     log("Refreshed family radio " + configuration.streamName());

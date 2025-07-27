@@ -27,10 +27,14 @@ reCreateFamilyRadioPlaylistTasks:
     streamName: myStream1
     descriptionPrefix: my prefix
     channelId: 3bb7d791-128a-424f-9ef8-378bd426d833
+    earliestSongTime: "06:30"
+    trackLimit: 200
   - playlistId: targetPlaylistId5
     streamName: myStream2
     descriptionPrefix: my other prefix
     channelId: 3176e7c3-d821-4554-ac10-eeb66941c256
+    earliestSongTime: "08:00"
+    trackLimit: 100
 reCreateBerlinHitRadioPlaylistTasks:
   - playlistId: targetPlaylistId6
     streamName: myHitStream1
