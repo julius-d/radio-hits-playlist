@@ -32,50 +32,72 @@ class FamilyRadioLoaderTest {
 
   @Test
   void shouldLoadTracksWithSortingFilteringAndLimiting() {
-    // given
-    FamilyRadioResponse mockResponse = createMockResponse();
-    when(mockClient.getTrackHistory(eq(TEST_CHANNEL_ID), any(), any())).thenReturn(mockResponse);
+    givenTrackHistory(
+        track("Morning Song", "Artist A", "2024-01-14T06:00:00.000Z"),
+        track("Afternoon Hit", "Artist B", "2024-01-14T14:00:00.000Z"),
+        track("Evening Tune", "Artist C", "2024-01-14T20:00:00.000Z"),
+        track("Night Beat", "Artist D", "2024-01-14T22:00:00.000Z"),
+        track("Afternoon Hit", "Artist B", "2024-01-14T15:00:00.000Z") // Duplicate
+        );
 
     // when
     List<Track> result = familyRadioLoader.load(TEST_CHANNEL_ID, "08:00", 5);
 
     // then
-    assertThat(result).hasSize(3); // Should be filtered (Morning Song removed) and deduplicated
-
-    // Verify tracks are sorted by time (earliest first)
-    // Morning Song (06:00) should be filtered out since it's before 08:00
-    assertThat(result.get(0).title()).isEqualTo("Afternoon Hit"); // 14:00
-    assertThat(result.get(1).title()).isEqualTo("Evening Tune"); // 20:00
-    assertThat(result.get(2).title()).isEqualTo("Night Beat"); // 22:00
-
-    // Verify tracks are unique (duplicate "Afternoon Hit" should be removed)
-    long afternoonHitCount =
-        result.stream().filter(track -> "Afternoon Hit".equals(track.title())).count();
-    assertThat(afternoonHitCount).isEqualTo(1);
+    assertThat(result)
+        .hasSize(3)
+        .extracting(Track::title)
+        .containsExactly("Afternoon Hit", "Evening Tune", "Night Beat");
   }
 
   @Test
   void shouldFilterTracksBeforeEarliestTime() {
     // given
-    FamilyRadioResponse mockResponse = createMockResponseWithEarlyTracks();
-    when(mockClient.getTrackHistory(eq(TEST_CHANNEL_ID), any(), any())).thenReturn(mockResponse);
+    givenTrackHistory(
+        track(
+            "Early Morning Song",
+            "Artist A",
+            "2024-01-14T07:00:00.000Z"), // Before 10:00, should be filtered
+        track(
+            "Late Morning Song",
+            "Artist B",
+            "2024-01-14T10:30:00.000Z"), // After 10:00, should be included
+        track(
+            "Very Early Song",
+            "Artist C",
+            "2024-01-14T05:00:00.000Z"), // Before 10:00, should be filtered
+        track(
+            "Afternoon Song",
+            "Artist D",
+            "2024-01-14T15:00:00.000Z") // After 10:00, should be included
+        );
 
     // when
     List<Track> result = familyRadioLoader.load(TEST_CHANNEL_ID, "10:00", 10);
 
     // then
-    assertThat(result).hasSize(2); // Only tracks after 10:00 should be included
-    assertThat(result.get(0).title()).isEqualTo("Late Morning Song"); // 10:30
-    assertThat(result.get(1).title()).isEqualTo("Afternoon Song"); // 15:00
+    assertThat(result)
+        .hasSize(2)
+        .extracting(Track::title)
+        .containsExactly("Late Morning Song", "Afternoon Song");
   }
 
   @Test
   void shouldHandlePagination() {
     // given
-    FamilyRadioResponse firstPage = createFirstPageResponse();
-    FamilyRadioResponse secondPage = createSecondPageResponse();
+    givenTrackHistoryWithNextPage(
+        "next-page-token",
+        track("Page 1 Song A", "Artist A", "2024-01-14T08:00:00.000Z"),
+        track("Page 1 Song B", "Artist B", "2024-01-14T09:00:00.000Z"));
 
-    when(mockClient.getTrackHistory(eq(TEST_CHANNEL_ID), any(), any())).thenReturn(firstPage);
+    FamilyRadioResponse secondPage =
+        new FamilyRadioResponse(
+            2,
+            List.of(
+                track("Page 2 Song A", "Artist C", "2024-01-14T10:00:00.000Z"),
+                track("Page 2 Song B", "Artist D", "2024-01-14T11:00:00.000Z")),
+            null);
+
     when(mockClient.getTrackHistoryWithOffset(
             eq(TEST_CHANNEL_ID), eq("next-page-token"), any(), any()))
         .thenReturn(secondPage);
@@ -84,7 +106,10 @@ class FamilyRadioLoaderTest {
     List<Track> result = familyRadioLoader.load(TEST_CHANNEL_ID, "06:00", 10);
 
     // then
-    assertThat(result).hasSize(4); // 2 from first page + 2 from second page
+    assertThat(result)
+        .hasSize(4) // 2 from first page + 2 from second page
+        .extracting(Track::title)
+        .containsExactly("Page 1 Song A", "Page 1 Song B", "Page 2 Song A", "Page 2 Song B");
 
     // Verify pagination calls
     verify(mockClient).getTrackHistory(eq(TEST_CHANNEL_ID), any(), any());
@@ -95,8 +120,12 @@ class FamilyRadioLoaderTest {
   @Test
   void shouldLimitResults() {
     // given
-    FamilyRadioResponse mockResponse = createLargeResponse();
-    when(mockClient.getTrackHistory(eq(TEST_CHANNEL_ID), any(), any())).thenReturn(mockResponse);
+    givenTrackHistory(
+        track("Song 1", "Artist 1", "2024-01-14T08:00:00.000Z"),
+        track("Song 2", "Artist 2", "2024-01-14T09:00:00.000Z"),
+        track("Song 3", "Artist 3", "2024-01-14T10:00:00.000Z"),
+        track("Song 4", "Artist 4", "2024-01-14T11:00:00.000Z"),
+        track("Song 5", "Artist 5", "2024-01-14T12:00:00.000Z"));
 
     // when
     List<Track> result = familyRadioLoader.load(TEST_CHANNEL_ID, "06:00", 3);
@@ -108,13 +137,14 @@ class FamilyRadioLoaderTest {
   @Test
   void shouldUseCorrectDateRange() {
     // given
-    FamilyRadioResponse mockResponse = createMockResponse();
-    when(mockClient.getTrackHistory(eq(TEST_CHANNEL_ID), any(), any())).thenReturn(mockResponse);
+    givenTrackHistory(track("Morning Song", "Artist A", "2024-01-14T06:00:00.000Z"));
 
     // when
     familyRadioLoader.load(TEST_CHANNEL_ID, "08:00", 5);
 
-    verify(mockClient).getTrackHistory(TEST_CHANNEL_ID, "2024-01-14T00:00:00Z", "2024-01-14T23:59:59Z");
+    // then - verify the date range is yesterday (2024-01-14)
+    verify(mockClient)
+        .getTrackHistory(TEST_CHANNEL_ID, "2024-01-14T00:00:00Z", "2024-01-14T23:59:59Z");
   }
 
   @Test
@@ -133,111 +163,35 @@ class FamilyRadioLoaderTest {
   @Test
   void shouldRemoveDuplicateTracks() {
     // given
-    FamilyRadioResponse responseWithDuplicates = createResponseWithDuplicates();
-    when(mockClient.getTrackHistory(eq(TEST_CHANNEL_ID), any(), any()))
-        .thenReturn(responseWithDuplicates);
+    givenTrackHistory(
+        track("Song A", "Artist X", "2024-01-14T08:00:00.000Z"),
+        track("Song B", "Artist Y", "2024-01-14T09:00:00.000Z"),
+        track("Song A", "Artist X", "2024-01-14T10:00:00.000Z"), // Same title and artist
+        track("Song B", "Artist Y", "2024-01-14T11:00:00.000Z") // Same title and artist
+        );
 
     // when
     List<Track> result = familyRadioLoader.load(TEST_CHANNEL_ID, "06:00", 10);
 
     // then
-    assertThat(result).hasSize(2); // Should have unique tracks only
-    assertThat(result.stream().map(Track::title)).containsExactly("Song A", "Song B");
+    assertThat(result).hasSize(2).extracting(Track::title).containsExactly("Song A", "Song B");
   }
 
-  private FamilyRadioResponse createMockResponse() {
-    List<FamilyRadioTrackWrapper> tracks =
-        List.of(
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("1", "Morning Song", "Artist A", null),
-                "2024-01-14T06:00:00.000Z"),
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("2", "Afternoon Hit", "Artist B", null),
-                "2024-01-14T14:00:00.000Z"),
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("3", "Evening Tune", "Artist C", null),
-                "2024-01-14T20:00:00.000Z"),
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("4", "Night Beat", "Artist D", null),
-                "2024-01-14T22:00:00.000Z"),
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("5", "Afternoon Hit", "Artist B", null), // Duplicate
-                "2024-01-14T15:00:00.000Z"));
-    return new FamilyRadioResponse(5, tracks, null);
+  private FamilyRadioTrackWrapper track(String title, String artist, String timestamp) {
+    return new FamilyRadioTrackWrapper(
+        new FamilyRadioTrack(String.valueOf(System.nanoTime()), title, artist, null), timestamp);
   }
 
-  private FamilyRadioResponse createMockResponseWithEarlyTracks() {
-    List<FamilyRadioTrackWrapper> tracks =
-        List.of(
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("1", "Early Morning Song", "Artist A", null),
-                "2024-01-14T07:00:00.000Z"), // Before 10:00, should be filtered
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("2", "Late Morning Song", "Artist B", null),
-                "2024-01-14T10:30:00.000Z"), // After 10:00, should be included
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("3", "Very Early Song", "Artist C", null),
-                "2024-01-14T05:00:00.000Z"), // Before 10:00, should be filtered
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("4", "Afternoon Song", "Artist D", null),
-                "2024-01-14T15:00:00.000Z") // After 10:00, should be included
-            );
-    return new FamilyRadioResponse(4, tracks, null);
+  private void givenTrackHistory(FamilyRadioTrackWrapper... tracks) {
+    FamilyRadioResponse mockResponse =
+        new FamilyRadioResponse(tracks.length, List.of(tracks), null);
+    when(mockClient.getTrackHistory(eq(TEST_CHANNEL_ID), any(), any())).thenReturn(mockResponse);
   }
 
-  private FamilyRadioResponse createFirstPageResponse() {
-    List<FamilyRadioTrackWrapper> tracks =
-        List.of(
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("1", "Page 1 Song A", "Artist A", null),
-                "2024-01-14T08:00:00.000Z"),
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("2", "Page 1 Song B", "Artist B", null),
-                "2024-01-14T09:00:00.000Z"));
-    return new FamilyRadioResponse(2, tracks, "next-page-token");
-  }
-
-  private FamilyRadioResponse createSecondPageResponse() {
-    List<FamilyRadioTrackWrapper> tracks =
-        List.of(
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("3", "Page 2 Song A", "Artist C", null),
-                "2024-01-14T10:00:00.000Z"),
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("4", "Page 2 Song B", "Artist D", null),
-                "2024-01-14T11:00:00.000Z"));
-    return new FamilyRadioResponse(2, tracks, null); // Last page
-  }
-
-  private FamilyRadioResponse createLargeResponse() {
-    List<FamilyRadioTrackWrapper> tracks =
-        List.of(
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("1", "Song 1", "Artist 1", null), "2024-01-14T08:00:00.000Z"),
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("2", "Song 2", "Artist 2", null), "2024-01-14T09:00:00.000Z"),
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("3", "Song 3", "Artist 3", null), "2024-01-14T10:00:00.000Z"),
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("4", "Song 4", "Artist 4", null), "2024-01-14T11:00:00.000Z"),
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("5", "Song 5", "Artist 5", null), "2024-01-14T12:00:00.000Z"));
-    return new FamilyRadioResponse(5, tracks, null);
-  }
-
-  private FamilyRadioResponse createResponseWithDuplicates() {
-    List<FamilyRadioTrackWrapper> tracks =
-        List.of(
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("1", "Song A", "Artist X", null), "2024-01-14T08:00:00.000Z"),
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("2", "Song B", "Artist Y", null), "2024-01-14T09:00:00.000Z"),
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("3", "Song A", "Artist X", null), // Same title and artist
-                "2024-01-14T10:00:00.000Z"),
-            new FamilyRadioTrackWrapper(
-                new FamilyRadioTrack("4", "Song B", "Artist Y", null), // Same title and artist
-                "2024-01-14T11:00:00.000Z"));
-    return new FamilyRadioResponse(4, tracks, null);
+  private void givenTrackHistoryWithNextPage(
+      String nextPageToken, FamilyRadioTrackWrapper... tracks) {
+    FamilyRadioResponse mockResponse =
+        new FamilyRadioResponse(tracks.length, List.of(tracks), nextPageToken);
+    when(mockClient.getTrackHistory(eq(TEST_CHANNEL_ID), any(), any())).thenReturn(mockResponse);
   }
 }
