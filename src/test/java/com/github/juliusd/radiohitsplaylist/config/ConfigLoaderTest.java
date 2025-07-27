@@ -34,9 +34,12 @@ class ConfigLoaderTest {
         - playlistId: targetPlaylistId4
           streamName: myStream1
           descriptionPrefix: my prefix
+          channelId: 3bb7d791-128a-424f-9ef8-378bd426d833
         - playlistId: targetPlaylistId5
           streamName: myStream2
           descriptionPrefix: my other prefix
+          channelId: 3176e7c3-d821-4554-ac10-eeb66941c256
+      familyRadioUrl: https://www.example.org/f
       reCreateBerlinHitRadioPlaylistTasks:
         - playlistId: targetPlaylistId6
           streamName: myHitStream1
@@ -156,9 +159,16 @@ class ConfigLoaderTest {
                     new ShuffleTaskConfiguration("myPlaylistId0003")),
                 List.of(
                     new ReCreateFamilyRadioPlaylistTaskConfiguration(
-                        "myStream1", "targetPlaylistId4", "my prefix"),
+                        "myStream1",
+                        "targetPlaylistId4",
+                        "my prefix",
+                        "3bb7d791-128a-424f-9ef8-378bd426d833"),
                     new ReCreateFamilyRadioPlaylistTaskConfiguration(
-                        "myStream2", "targetPlaylistId5", "my other prefix")),
+                        "myStream2",
+                        "targetPlaylistId5",
+                        "my other prefix",
+                        "3176e7c3-d821-4554-ac10-eeb66941c256")),
+                "https://www.example.org/f",
                 List.of(
                     new ReCreateBerlinHitRadioPlaylistTaskConfiguration(
                         "myHitStream1", "targetPlaylistId6", "my prefix2"),

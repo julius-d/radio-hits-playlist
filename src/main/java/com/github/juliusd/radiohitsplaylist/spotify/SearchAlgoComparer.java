@@ -6,7 +6,6 @@ import com.github.juliusd.radiohitsplaylist.Track;
 import com.github.juliusd.radiohitsplaylist.config.ConfigLoader;
 import com.github.juliusd.radiohitsplaylist.config.ReCreateBerlinHitRadioPlaylistTaskConfiguration;
 import com.github.juliusd.radiohitsplaylist.source.berlinhitradio.BerlinHitRadioClientConfiguration;
-import com.github.juliusd.radiohitsplaylist.source.family.FamilyRadioClientConfiguration;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
@@ -33,7 +32,6 @@ public class SearchAlgoComparer {
     var configuration = new ConfigLoader().loadConfig(System.getProperty("configFilePath"));
     var spotifyApi = new SpotifyApiConfiguration().spotifyApi(configuration);
     var berlinHitRadioLoader = new BerlinHitRadioClientConfiguration().berlinHitRadioLoader();
-    var familyRadioLoader = new FamilyRadioClientConfiguration().familyRadioLoader();
     var trackFinder = new TrackFinder(spotifyApi);
     var trackFinderAlternative = new TrackFinderAlternative(spotifyApi);
 

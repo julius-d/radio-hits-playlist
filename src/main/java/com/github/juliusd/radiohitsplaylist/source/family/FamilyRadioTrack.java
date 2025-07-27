@@ -1,3 +1,6 @@
 package com.github.juliusd.radiohitsplaylist.source.family;
 
-record FamilyRadioTrack(String title, String artist) {}
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+record FamilyRadioTrack(
+    String trackId, String title, @JsonProperty("artistCredits") String artist, String artwork) {}

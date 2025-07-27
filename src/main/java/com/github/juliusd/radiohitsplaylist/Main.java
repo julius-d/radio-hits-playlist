@@ -73,7 +73,8 @@ public class Main {
     // Family Radio tasks
     try {
       if (!configuration.reCreateFamilyRadioPlaylistTasks().isEmpty()) {
-        var familyRadioLoader = new FamilyRadioClientConfiguration().familyRadioLoader();
+        var familyRadioLoader =
+            new FamilyRadioClientConfiguration(configuration).familyRadioLoader();
         configuration
             .reCreateFamilyRadioPlaylistTasks()
             .forEach(
@@ -184,7 +185,7 @@ public class Main {
       PlaylistUpdater playlistUpdater,
       ReCreateFamilyRadioPlaylistTaskConfiguration configuration,
       Notifier notifier) {
-    List<Track> tracks = familyRadioLoader.load(configuration.streamName());
+    List<Track> tracks = familyRadioLoader.load(configuration.channelId());
     playlistUpdater.update(tracks, configuration.playlistId(), configuration.descriptionPrefix());
     notifier.recordPlaylistRefresh(configuration.streamName(), tracks.size());
     log("Refreshed family radio " + configuration.streamName());

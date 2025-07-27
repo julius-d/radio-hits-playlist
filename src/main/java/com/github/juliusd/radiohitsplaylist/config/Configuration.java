@@ -6,6 +6,7 @@ public record Configuration(
     SpotifyConfiguration spotify,
     List<ShuffleTaskConfiguration> shuffleTasks,
     List<ReCreateFamilyRadioPlaylistTaskConfiguration> reCreateFamilyRadioPlaylistTasks,
+    String familyRadioUrl,
     List<ReCreateBerlinHitRadioPlaylistTaskConfiguration> reCreateBerlinHitRadioPlaylistTasks,
     List<ReCreateYoungPeoplePlaylistTaskConfiguration> reCreateYoungPeoplePlaylistTasks,
     String youngPeopleUrl,

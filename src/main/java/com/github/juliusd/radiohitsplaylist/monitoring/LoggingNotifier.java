@@ -80,7 +80,10 @@ public class LoggingNotifier implements Notifier {
       List<Statistic.TaskGroupFailure> failures = statistic.getFailedTaskGroups();
       log("Failed task groups (" + failures.size() + "):");
       failures.forEach(
-          failure -> log("- " + failure.taskGroupName() + ": " + failure.throwable().getMessage()));
+          failure -> {
+            log("Failed task group: " + failure.taskGroupName());
+            failure.throwable().printStackTrace();
+          });
     } else {
       log("Run finished successfully after " + durationText);
     }
