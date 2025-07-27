@@ -26,8 +26,11 @@ public class NoOpNotifier implements Notifier {
   public void recordCacheMiss() {}
 
   @Override
-  public void runFinishedSuccessfully() {}
+  public void runFinished() {}
 
   @Override
   public void runFailed(Throwable throwable) {}
+
+  @Override
+  public void runFailed(String taskGroupName, Throwable throwable) {}
 }

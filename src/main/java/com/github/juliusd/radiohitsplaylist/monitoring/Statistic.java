@@ -10,6 +10,7 @@ class Statistic {
   private final List<String> shuffledPlaylists = new ArrayList<>();
   private final List<PlaylistRefreshResult> refreshedPlaylists = new ArrayList<>();
   private final List<SoundgraphResult> soundgraphResults = new ArrayList<>();
+  private final List<TaskGroupFailure> failedTaskGroups = new ArrayList<>();
   private LocalDateTime startTime;
   private long initialCacheSize = 0;
   private long finalCacheSize = 0;
@@ -26,6 +27,10 @@ class Statistic {
 
   public void recordSoundgraphExecuted(String name, int amountOfTracks) {
     soundgraphResults.add(new SoundgraphResult(name, amountOfTracks));
+  }
+
+  public void recordTaskGroupFailure(String taskGroupName, Throwable throwable) {
+    failedTaskGroups.add(new TaskGroupFailure(taskGroupName, throwable));
   }
 
   public void recordInitialCacheSize(long cacheSize) {
@@ -54,6 +59,14 @@ class Statistic {
 
   public List<SoundgraphResult> getSoundgraphResults() {
     return Collections.unmodifiableList(soundgraphResults);
+  }
+
+  public List<TaskGroupFailure> getFailedTaskGroups() {
+    return Collections.unmodifiableList(failedTaskGroups);
+  }
+
+  public boolean hasFailures() {
+    return !failedTaskGroups.isEmpty();
   }
 
   public long getInitialCacheSize() {
@@ -87,4 +100,6 @@ class Statistic {
   public record PlaylistRefreshResult(String streamName, int amountOfTracks) {}
 
   public record SoundgraphResult(String name, int amountOfTracks) {}
+
+  public record TaskGroupFailure(String taskGroupName, Throwable throwable) {}
 }

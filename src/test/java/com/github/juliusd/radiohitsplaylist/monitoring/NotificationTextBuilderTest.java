@@ -273,6 +273,76 @@ class NotificationTextBuilderTest {
         """;
       assertThat(result).isEqualTo(expected);
     }
+
+    @Test
+    void canCreatePartialFailureMessageText() {
+      var statistic = new Statistic();
+      statistic.recordPlaylistRefresh("successfulStream", 15);
+      statistic.recordPlaylistShuffled("successfulPlaylist");
+      statistic.recordTaskGroupFailure(
+          "Family Radio tasks", new RuntimeException("Connection failed"));
+      statistic.recordTaskGroupFailure("Young People tasks", new IOException("File not found"));
+
+      String result = NotificationTextBuilder.createPartialFailureMessageText(statistic);
+
+      String expected =
+          """
+        Run finished with partial failures after ???
+
+        ✅ Shuffled playlists (1):
+        - successfulPlaylist
+
+        ✅ Refreshed playlists (1):
+        - successfulStream: 15 tracks
+
+        ❌ Failed task groups (2):
+        - Family Radio tasks: Connection failed
+        - Young People tasks: File not found
+        """;
+      assertThat(result).isEqualTo(expected);
+    }
+
+    @Test
+    void canCreatePartialFailureMessageTextWithOnlyFailures() {
+      var statistic = new Statistic();
+      statistic.recordTaskGroupFailure("Berlin Hit Radio tasks", new RuntimeException("API error"));
+
+      String result = NotificationTextBuilder.createPartialFailureMessageText(statistic);
+
+      String expected =
+          """
+        Run finished with partial failures after ???
+
+        ❌ Failed task groups (1):
+        - Berlin Hit Radio tasks: API error
+        """;
+      assertThat(result).isEqualTo(expected);
+    }
+
+    @Test
+    void canCreatePartialFailureMessageTextWithSoundgraphResults() {
+      var statistic = new Statistic();
+      statistic.recordSoundgraphExecuted("soundgraphPlaylist", 30);
+      statistic.recordTaskGroupFailure("Bundesmux tasks", new RuntimeException("Timeout"));
+      statistic.recordInitialCacheSize(50);
+      statistic.recordFinalCacheSize(55);
+
+      String result = NotificationTextBuilder.createPartialFailureMessageText(statistic);
+
+      String expected =
+          """
+        Run finished with partial failures after ???
+
+        ✅ Soundgraph playlists (1):
+        - soundgraphPlaylist: 30 tracks
+
+        ❌ Failed task groups (1):
+        - Bundesmux tasks: Timeout
+
+        Track cache: 55 total tracks (+5 new)
+        """;
+      assertThat(result).isEqualTo(expected);
+    }
   }
 
   @Nested
@@ -293,6 +363,22 @@ class NotificationTextBuilderTest {
     }
 
     @Test
+    void canCreateFailedMessageTextWithTaskGroupName() {
+      // Create an exception with null message
+      Exception exception = new RuntimeException("Just a test");
+
+      String result =
+          NotificationTextBuilder.createFailedMessageText("Family Radio tasks", exception);
+
+      // Verify the result contains expected elements with task group name
+      assertThat(result)
+          .startsWith("Task group 'Family Radio tasks' failed with RuntimeException: Just a test");
+      assertThat(result)
+          .contains(
+              "at com.github.juliusd.radiohitsplaylist.monitoring.NotificationTextBuilderTest$FailedMessageTest");
+    }
+
+    @Test
     void limitedStackTraceElementsAreIncluded() {
       Exception exception = createDeepException();
 
@@ -302,6 +388,21 @@ class NotificationTextBuilderTest {
 
       assertThat(stackTraceLines).isEqualTo(2);
       assertThat(result).contains("... ");
+    }
+
+    @Test
+    void limitedStackTraceElementsAreIncludedWithTaskGroupName() {
+      Exception exception = createDeepException();
+
+      String result =
+          NotificationTextBuilder.createFailedMessageText("Berlin Hit Radio tasks", exception);
+
+      long stackTraceLines = result.lines().filter(line -> line.trim().startsWith("at ")).count();
+
+      assertThat(stackTraceLines).isEqualTo(2);
+      assertThat(result).contains("... ");
+      assertThat(result)
+          .startsWith("Task group 'Berlin Hit Radio tasks' failed with RuntimeException");
     }
 
     private Exception createDeepException() {
@@ -349,6 +450,42 @@ class NotificationTextBuilderTest {
               .count();
 
       assertThat(rootCauseStackLines).isEqualTo(2);
+    }
+
+    @Test
+    void includesCausedByExceptionsInFailedMessageTextWithTaskGroupName() {
+      Exception rootCause = new IOException("Root cause");
+      Exception middleCause = new IllegalStateException("Middle cause", rootCause);
+      Exception topException = new RuntimeException("Top exception", middleCause);
+
+      var result =
+          NotificationTextBuilder.createFailedMessageText("Soundgraph tasks", topException);
+
+      assertThat(result)
+          .contains("Task group 'Soundgraph tasks' failed with RuntimeException: Top exception");
+      assertThat(result).contains("Caused by: IllegalStateException: Middle cause");
+      assertThat(result).contains("Caused by: IOException: Root cause");
+
+      String[] lines = result.split("\n");
+      long rootCauseStackLines =
+          Arrays.stream(lines)
+              .dropWhile(line -> !line.contains("Caused by: IOException"))
+              .filter(line -> line.trim().startsWith("at "))
+              .count();
+
+      assertThat(rootCauseStackLines).isEqualTo(2);
+    }
+
+    @Test
+    void taskGroupNameIsProperlyEscapedInMessage() {
+      Exception exception = new RuntimeException("Test exception");
+
+      String result =
+          NotificationTextBuilder.createFailedMessageText("Young People's Radio", exception);
+
+      assertThat(result)
+          .startsWith(
+              "Task group 'Young People's Radio' failed with RuntimeException: Test exception");
     }
   }
 }

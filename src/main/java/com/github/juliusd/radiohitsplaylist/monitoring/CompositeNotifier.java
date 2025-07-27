@@ -50,12 +50,17 @@ public class CompositeNotifier implements Notifier {
   }
 
   @Override
-  public void runFinishedSuccessfully() {
-    notifiers.forEach(Notifier::runFinishedSuccessfully);
+  public void runFinished() {
+    notifiers.forEach(Notifier::runFinished);
   }
 
   @Override
   public void runFailed(Throwable throwable) {
     notifiers.forEach(notifier -> notifier.runFailed(throwable));
+  }
+
+  @Override
+  public void runFailed(String taskGroupName, Throwable throwable) {
+    notifiers.forEach(notifier -> notifier.runFailed(taskGroupName, throwable));
   }
 }

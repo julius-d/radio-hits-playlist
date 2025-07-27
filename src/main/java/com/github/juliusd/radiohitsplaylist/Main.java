@@ -46,7 +46,7 @@ public class Main {
 
       notifier.recordFinalCacheSize(trackCache.getCacheSize());
 
-      notifier.runFinishedSuccessfully();
+      notifier.runFinished();
     } catch (Exception e) {
       notifier.runFailed(e);
       throw e;
@@ -70,66 +70,93 @@ public class Main {
                   shuffleTaskConfiguration.playlistId(), notifier);
             });
 
-    if (!configuration.reCreateFamilyRadioPlaylistTasks().isEmpty()) {
-      var familyRadioLoader = new FamilyRadioClientConfiguration().familyRadioLoader();
-      configuration
-          .reCreateFamilyRadioPlaylistTasks()
-          .forEach(
-              task -> {
-                refreshFamilyPlaylistFromSource(familyRadioLoader, playlistUpdater, task, notifier);
-              });
+    // Family Radio tasks
+    try {
+      if (!configuration.reCreateFamilyRadioPlaylistTasks().isEmpty()) {
+        var familyRadioLoader = new FamilyRadioClientConfiguration().familyRadioLoader();
+        configuration
+            .reCreateFamilyRadioPlaylistTasks()
+            .forEach(
+                task -> {
+                  refreshFamilyPlaylistFromSource(
+                      familyRadioLoader, playlistUpdater, task, notifier);
+                });
+      }
+    } catch (Exception e) {
+      notifier.runFailed("Family Radio tasks", e);
     }
 
-    if (!configuration.reCreateBerlinHitRadioPlaylistTasks().isEmpty()) {
-      var berlinHitRadioLoader = new BerlinHitRadioClientConfiguration().berlinHitRadioLoader();
-      configuration
-          .reCreateBerlinHitRadioPlaylistTasks()
-          .forEach(
-              task -> {
-                refreshPlaylistFromSource(berlinHitRadioLoader, playlistUpdater, task, notifier);
-              });
+    // Berlin Hit Radio tasks
+    try {
+      if (!configuration.reCreateBerlinHitRadioPlaylistTasks().isEmpty()) {
+        var berlinHitRadioLoader = new BerlinHitRadioClientConfiguration().berlinHitRadioLoader();
+        configuration
+            .reCreateBerlinHitRadioPlaylistTasks()
+            .forEach(
+                task -> {
+                  refreshPlaylistFromSource(berlinHitRadioLoader, playlistUpdater, task, notifier);
+                });
+      }
+    } catch (Exception e) {
+      notifier.runFailed("Berlin Hit Radio tasks", e);
     }
 
-    if (!configuration.reCreateYoungPeoplePlaylistTasks().isEmpty()) {
-      var youngPeopleLoader = new YoungPeopleClientConfiguration(configuration).youngPeopleLoader();
-      configuration
-          .reCreateYoungPeoplePlaylistTasks()
-          .forEach(
-              task -> {
-                refreshYoungPeoplePlaylistFromSource(
-                    youngPeopleLoader, playlistUpdater, task, notifier);
-              });
+    // Young People tasks
+    try {
+      if (!configuration.reCreateYoungPeoplePlaylistTasks().isEmpty()) {
+        var youngPeopleLoader =
+            new YoungPeopleClientConfiguration(configuration).youngPeopleLoader();
+        configuration
+            .reCreateYoungPeoplePlaylistTasks()
+            .forEach(
+                task -> {
+                  refreshYoungPeoplePlaylistFromSource(
+                      youngPeopleLoader, playlistUpdater, task, notifier);
+                });
+      }
+    } catch (Exception e) {
+      notifier.runFailed("Young People tasks", e);
     }
 
-    if (!configuration.reCreateBundesmuxPlaylistTasks().isEmpty()) {
-      var bundesmuxLoader = new BundesmuxClientConfiguration(configuration).bundesmuxLoader();
-      configuration
-          .reCreateBundesmuxPlaylistTasks()
-          .forEach(
-              task -> {
-                refreshBundesmuxPlaylistFromSource(
-                    bundesmuxLoader, playlistUpdater, task, notifier);
-              });
+    // Bundesmux tasks
+    try {
+      if (!configuration.reCreateBundesmuxPlaylistTasks().isEmpty()) {
+        var bundesmuxLoader = new BundesmuxClientConfiguration(configuration).bundesmuxLoader();
+        configuration
+            .reCreateBundesmuxPlaylistTasks()
+            .forEach(
+                task -> {
+                  refreshBundesmuxPlaylistFromSource(
+                      bundesmuxLoader, playlistUpdater, task, notifier);
+                });
+      }
+    } catch (Exception e) {
+      notifier.runFailed("Bundesmux tasks", e);
     }
 
-    configuration
-        .soundgraphTasks()
-        .forEach(
-            task -> {
-              try {
-                List<SoundgraphSong> tracks = soundgraphService.processSoundgraphConfig(task);
-                notifier.recordSoundgraphExecuted(task.name(), tracks.size());
-                log(
-                    "Processed Soundgraph task for playlist "
-                        + task.name()
-                        + " with "
-                        + tracks.size()
-                        + " tracks");
-              } catch (Exception e) {
-                throw new RuntimeException(
-                    "Failed to process Soundgraph task for playlist " + task.name(), e);
-              }
-            });
+    // Soundgraph tasks
+    try {
+      configuration
+          .soundgraphTasks()
+          .forEach(
+              task -> {
+                try {
+                  List<SoundgraphSong> tracks = soundgraphService.processSoundgraphConfig(task);
+                  notifier.recordSoundgraphExecuted(task.name(), tracks.size());
+                  log(
+                      "Processed Soundgraph task for playlist "
+                          + task.name()
+                          + " with "
+                          + tracks.size()
+                          + " tracks");
+                } catch (Exception e) {
+                  throw new RuntimeException(
+                      "Failed to process Soundgraph task for playlist " + task.name(), e);
+                }
+              });
+    } catch (Exception e) {
+      notifier.runFailed("Soundgraph tasks", e);
+    }
   }
 
   private static Notifier determineNotifier(Configuration configuration) {

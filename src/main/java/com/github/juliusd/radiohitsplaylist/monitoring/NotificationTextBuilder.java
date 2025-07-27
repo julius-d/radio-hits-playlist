@@ -109,12 +109,97 @@ class NotificationTextBuilder {
   }
 
   static String createFailedMessageText(Throwable throwable) {
-    StringBuilder messageText = new StringBuilder();
-
-    messageText.append(
+    String initialMessage =
         String.format(
-            "Run failed with %s: %s",
-            throwable.getClass().getSimpleName(), throwable.getMessage()));
+            "Run failed with %s: %s", throwable.getClass().getSimpleName(), throwable.getMessage());
+    return buildFailedMessageText(initialMessage, throwable);
+  }
+
+  static String createFailedMessageText(String taskGroupName, Throwable throwable) {
+    String initialMessage =
+        String.format(
+            "Task group '%s' failed with %s: %s",
+            taskGroupName, throwable.getClass().getSimpleName(), throwable.getMessage());
+    return buildFailedMessageText(initialMessage, throwable);
+  }
+
+  static String createPartialFailureMessageText(Statistic statistic) {
+    var durationText = getDurationText(statistic);
+    StringBuilder messageText =
+        new StringBuilder("Run finished with partial failures after ")
+            .append(durationText)
+            .append("\n\n");
+
+    // Add successful operations first
+    List<String> shuffledPlaylists = statistic.getShuffledPlaylists();
+    if (!shuffledPlaylists.isEmpty()) {
+      messageText.append("✅ Shuffled playlists (").append(shuffledPlaylists.size()).append("):\n");
+      shuffledPlaylists.forEach(playlist -> messageText.append("- ").append(playlist).append("\n"));
+      messageText.append("\n");
+    }
+
+    if (!statistic.getRefreshedPlaylists().isEmpty()) {
+      messageText
+          .append("✅ Refreshed playlists (")
+          .append(statistic.getRefreshedPlaylists().size())
+          .append("):\n");
+      statistic
+          .getRefreshedPlaylists()
+          .forEach(
+              result ->
+                  messageText
+                      .append("- ")
+                      .append(result.streamName())
+                      .append(": ")
+                      .append(result.amountOfTracks())
+                      .append(" tracks\n"));
+      messageText.append("\n");
+    }
+
+    if (!statistic.getSoundgraphResults().isEmpty()) {
+      messageText
+          .append("✅ Soundgraph playlists (")
+          .append(statistic.getSoundgraphResults().size())
+          .append("):\n");
+      statistic
+          .getSoundgraphResults()
+          .forEach(
+              result ->
+                  messageText
+                      .append("- ")
+                      .append(result.name())
+                      .append(": ")
+                      .append(result.amountOfTracks())
+                      .append(" tracks\n"));
+      messageText.append("\n");
+    }
+
+    // Add failed task groups
+    List<Statistic.TaskGroupFailure> failures = statistic.getFailedTaskGroups();
+    messageText.append("❌ Failed task groups (").append(failures.size()).append("):\n");
+    failures.forEach(
+        failure ->
+            messageText
+                .append("- ")
+                .append(failure.taskGroupName())
+                .append(": ")
+                .append(failure.throwable().getMessage())
+                .append("\n"));
+
+    // Add cache statistics if available
+    long finalCacheSize = statistic.getFinalCacheSize();
+    long newTracksAdded = statistic.getNewTracksAdded();
+    if (finalCacheSize > 0 || newTracksAdded > 0) {
+      messageText.append("\nTrack cache: ").append(finalCacheSize).append(" total tracks");
+      messageText.append(" (+").append(newTracksAdded).append(" new)\n");
+    }
+
+    return messageText.toString();
+  }
+
+  private static String buildFailedMessageText(String initialMessage, Throwable throwable) {
+    StringBuilder messageText = new StringBuilder();
+    messageText.append(initialMessage);
 
     StackTraceElement[] stackTrace = throwable.getStackTrace();
     int traceLimit = Math.min(2, stackTrace.length);

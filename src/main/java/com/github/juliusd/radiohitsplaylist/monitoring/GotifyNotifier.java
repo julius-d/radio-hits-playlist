@@ -54,12 +54,19 @@ class GotifyNotifier implements Notifier {
   }
 
   @Override
-  public void runFinishedSuccessfully() {
-    if (config.notifyOnSuccess()) {
-      var messageText = NotificationTextBuilder.createMessageText(statistic);
-
-      var message = new GotfiyMessage("Success", messageText, 1);
-      gotifyClient.sendMessage(config.gotifyApiToken(), message);
+  public void runFinished() {
+    if (statistic.hasFailures()) {
+      if (config.notifyOnFailure()) {
+        var messageText = NotificationTextBuilder.createPartialFailureMessageText(statistic);
+        var message = new GotfiyMessage("Partial Failure", messageText, 1);
+        gotifyClient.sendMessage(config.gotifyApiToken(), message);
+      }
+    } else {
+      if (config.notifyOnSuccess()) {
+        var messageText = NotificationTextBuilder.createMessageText(statistic);
+        var message = new GotfiyMessage("Success", messageText, 1);
+        gotifyClient.sendMessage(config.gotifyApiToken(), message);
+      }
     }
   }
 
@@ -69,6 +76,17 @@ class GotifyNotifier implements Notifier {
       var messageText = NotificationTextBuilder.createFailedMessageText(throwable);
 
       var message = new GotfiyMessage("Failed", messageText, 3);
+      gotifyClient.sendMessage(config.gotifyApiToken(), message);
+    }
+  }
+
+  @Override
+  public void runFailed(String taskGroupName, Throwable throwable) {
+    statistic.recordTaskGroupFailure(taskGroupName, throwable);
+    if (config.notifyOnFailure()) {
+      var messageText = NotificationTextBuilder.createFailedMessageText(taskGroupName, throwable);
+
+      var message = new GotfiyMessage("Failed: " + taskGroupName, messageText, 3);
       gotifyClient.sendMessage(config.gotifyApiToken(), message);
     }
   }

@@ -4,6 +4,7 @@ import static com.github.juliusd.radiohitsplaylist.Logger.log;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class LoggingNotifier implements Notifier {
 
@@ -72,14 +73,28 @@ public class LoggingNotifier implements Notifier {
   }
 
   @Override
-  public void runFinishedSuccessfully() {
+  public void runFinished() {
     String durationText = getDurationText();
-    log("Run finished successfully after " + durationText);
+    if (statistic.hasFailures()) {
+      log("Run finished with failures after " + durationText);
+      List<Statistic.TaskGroupFailure> failures = statistic.getFailedTaskGroups();
+      log("Failed task groups (" + failures.size() + "):");
+      failures.forEach(
+          failure -> log("- " + failure.taskGroupName() + ": " + failure.throwable().getMessage()));
+    } else {
+      log("Run finished successfully after " + durationText);
+    }
   }
 
   @Override
   public void runFailed(Throwable throwable) {
     log("Run failed: " + throwable.getMessage());
+  }
+
+  @Override
+  public void runFailed(String taskGroupName, Throwable throwable) {
+    statistic.recordTaskGroupFailure(taskGroupName, throwable);
+    log("Run failed in " + taskGroupName + ": " + throwable.getMessage());
   }
 
   private String getDurationText() {

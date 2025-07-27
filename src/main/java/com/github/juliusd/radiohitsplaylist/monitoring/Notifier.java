@@ -17,7 +17,9 @@ public interface Notifier {
 
   void recordCacheMiss();
 
-  void runFinishedSuccessfully();
+  void runFinished();
 
   void runFailed(Throwable throwable);
+
+  void runFailed(String taskGroupName, Throwable throwable);
 }
