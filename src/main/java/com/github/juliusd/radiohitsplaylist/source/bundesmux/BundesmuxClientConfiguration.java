@@ -3,6 +3,7 @@ package com.github.juliusd.radiohitsplaylist.source.bundesmux;
 import com.github.juliusd.radiohitsplaylist.config.Configuration;
 import feign.Feign;
 import feign.Logger;
+import java.time.Clock;
 
 public class BundesmuxClientConfiguration {
 
@@ -18,7 +19,11 @@ public class BundesmuxClientConfiguration {
         .target(BundesmuxClient.class, configuration.bundesmuxUrl());
   }
 
+  Clock clock() {
+    return Clock.systemUTC();
+  }
+
   public BundesmuxLoader bundesmuxLoader() {
-    return new BundesmuxLoader(bundesmuxClient());
+    return new BundesmuxLoader(bundesmuxClient(), clock());
   }
 }
