@@ -1,6 +1,5 @@
 package com.github.juliusd.radiohitsplaylist.source.bundesmux;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.juliusd.radiohitsplaylist.Track;
 import com.github.juliusd.radiohitsplaylist.source.bundesmux.model.BundesmuxApiResponse;
 import com.github.juliusd.radiohitsplaylist.source.bundesmux.model.BundesmuxMetadataEntry;
@@ -12,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import tools.jackson.databind.ObjectMapper;
 
 public class BundesmuxLoader {
 

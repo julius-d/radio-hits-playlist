@@ -2,17 +2,16 @@ package com.github.juliusd.radiohitsplaylist.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.github.juliusd.radiohitsplaylist.soundgraph.AlbumType;
 import org.junit.jupiter.api.Test;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 class SoundgraphConfigTest {
 
   @Test
-  void shouldParseYamlConfig() throws Exception {
+  void shouldParseYamlConfig() {
     // given
-    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    var mapper = new YAMLMapper();
     String yamlConfig =
         """
             name: "Test Configuration"
@@ -91,9 +90,9 @@ class SoundgraphConfigTest {
   }
 
   @Test
-  void shouldParseArtistTopTracksConfig() throws Exception {
+  void shouldParseArtistTopTracksConfig() {
     // given
-    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    var mapper = new YAMLMapper();
     String yamlConfig =
         """
             name: "Artist Top Tracks Test"
@@ -135,9 +134,9 @@ class SoundgraphConfigTest {
   }
 
   @Test
-  void shouldParseFilterArtistsFromConfig() throws Exception {
+  void shouldParseFilterArtistsFromConfig() {
     // given
-    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    var mapper = new YAMLMapper();
     String yamlConfig =
         """
             name: "Filter Artists From Test"
@@ -186,9 +185,9 @@ class SoundgraphConfigTest {
   }
 
   @Test
-  void shouldParseLoadArtistNewestAlbumConfigWithDefaultAlbumTypes() throws Exception {
+  void shouldParseLoadArtistNewestAlbumConfigWithDefaultAlbumTypes() {
     // given
-    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    var mapper = new YAMLMapper();
     String yamlConfig =
         """
             name: "Artist Newest Album Default Test"
@@ -217,9 +216,9 @@ class SoundgraphConfigTest {
   }
 
   @Test
-  void shouldParseLoadArtistNewestAlbumConfig() throws Exception {
+  void shouldParseLoadArtistNewestAlbumConfig() {
     // given
-    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    var mapper = new YAMLMapper();
     String yamlConfig =
         """
             name: "Artist Newest Album Valid Types Test"
@@ -251,9 +250,9 @@ class SoundgraphConfigTest {
   }
 
   @Test
-  void shouldParseLoadArtistNewestAlbumConfigWithExclusions() throws Exception {
+  void shouldParseLoadArtistNewestAlbumConfigWithExclusions() {
     // given
-    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    var mapper = new YAMLMapper();
     String yamlConfig =
         """
             name: "Artist Newest Album With Exclusions Test"

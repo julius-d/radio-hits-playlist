@@ -2,8 +2,6 @@ package com.github.juliusd.radiohitsplaylist.soundgraph;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.github.juliusd.radiohitsplaylist.config.SoundgraphConfig;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
@@ -11,6 +9,8 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import se.michaelthelin.spotify.SpotifyApi;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 @WireMockTest
 class SoundgraphTest {
@@ -251,7 +251,7 @@ class SoundgraphTest {
   }
 
   private void whenProcessSoundgraphConfig(String configYaml) throws Exception {
-    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    ObjectMapper mapper = new YAMLMapper();
     SoundgraphConfig config = mapper.readValue(configYaml, SoundgraphConfig.class);
     soundgraphService.processSoundgraphConfig(config);
   }
