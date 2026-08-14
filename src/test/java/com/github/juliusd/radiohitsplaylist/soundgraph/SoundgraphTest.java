@@ -208,9 +208,8 @@ class SoundgraphTest {
                 ]
             }""";
     wireMock.register(
-        stubFor(
-            get(urlPathEqualTo("/v1/playlists/" + playlistId + "/tracks"))
-                .willReturn(okJson(playlistResponse))));
+        get(urlPathEqualTo("/v1/playlists/" + playlistId + "/tracks"))
+            .willReturn(okJson(playlistResponse)));
   }
 
   private void givenAlbumTracksResponse(String albumId) {
@@ -233,21 +232,15 @@ class SoundgraphTest {
                 ]
             }""";
     wireMock.register(
-        stubFor(
-            get(urlPathEqualTo("/v1/albums/" + albumId + "/tracks"))
-                .willReturn(okJson(albumResponse))));
+        get(urlPathEqualTo("/v1/albums/" + albumId + "/tracks")).willReturn(okJson(albumResponse)));
   }
 
   private void givenPlaylistUpdateWillBeAccepted(String playlistId) {
     wireMock.register(
-        stubFor(
-            put(urlPathEqualTo("/v1/playlists/" + playlistId + "/tracks"))
-                .willReturn(okJson("{}"))));
+        put(urlPathEqualTo("/v1/playlists/" + playlistId + "/tracks")).willReturn(okJson("{}")));
 
     wireMock.register(
-        stubFor(
-            post(urlPathEqualTo("/v1/playlists/" + playlistId + "/tracks"))
-                .willReturn(okJson("{}"))));
+        post(urlPathEqualTo("/v1/playlists/" + playlistId + "/tracks")).willReturn(okJson("{}")));
   }
 
   private void whenProcessSoundgraphConfig(String configYaml) throws Exception {
@@ -295,13 +288,13 @@ class SoundgraphTest {
 
     // then
     // Verify playlist tracks were fetched
-    verify(getRequestedFor(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks")));
+    wireMock.verifyThat(getRequestedFor(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks")));
 
     // Verify album tracks were fetched
-    verify(getRequestedFor(urlPathEqualTo("/v1/albums/source_album_1/tracks")));
+    wireMock.verifyThat(getRequestedFor(urlPathEqualTo("/v1/albums/source_album_1/tracks")));
 
     // Verify tracks were replaced in playlist
-    verify(
+    wireMock.verifyThat(
         putRequestedFor(urlPathEqualTo("/v1/playlists/target_playlist_id/tracks"))
             .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:track1")))
             .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:track2")))
@@ -333,10 +326,10 @@ class SoundgraphTest {
 
     // then
     // Verify playlist tracks were fetched
-    verify(getRequestedFor(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks")));
+    wireMock.verifyThat(getRequestedFor(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks")));
 
     // Verify tracks were replaced in playlist
-    verify(
+    wireMock.verifyThat(
         putRequestedFor(urlPathEqualTo("/v1/playlists/target_playlist_id/tracks"))
             .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:track1")))
             .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:track2")))
@@ -532,9 +525,8 @@ class SoundgraphTest {
             }
             """;
     wireMock.register(
-        stubFor(
-            get(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks"))
-                .willReturn(okJson(playlistResponseWithDuplicates))));
+        get(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks"))
+            .willReturn(okJson(playlistResponseWithDuplicates)));
 
     givenPlaylistUpdateWillBeAccepted("target_playlist_id");
 
@@ -542,16 +534,16 @@ class SoundgraphTest {
     whenProcessSoundgraphConfig(configYaml);
 
     // then
-    verify(getRequestedFor(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks")));
+    wireMock.verifyThat(getRequestedFor(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks")));
 
     // Verify that only unique tracks were added to the playlist
-    verify(
+    wireMock.verifyThat(
         putRequestedFor(urlPathEqualTo("/v1/playlists/target_playlist_id/tracks"))
             .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:track1")))
             .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:track2"))));
 
     // Verify that track1 appears only once
-    verify(
+    wireMock.verifyThat(
         putRequestedFor(urlPathEqualTo("/v1/playlists/target_playlist_id/tracks"))
             .withRequestBody(
                 matchingJsonPath(
@@ -692,9 +684,8 @@ class SoundgraphTest {
             }
             """;
     wireMock.register(
-        stubFor(
-            get(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks"))
-                .willReturn(okJson(playlistResponseWithExplicitTracks))));
+        get(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks"))
+            .willReturn(okJson(playlistResponseWithExplicitTracks)));
 
     givenPlaylistUpdateWillBeAccepted("target_playlist_id");
 
@@ -702,15 +693,15 @@ class SoundgraphTest {
     whenProcessSoundgraphConfig(configYaml);
 
     // then
-    verify(getRequestedFor(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks")));
+    wireMock.verifyThat(getRequestedFor(urlPathEqualTo("/v1/playlists/source_playlist_1/tracks")));
 
     // Verify that only non-explicit tracks were added to the playlist
-    verify(
+    wireMock.verifyThat(
         putRequestedFor(urlPathEqualTo("/v1/playlists/target_playlist_id/tracks"))
             .withRequestBody(matchingJsonPath("$.uris", containing("spotify:track:track2"))));
 
     // Verify that explicit track was not added
-    verify(
+    wireMock.verifyThat(
         putRequestedFor(urlPathEqualTo("/v1/playlists/target_playlist_id/tracks"))
             .withRequestBody(matchingJsonPath("$.uris", not(containing("spotify:track:track1")))));
   }

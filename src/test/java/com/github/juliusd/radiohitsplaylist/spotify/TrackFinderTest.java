@@ -28,11 +28,10 @@ class TrackFinderTest {
   @Test
   void searchesForSingleArtistWhenNoExactMatch() {
     wireMock.register(
-        stubFor(
-            get(urlPathEqualTo("/v1/search"))
-                .willReturn(
-                    okJson(
-                        """
+        get(urlPathEqualTo("/v1/search"))
+            .willReturn(
+                okJson(
+                    """
           {
             "tracks": {
               "limit": 2,
@@ -43,15 +42,14 @@ class TrackFinderTest {
               "items": []
             }
           }
-          """))));
+          """)));
 
     wireMock.register(
-        stubFor(
-            get(urlPathEqualTo("/v1/search"))
-                .withQueryParam("q", equalTo("artist:\"Udo Lindenberg\" track:\"Komet\""))
-                .willReturn(
-                    okJson(
-                        """
+        get(urlPathEqualTo("/v1/search"))
+            .withQueryParam("q", equalTo("artist:\"Udo Lindenberg\" track:\"Komet\""))
+            .willReturn(
+                okJson(
+                    """
           {
             "tracks": {
               "limit": 2,
@@ -158,24 +156,24 @@ class TrackFinderTest {
                 }
               ]
             }
-          }"""))));
+          }""")));
 
     Optional<SpotifyTrack> spotifyTrack =
         trackFinder.findSpotifyTrack(new Track("Komet", "Udo Lindenberg & Apache 207"));
 
-    verify(
+    wireMock.verifyThat(
         getRequestedFor(urlPathEqualTo("/v1/search"))
             .withQueryParam("q", equalTo("artist:\"Udo Lindenberg & Apache 207\" track:\"Komet\""))
             .withQueryParam("market", equalTo("DE"))
             .withQueryParam("limit", equalTo("5"))
             .withQueryParam("type", equalTo("track")));
-    verify(
+    wireMock.verifyThat(
         getRequestedFor(urlPathEqualTo("/v1/search"))
             .withQueryParam("q", equalTo("artist:\"Udo Lindenberg\" track:\"Komet\""))
             .withQueryParam("market", equalTo("DE"))
             .withQueryParam("limit", equalTo("5"))
             .withQueryParam("type", equalTo("track")));
-    verify(2, getRequestedFor(urlPathEqualTo("/v1/search")));
+    wireMock.verifyThat(2, getRequestedFor(urlPathEqualTo("/v1/search")));
 
     assertThat(spotifyTrack.map(SpotifyTrack::uri))
         .asString()
@@ -185,11 +183,10 @@ class TrackFinderTest {
   @Test
   void searchWithUnquotedQuery() {
     wireMock.register(
-        stubFor(
-            get(urlPathEqualTo("/v1/search"))
-                .willReturn(
-                    okJson(
-                        """
+        get(urlPathEqualTo("/v1/search"))
+            .willReturn(
+                okJson(
+                    """
           {
             "tracks": {
               "limit": 2,
@@ -200,15 +197,14 @@ class TrackFinderTest {
               "items": []
             }
           }
-          """))));
+          """)));
 
     wireMock.register(
-        stubFor(
-            get(urlPathEqualTo("/v1/search"))
-                .withQueryParam("q", equalTo("artist:Lil Nas X track:Star Walkin'"))
-                .willReturn(
-                    okJson(
-                        """
+        get(urlPathEqualTo("/v1/search"))
+            .withQueryParam("q", equalTo("artist:Lil Nas X track:Star Walkin'"))
+            .willReturn(
+                okJson(
+                    """
           {
             "tracks": {
               "limit": 2,
@@ -296,26 +292,26 @@ class TrackFinderTest {
               ]
             }
           }
-          """))));
+          """)));
 
     Optional<SpotifyTrack> spotifyTrack =
         trackFinder.findSpotifyTrack(new Track("Star Walkin'", "Lil Nas X"));
 
-    verify(
+    wireMock.verifyThat(
         getRequestedFor(urlPathEqualTo("/v1/search"))
             .withQueryParam("q", equalTo("artist:\"Lil Nas X\" track:\"Star Walkin'\""))
             .withQueryParam("market", equalTo("DE"))
             .withQueryParam("limit", equalTo("5"))
             .withQueryParam("type", equalTo("track")));
 
-    verify(
+    wireMock.verifyThat(
         getRequestedFor(urlPathEqualTo("/v1/search"))
             .withQueryParam("q", equalTo("artist:Lil Nas X track:Star Walkin'"))
             .withQueryParam("market", equalTo("DE"))
             .withQueryParam("limit", equalTo("5"))
             .withQueryParam("type", equalTo("track")));
 
-    verify(2, getRequestedFor(urlPathEqualTo("/v1/search")));
+    wireMock.verifyThat(2, getRequestedFor(urlPathEqualTo("/v1/search")));
 
     assertThat(spotifyTrack.map(SpotifyTrack::uri))
         .asString()

@@ -61,8 +61,7 @@ class RefreshTokenWriterTest {
 
   @Test
   void handlesTokenWithHyphensAndUnderscores() throws IOException {
-    Path config =
-        writeConfig("---\nspotify:\n  refreshToken: AQD_old-Token==\n  clientId: abc\n");
+    Path config = writeConfig("---\nspotify:\n  refreshToken: AQD_old-Token==\n  clientId: abc\n");
 
     writer.updateRefreshToken(config.toString(), "AQD_new-Token_with-special==");
 
