@@ -21,7 +21,8 @@ import org.junit.jupiter.api.Test;
 @WireMockTest
 class FamilyRadioClientTest {
 
-  private static final String TEST_CHANNEL_ID = "3bb7d791-128a-424f-9ef8-378bd426d833";
+  private static final String TEST_CHANNEL_KEY = "test-channel-key";
+  private static final long TEST_TIMESTAMP = 1700000000L;
 
   private FamilyRadioClient familyRadioClient;
 
@@ -44,149 +45,60 @@ class FamilyRadioClientTest {
   }
 
   @Test
-  void shouldGetTrackHistorySuccessfully() {
+  void shouldGetPlaylistSuccessfully() {
     // given
     String expectedResponse =
         """
         {
-          "size": 3,
-          "items": [
+          "error": 0,
+          "data": [
             {
-              "track": {
-                "trackId": "test-track-id-001",
-                "title": "Test Song Alpha",
-                "artistCredits": "Test Artist One"
-              },
-              "start": "2023-01-01T10:00:00.000Z"
+              "ts": 1700003600,
+              "title": "Test Song Alpha",
+              "artist": "Test Artist One",
+              "cover": "https://example.com/cover.jpg",
+              "buylink": "https://example.com/buy",
+              "hook": "https://example.com/hook.m4a"
             },
             {
-              "track": {
-                "trackId": "test-track-id-002",
-                "title": "Test Song Beta",
-                "artistCredits": "Test Artist Two",
-                "artwork": "https://example.org/test-artwork-url"
-              },
-              "start": "2023-01-01T09:57:00.000Z"
-            },
-            {
-              "track": {
-                "trackId": "test-track-id-003",
-                "title": "Test Song Gamma",
-                "artistCredits": "Test Artist Three"
-              },
-              "start": "2023-01-01T09:54:00.000Z"
+              "ts": 1700003700,
+              "title": "Test Song Beta",
+              "artist": "Test Artist Two",
+              "cover": false,
+              "buylink": false,
+              "hook": false
             }
           ],
-          "next": "test-pagination-token-123"
+          "fromcache": 1
         }
         """;
 
-    stubFor(
-        get(urlPathEqualTo("/channels/" + TEST_CHANNEL_ID + "/track-history"))
-            .willReturn(okJson(expectedResponse)));
+    stubFor(get(urlPathEqualTo("/ctrl-api/getPlaylist")).willReturn(okJson(expectedResponse)));
 
     // when
-    FamilyRadioResponse response =
-        familyRadioClient.getTrackHistory(
-            TEST_CHANNEL_ID, "2023-01-01T09:00:00.000Z", "2023-01-01T10:59:59.999Z");
+    FamilyRadioResponse response = familyRadioClient.getPlaylist(TEST_CHANNEL_KEY, TEST_TIMESTAMP);
 
     // then
     assertThat(response).isNotNull();
-    assertThat(response.size()).isEqualTo(3);
-    assertThat(response.next()).isEqualTo("test-pagination-token-123");
-    assertThat(response.items()).hasSize(3);
+    assertThat(response.error()).isEqualTo(0);
+    assertThat(response.data()).hasSize(2);
 
-    // Verify first track
-    FamilyRadioTrackWrapper firstItem = response.items().get(0);
-    assertThat(firstItem.track().trackId()).isEqualTo("test-track-id-001");
-    assertThat(firstItem.track().title()).isEqualTo("Test Song Alpha");
-    assertThat(firstItem.track().artist()).isEqualTo("Test Artist One");
-    assertThat(firstItem.track().artwork()).isNull();
-    assertThat(firstItem.start()).isEqualTo("2023-01-01T10:00:00.000Z");
+    FamilyRadioTrack firstTrack = response.data().get(0);
+    assertThat(firstTrack.ts()).isEqualTo(1700003600L);
+    assertThat(firstTrack.title()).isEqualTo("Test Song Alpha");
+    assertThat(firstTrack.artist()).isEqualTo("Test Artist One");
 
-    // Verify second track (with artwork)
-    FamilyRadioTrackWrapper secondItem = response.items().get(1);
-    assertThat(secondItem.track().trackId()).isEqualTo("test-track-id-002");
-    assertThat(secondItem.track().title()).isEqualTo("Test Song Beta");
-    assertThat(secondItem.track().artist()).isEqualTo("Test Artist Two");
-    assertThat(secondItem.track().artwork()).isEqualTo("https://example.org/test-artwork-url");
-    assertThat(secondItem.start()).isEqualTo("2023-01-01T09:57:00.000Z");
+    FamilyRadioTrack secondTrack = response.data().get(1);
+    assertThat(secondTrack.ts()).isEqualTo(1700003700L);
+    assertThat(secondTrack.title()).isEqualTo("Test Song Beta");
+    assertThat(secondTrack.artist()).isEqualTo("Test Artist Two");
 
-    // Verify request was made with correct headers and parameters
     verify(
-        getRequestedFor(urlPathEqualTo("/channels/" + TEST_CHANNEL_ID + "/track-history"))
-            .withQueryParam("limit", equalTo("10"))
-            .withQueryParam("check-favorites", equalTo("false"))
-            .withQueryParam("from", equalTo("2023-01-01T09:00:00.000Z"))
-            .withQueryParam("to", equalTo("2023-01-01T10:59:59.999Z"))
+        getRequestedFor(urlPathEqualTo("/ctrl-api/getPlaylist"))
+            .withQueryParam("k", equalTo(TEST_CHANNEL_KEY))
+            .withQueryParam("typ", equalTo("hour"))
+            .withQueryParam("ts", equalTo(String.valueOf(TEST_TIMESTAMP)))
             .withHeader("Accept", equalTo("application/json, text/plain, */*"))
-            .withHeader("Accept-Language", equalTo("de,en-US;q=0.7,en;q=0.3"))
-            .withHeader(
-                "User-Agent",
-                equalTo(
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0")));
-  }
-
-  @Test
-  void shouldGetTrackHistoryWithOffsetSuccessfully() {
-    // given
-    String expectedResponse =
-        """
-        {
-          "size": 2,
-          "items": [
-            {
-              "track": {
-                "trackId": "test-track-id-004",
-                "title": "Test Song Delta",
-                "artistCredits": "Test Artist Four"
-              },
-              "start": "2023-01-01T09:51:00.000Z"
-            },
-            {
-              "track": {
-                "trackId": "test-track-id-005",
-                "title": "Test Song Epsilon",
-                "artistCredits": "Test Artist Five"
-              },
-              "start": "2023-01-01T09:48:00.000Z"
-            }
-          ],
-          "next": null
-        }
-        """;
-
-    stubFor(
-        get(urlPathEqualTo("/channels/" + TEST_CHANNEL_ID + "/track-history"))
-            .willReturn(okJson(expectedResponse)));
-
-    // when
-    FamilyRadioResponse response =
-        familyRadioClient.getTrackHistoryWithOffset(
-            TEST_CHANNEL_ID,
-            "test-pagination-token-123",
-            "2023-01-01T09:00:00.000Z",
-            "2023-01-01T10:59:59.999Z");
-
-    // then
-    assertThat(response).isNotNull();
-    assertThat(response.size()).isEqualTo(2);
-    assertThat(response.next()).isNull(); // Last page
-    assertThat(response.items()).hasSize(2);
-
-    // Verify first track on second page
-    FamilyRadioTrackWrapper firstItem = response.items().get(0);
-    assertThat(firstItem.track().trackId()).isEqualTo("test-track-id-004");
-    assertThat(firstItem.track().title()).isEqualTo("Test Song Delta");
-    assertThat(firstItem.track().artist()).isEqualTo("Test Artist Four");
-
-    // Verify request was made with correct parameters including offset
-    verify(
-        getRequestedFor(urlPathEqualTo("/channels/" + TEST_CHANNEL_ID + "/track-history"))
-            .withQueryParam("limit", equalTo("10"))
-            .withQueryParam("offset", equalTo("test-pagination-token-123"))
-            .withQueryParam("check-favorites", equalTo("false"))
-            .withQueryParam("from", equalTo("2023-01-01T09:00:00.000Z"))
-            .withQueryParam("to", equalTo("2023-01-01T10:59:59.999Z")));
+            .withHeader("Accept-Language", equalTo("de,en-US;q=0.7,en;q=0.3")));
   }
 }

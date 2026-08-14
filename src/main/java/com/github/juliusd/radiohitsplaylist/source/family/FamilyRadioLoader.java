@@ -4,9 +4,8 @@ import com.github.juliusd.radiohitsplaylist.Track;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -22,49 +21,30 @@ public class FamilyRadioLoader {
     this.clock = clock;
   }
 
-  public List<Track> load(String channelId, String earliestSongTime, int trackLimit) {
-    // Get tracks from yesterday (24 hours worth)
+  public List<Track> load(String channelKey, String earliestSongTime, int trackLimit) {
+    ZoneId zone = clock.getZone();
     LocalDate yesterday = LocalDate.now(clock).minusDays(1);
-    LocalDateTime fromDateTime = yesterday.atStartOfDay();
-    LocalDateTime toDateTime = yesterday.atTime(23, 59, 59);
 
-    String from = fromDateTime.atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
-    String to = toDateTime.atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
-
-    List<FamilyRadioTrackWrapper> allTracks = new ArrayList<>();
-    String nextOffset = null;
-    FamilyRadioResponse response;
-
-    // Load all pages
-    do {
-      if (nextOffset == null) {
-        // First page
-        response = familyRadioClient.getTrackHistory(channelId, from, to);
-      } else {
-        // Subsequent pages
-        response = familyRadioClient.getTrackHistoryWithOffset(channelId, nextOffset, from, to);
-      }
-
-      allTracks.addAll(response.items());
-      nextOffset = response.next();
-
-      // Continue if there's a next page and we got some items
-    } while (nextOffset != null && !response.items().isEmpty());
-
-    // Parse the earliest song time threshold
     LocalTime earliestTime =
         LocalTime.parse(earliestSongTime, DateTimeFormatter.ofPattern("HH:mm"));
 
+    List<FamilyRadioTrack> allTracks = new ArrayList<>();
+    for (int hour = earliestTime.getHour(); hour < 24; hour++) {
+      long ts = yesterday.atTime(hour, 0, 0).atZone(zone).toEpochSecond();
+      FamilyRadioResponse response = familyRadioClient.getPlaylist(channelKey, ts);
+      if (response.error() == 0 && response.data() != null) {
+        allTracks.addAll(response.data());
+      }
+    }
+
     return allTracks.stream()
-        .sorted(Comparator.comparing(wrapper -> Instant.parse(wrapper.start())))
+        .sorted(Comparator.comparingLong(FamilyRadioTrack::ts))
         .filter(
-            wrapper -> {
-              Instant startInstant = Instant.parse(wrapper.start());
-              LocalTime trackTime = startInstant.atOffset(ZoneOffset.UTC).toLocalTime();
+            track -> {
+              LocalTime trackTime = Instant.ofEpochSecond(track.ts()).atZone(zone).toLocalTime();
               return !trackTime.isBefore(earliestTime);
             })
-        .map(FamilyRadioTrackWrapper::track)
-        .map(it -> new Track(it.title(), it.artist()))
+        .map(track -> new Track(track.title(), track.artist()))
         .distinct()
         .limit(trackLimit)
         .toList();
