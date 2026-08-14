@@ -62,6 +62,10 @@ public class Main {
 
   private static void handleCliCommand(String[] args) {
     var configFilePath = System.getProperty("configFilePath");
+    if (configFilePath == null || configFilePath.isBlank()) {
+      System.err.println("Error: -DconfigFilePath=<path> is required");
+      System.exit(1);
+    }
     var configuration = new ConfigLoader().loadConfig(configFilePath);
     var spotify = configuration.spotify();
 

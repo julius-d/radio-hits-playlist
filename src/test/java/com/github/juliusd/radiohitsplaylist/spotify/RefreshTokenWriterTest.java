@@ -71,6 +71,17 @@ class RefreshTokenWriterTest {
     assertThat(result).doesNotContain("AQD_old-Token==");
   }
 
+  @Test
+  void handlesTokenWithRegexMetacharacters() throws IOException {
+    Path config = writeConfig("---\nspotify:\n  refreshToken: oldToken\n  clientId: abc\n");
+
+    writer.updateRefreshToken(config.toString(), "AQD$1suffix\\end");
+
+    String result = Files.readString(config);
+    assertThat(result).contains("  refreshToken: AQD$1suffix\\end");
+    assertThat(result).doesNotContain("oldToken");
+  }
+
   private Path writeConfig(String content) throws IOException {
     Path file = tempDir.resolve("config.yaml");
     Files.writeString(file, content);

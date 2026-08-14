@@ -31,6 +31,10 @@ public class SpotifyInitialRefreshTokenCreator {
       throws IOException, ParseException, SpotifyWebApiException {
     var authorizationCodeRequest = spotifyApi.authorizationCode(code).build();
     var authorizationCodeCredentials = authorizationCodeRequest.execute();
-    return authorizationCodeCredentials.getRefreshToken();
+    String refreshToken = authorizationCodeCredentials.getRefreshToken();
+    if (refreshToken == null) {
+      throw new IllegalStateException("Spotify response did not include a refresh token");
+    }
+    return refreshToken;
   }
 }
