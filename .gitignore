@@ -4,7 +4,15 @@ target/
 !**/src/test/**/target/
 
 ### IntelliJ IDEA ###
-.idea/
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+.idea/dataSources/
+.idea/dataSources.local.xml
+.idea/dataSources.xml
+.idea/copilot.data.migration.agent.xml
+.idea/go.imports.xml
 *.iws
 *.iml
 *.ipr
