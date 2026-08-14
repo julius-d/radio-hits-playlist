@@ -25,14 +25,21 @@ import com.github.juliusd.radiohitsplaylist.source.youngpeople.YoungPeopleClient
 import com.github.juliusd.radiohitsplaylist.source.youngpeople.YoungPeopleLoader;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistShuffel;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistUpdater;
+import com.github.juliusd.radiohitsplaylist.spotify.RefreshTokenWriter;
 import com.github.juliusd.radiohitsplaylist.spotify.SpotifyApiConfiguration;
+import com.github.juliusd.radiohitsplaylist.spotify.SpotifyInitialRefreshTokenCreator;
 import com.github.juliusd.radiohitsplaylist.spotify.TrackCache;
 import com.github.juliusd.radiohitsplaylist.spotify.TrackFinder;
 import java.util.List;
+import se.michaelthelin.spotify.SpotifyApi;
 
 public class Main {
 
   public static void main(String[] args) {
+    if (args.length > 0) {
+      handleCliCommand(args);
+      return;
+    }
 
     var configuration = new ConfigLoader().loadConfig(System.getProperty("configFilePath"));
     var notifier = determineNotifier(configuration);
@@ -50,6 +57,51 @@ public class Main {
     } catch (Exception e) {
       notifier.runFailed(e);
       throw e;
+    }
+  }
+
+  private static void handleCliCommand(String[] args) {
+    var configFilePath = System.getProperty("configFilePath");
+    var configuration = new ConfigLoader().loadConfig(configFilePath);
+    var spotify = configuration.spotify();
+
+    var spotifyApi =
+        new SpotifyApi.Builder()
+            .setClientId(spotify.clientId())
+            .setClientSecret(spotify.clientSecret())
+            .setRedirectUri(SpotifyInitialRefreshTokenCreator.REDIRECT_URI)
+            .build();
+    var tokenCreator = new SpotifyInitialRefreshTokenCreator(spotifyApi);
+
+    switch (args[0]) {
+      case "auth-url" -> {
+        String url = tokenCreator.buildAuthorizationUrl();
+        System.out.println("Open this URL in your browser to authorize:");
+        System.out.println(url);
+        System.out.println();
+        System.out.println(
+            "After authorizing, copy the 'code' parameter from the redirect URL, then run:");
+        System.out.println(
+            "  java -jar -DconfigFilePath=<path> radio-hits-playlist.jar update-token <code>");
+      }
+      case "update-token" -> {
+        if (args.length < 2 || args[1].isBlank()) {
+          System.err.println("Usage: update-token <authorization-code>");
+          System.exit(1);
+        }
+        try {
+          String newRefreshToken = tokenCreator.exchangeCodeForRefreshToken(args[1]);
+          new RefreshTokenWriter().updateRefreshToken(configFilePath, newRefreshToken);
+          System.out.println("Success. New refresh token written to " + configFilePath);
+        } catch (Exception e) {
+          throw new RuntimeException("Failed to exchange authorization code for refresh token", e);
+        }
+      }
+      default -> {
+        System.err.println("Unknown command: " + args[0]);
+        System.err.println("Available commands: auth-url, update-token <code>");
+        System.exit(1);
+      }
     }
   }
 

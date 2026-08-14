@@ -135,6 +135,7 @@ soundgraphTasks:
         - type: limit
           value: 100
 ```
+
 # Available Soundgraph Tasks Steps Reference 🎵
 
 | Step                | Description                                | Required Parameters                    |
@@ -199,3 +200,24 @@ This step allows you to automatically include the latest content from your favor
 - Returns empty list if no matching albums are found
 - Newest release is determined by Spotify's release date sorting
 - When excluding albums by title, the step will select the newest non-excluded album
+
+# Renewing the Spotify Refresh Token
+
+Spotify requires the refresh token to be recreated every 6 months. When the cron job starts failing with authentication errors, follow these steps on the host machine.
+
+**Step 1 — get the authorization URL:**
+```shell
+java -jar -DconfigFilePath=./config.yaml radio-hits-playlist.jar auth-url
+```
+This prints a URL like `https://accounts.spotify.com/authorize?...`.
+
+**Step 2 — authorize and exchange the code:**
+
+1. Open the printed URL in a browser and log in with the Spotify account that owns the playlists.
+2. After authorizing, Spotify redirects to a GitHub page. The URL in the browser address bar will contain a `code` parameter, e.g. `https://github.com/julius-d/radio-hits-playlist/redirected?code=AQBKIno7...`
+3. Copy the value of the `code` parameter.
+4. Run:
+```shell
+java -jar -DconfigFilePath=./config.yaml radio-hits-playlist.jar update-token <code>
+```
+This exchanges the code for a new refresh token and writes it directly into `config.yaml`. The cron job will use the new token on its next run.
