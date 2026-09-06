@@ -23,6 +23,7 @@ import com.github.juliusd.radiohitsplaylist.source.family.FamilyRadioClientConfi
 import com.github.juliusd.radiohitsplaylist.source.family.FamilyRadioLoader;
 import com.github.juliusd.radiohitsplaylist.source.youngpeople.YoungPeopleClientConfiguration;
 import com.github.juliusd.radiohitsplaylist.source.youngpeople.YoungPeopleLoader;
+import com.github.juliusd.radiohitsplaylist.spotify.CacheMigrator;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistShuffel;
 import com.github.juliusd.radiohitsplaylist.spotify.PlaylistUpdater;
 import com.github.juliusd.radiohitsplaylist.spotify.RefreshTokenWriter;
@@ -101,9 +102,13 @@ public class Main {
           throw new RuntimeException("Failed to exchange authorization code for refresh token", e);
         }
       }
+      case "migrate-cache" -> {
+        var authenticatedApi = new SpotifyApiConfiguration().spotifyApi(configuration);
+        new CacheMigrator(authenticatedApi).migrate();
+      }
       default -> {
         System.err.println("Unknown command: " + args[0]);
-        System.err.println("Available commands: auth-url, update-token <code>");
+        System.err.println("Available commands: auth-url, update-token <code>, migrate-cache");
         System.exit(1);
       }
     }

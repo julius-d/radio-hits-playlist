@@ -69,11 +69,18 @@ public class TrackCache {
   }
 
   public void storeTrack(SpotifyTrack spotifyTrack) {
+    storeTrack(spotifyTrack, null);
+  }
+
+  // createdAt: explicit ISO timestamp to preserve (e.g. when migrating from old cache);
+  // null falls back to CURRENT_TIMESTAMP.
+  void storeTrack(SpotifyTrack spotifyTrack, String createdAt) {
     String displayArtist = String.join(" & ", spotifyTrack.artists());
     String spotifyTitle = spotifyTrack.name();
     String key = lookupKeyFromList(spotifyTrack.artists(), spotifyTitle);
     String sql =
-        "INSERT OR REPLACE INTO tracks (artist, title, spotify_uri, lookup_key) VALUES (?, ?, ?, ?)";
+        "INSERT OR REPLACE INTO tracks (artist, title, spotify_uri, lookup_key, created_at)"
+            + " VALUES (?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))";
 
     try (Connection conn = getConnection();
         PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -82,6 +89,7 @@ public class TrackCache {
       pstmt.setString(2, spotifyTitle);
       pstmt.setString(3, spotifyTrack.uri().toString());
       pstmt.setString(4, key);
+      pstmt.setString(5, createdAt);
 
       pstmt.executeUpdate();
 
