@@ -47,3 +47,4 @@ build/
 /dependency-reduced-pom.xml
 test.yaml
 track_cache.db
+track_cache_v2.db

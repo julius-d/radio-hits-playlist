@@ -8,12 +8,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-/**
- * SQLite-based cache for storing and retrieving Spotify track URIs based on artist and title. This
- * cache provides exact match lookup to avoid redundant Spotify API calls.
- */
 public class TrackCache {
   private final String databasePath;
 
@@ -22,13 +21,11 @@ public class TrackCache {
     initializeDatabase();
   }
 
-  /** Initializes the SQLite database and creates the tracks table if it doesn't exist. */
   private void initializeDatabase() {
     try (Connection conn = getConnection();
         Statement stmt = conn.createStatement()) {
 
-      // Create tracks table
-      String createTableSql =
+      stmt.execute(
           """
           CREATE TABLE IF NOT EXISTS tracks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,44 +33,27 @@ public class TrackCache {
             title TEXT NOT NULL,
             spotify_uri TEXT NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE(artist, title)
+            lookup_key TEXT NOT NULL UNIQUE
           )
-          """;
-      stmt.execute(createTableSql);
-
-      // Create index for fast lookups
-      String createIndexSql =
-          """
-          CREATE INDEX IF NOT EXISTS idx_artist_title ON tracks(artist, title)
-          """;
-      stmt.execute(createIndexSql);
+          """);
 
     } catch (SQLException e) {
       throw new SqliteException("Failed to initialize track cache database", e);
     }
   }
 
-  /**
-   * Checks if a track with the exact artist and title exists in the cache.
-   *
-   * @param track The track to search for
-   * @return Optional containing the Spotify URI if found, empty otherwise
-   */
   public Optional<URI> findTrack(Track track) {
-    String sql = "SELECT spotify_uri FROM tracks WHERE artist = ? AND title = ?";
+    String key = lookupKey(track.artist(), track.title());
+    String sql = "SELECT spotify_uri FROM tracks WHERE lookup_key = ?";
 
     try (Connection conn = getConnection();
         PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-      pstmt.setString(1, track.artist());
-      pstmt.setString(2, track.title());
+      pstmt.setString(1, key);
 
       try (ResultSet rs = pstmt.executeQuery()) {
         if (rs.next()) {
-          String spotifyUri = rs.getString("spotify_uri");
-          return Optional.of(URI.create(spotifyUri));
-        } else {
-          return Optional.empty();
+          return Optional.of(URI.create(rs.getString("spotify_uri")));
         }
       }
     } catch (SQLException e) {
@@ -85,71 +65,99 @@ public class TrackCache {
               + "'",
           e);
     }
+    return Optional.empty();
   }
 
-  /**
-   * Stores a track mapping in the cache.
-   *
-   * @param track The original track
-   * @param spotifyUri The Spotify URI found for this track
-   */
-  public void storeTrack(Track track, URI spotifyUri) {
-    String sql = "INSERT OR REPLACE INTO tracks (artist, title, spotify_uri) VALUES (?, ?, ?)";
+  public void storeTrack(SpotifyTrack spotifyTrack) {
+    String displayArtist = String.join(" & ", spotifyTrack.artists());
+    String spotifyTitle = spotifyTrack.name();
+    String key = lookupKeyFromList(spotifyTrack.artists(), spotifyTitle);
+    String sql =
+        "INSERT OR REPLACE INTO tracks (artist, title, spotify_uri, lookup_key) VALUES (?, ?, ?, ?)";
 
     try (Connection conn = getConnection();
         PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-      pstmt.setString(1, track.artist());
-      pstmt.setString(2, track.title());
-      pstmt.setString(3, spotifyUri.toString());
+      pstmt.setString(1, displayArtist);
+      pstmt.setString(2, spotifyTitle);
+      pstmt.setString(3, spotifyTrack.uri().toString());
+      pstmt.setString(4, key);
 
       pstmt.executeUpdate();
 
     } catch (SQLException e) {
       throw new SqliteException(
           "Failed to store track in cache for artist '"
-              + track.artist()
+              + displayArtist
               + "' and title '"
-              + track.title()
+              + spotifyTitle
               + "'",
           e);
     }
   }
 
-  /** Clears all entries from the cache. */
   public void clearCache() {
-    String sql = "DELETE FROM tracks";
-
     try (Connection conn = getConnection();
         Statement stmt = conn.createStatement()) {
-
-      stmt.executeUpdate(sql);
-
+      stmt.executeUpdate("DELETE FROM tracks");
     } catch (SQLException e) {
       throw new SqliteException("Failed to clear track cache", e);
     }
   }
 
-  /**
-   * Gets the current size of the cache.
-   *
-   * @return Number of cached tracks
-   */
   public long getCacheSize() {
-    String sql = "SELECT COUNT(*) FROM tracks";
-
     try (Connection conn = getConnection();
         Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql)) {
-
+        ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM tracks")) {
       if (rs.next()) {
         return rs.getLong(1);
       }
     } catch (SQLException e) {
       throw new SqliteException("Failed to get cache size", e);
     }
-
     throw new SqliteException("Failed to get cache size");
+  }
+
+  // Used when looking up from a radio source artist string (separators unknown)
+  static String lookupKey(String radioArtist, String title) {
+    String artistKey =
+        splitArtists(radioArtist).stream()
+            .map(TrackCache::normalizeArtistName)
+            .sorted()
+            .collect(Collectors.joining(","));
+    return artistKey + "|" + title.toLowerCase().trim();
+  }
+
+  // Used when storing from a Spotify artists list (already split by Spotify).
+  // Each individual name is also passed through splitArtists so that band names
+  // containing '&' (e.g. "Simon & Garfunkel") produce the same key as when a
+  // radio source sends the full string "Simon & Garfunkel".
+  static String lookupKeyFromList(List<String> artists, String title) {
+    String artistKey =
+        artists.stream()
+            .flatMap(a -> splitArtists(a).stream())
+            .map(TrackCache::normalizeArtistName)
+            .sorted()
+            .collect(Collectors.joining(","));
+    return artistKey + "|" + title.toLowerCase().trim();
+  }
+
+  private static List<String> splitArtists(String artist) {
+    return Arrays.stream(
+            artist
+                .replaceAll("(?i)\\s+featuring\\.?\\s*", ",") // before feat to avoid prefix match
+                .replaceAll("(?i)\\s+feat\\.?\\s*", ",")
+                .replaceAll("(?i)\\s+ft\\.?\\s*", ",")
+                .replaceAll("(?i)\\s+x\\s+", ",")
+                .replace("&", ",")
+                .split(","))
+        .map(String::trim)
+        .filter(s -> !s.isEmpty())
+        .toList();
+  }
+
+  private static String normalizeArtistName(String name) {
+    return name.toLowerCase().trim();
   }
 
   private Connection getConnection() throws SQLException {

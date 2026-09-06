@@ -46,7 +46,7 @@ public class Main {
     try {
       notifier.runStarted();
 
-      var trackCache = new TrackCache("track_cache.db");
+      var trackCache = new TrackCache("track_cache_v2.db");
       notifier.recordInitialCacheSize(trackCache.getCacheSize());
 
       executePlaylistTasks(configuration, notifier, trackCache);

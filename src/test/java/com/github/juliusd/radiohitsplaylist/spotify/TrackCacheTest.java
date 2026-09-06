@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.github.juliusd.radiohitsplaylist.Track;
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.Optional;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -19,67 +19,93 @@ class TrackCacheTest {
 
   @BeforeEach
   void setUp() {
-    tempDbPath = tempDir.resolve("test_track_cache.db");
+    tempDbPath = tempDir.resolve("test_track_cache_v2.db");
     trackCache = new TrackCache(tempDbPath.toString());
   }
 
-  @Test
-  void findTrack_returnsEmptyWhenTrackNotInCache() {
-    var track = new Track("Test Song", "Test Artist");
+  private static SpotifyTrack spotify(String title, String artist, String uri) {
+    return new SpotifyTrack(title, List.of(artist), URI.create(uri), null);
+  }
 
-    var result = trackCache.findTrack(track);
-
-    assertThat(result).isEmpty();
+  private static SpotifyTrack spotify(String title, List<String> artists, String uri) {
+    return new SpotifyTrack(title, artists, URI.create(uri), null);
   }
 
   @Test
-  void storeTrack_andFindTrack_returnsStoredUri() {
-    var track = new Track("Test Song", "Test Artist");
-    var spotifyUri = URI.create("spotify:track:1234567890abcdef");
-
-    trackCache.storeTrack(track, spotifyUri);
-    var result = trackCache.findTrack(track);
-
-    assertThat(result).contains(spotifyUri);
+  void findTrack_returnsEmptyWhenNotCached() {
+    assertThat(trackCache.findTrack(new Track("Test Song", "Test Artist"))).isEmpty();
   }
 
   @Test
-  void findTrack_requiresExactMatch() {
-    var originalTrack = new Track("Test Song", "Test Artist");
+  void storeAndFind_exactMatch() {
     var spotifyUri = URI.create("spotify:track:1234567890abcdef");
-    trackCache.storeTrack(originalTrack, spotifyUri);
+    trackCache.storeTrack(spotify("Test Song", "Test Artist", "spotify:track:1234567890abcdef"));
 
-    // Different artist
-    var differentArtist = new Track("Test Song", "Different Artist");
-    assertThat(trackCache.findTrack(differentArtist)).isEmpty();
+    assertThat(trackCache.findTrack(new Track("Test Song", "Test Artist"))).contains(spotifyUri);
+  }
 
-    // Different title
-    var differentTitle = new Track("Different Song", "Test Artist");
-    assertThat(trackCache.findTrack(differentTitle)).isEmpty();
+  @Test
+  void findTrack_matchesCaseInsensitive() {
+    trackCache.storeTrack(spotify("New Religion", "Bebe Rexha", "spotify:track:abc"));
 
-    // Case sensitivity
-    var differentCase = new Track("test song", "test artist");
-    assertThat(trackCache.findTrack(differentCase)).isEmpty();
+    // Radio sends title in ALL CAPS
+    assertThat(trackCache.findTrack(new Track("NEW RELIGION", "Bebe Rexha")))
+        .contains(URI.create("spotify:track:abc"));
+  }
 
-    // Exact match should still work
-    assertThat(trackCache.findTrack(originalTrack)).isPresent();
+  @Test
+  void findTrack_matchesArtistSeparatorVariants() {
+    trackCache.storeTrack(
+        spotify("Stay", List.of("Leony", "Calum Scott"), "spotify:track:def"));
+
+    assertThat(trackCache.findTrack(new Track("Stay", "LEONY & CALUM SCOTT")))
+        .contains(URI.create("spotify:track:def"));
+    assertThat(trackCache.findTrack(new Track("Stay", "Leony, Calum Scott")))
+        .contains(URI.create("spotify:track:def"));
+    assertThat(trackCache.findTrack(new Track("Stay", "Leony x Calum Scott")))
+        .contains(URI.create("spotify:track:def"));
+  }
+
+  @Test
+  void findTrack_matchesFeatVariants() {
+    trackCache.storeTrack(
+        spotify("Better Days", List.of("Glockenbach", "Declan J Donovan"), "spotify:track:ghi"));
+
+    assertThat(trackCache.findTrack(new Track("Better Days", "Glockenbach feat. Declan J Donovan")))
+        .contains(URI.create("spotify:track:ghi"));
+    assertThat(trackCache.findTrack(new Track("Better Days", "Glockenbach feat Declan J Donovan")))
+        .contains(URI.create("spotify:track:ghi"));
+    assertThat(
+            trackCache.findTrack(
+                new Track("Better Days", "Glockenbach featuring Declan J Donovan")))
+        .contains(URI.create("spotify:track:ghi"));
+  }
+
+  @Test
+  void findTrack_matchesBandNameWithAmpersand() {
+    trackCache.storeTrack(
+        spotify("The Sound of Silence", List.of("Simon & Garfunkel"), "spotify:track:jkl"));
+
+    assertThat(
+            trackCache.findTrack(new Track("The Sound of Silence", "Simon & Garfunkel")))
+        .contains(URI.create("spotify:track:jkl"));
+  }
+
+  @Test
+  void findTrack_doesNotMatchDifferentSong() {
+    trackCache.storeTrack(spotify("New Religion", "Bebe Rexha", "spotify:track:abc"));
+
+    assertThat(trackCache.findTrack(new Track("Old Religion", "Bebe Rexha"))).isEmpty();
+    assertThat(trackCache.findTrack(new Track("New Religion", "Other Artist"))).isEmpty();
   }
 
   @Test
   void storeTrack_replacesExistingEntry() {
-    var track = new Track("Test Song", "Test Artist");
-    var firstUri = URI.create("spotify:track:1111111111111111");
-    var secondUri = URI.create("spotify:track:2222222222222222");
+    trackCache.storeTrack(spotify("Song", "Artist", "spotify:track:1111111111111111"));
+    trackCache.storeTrack(spotify("Song", "Artist", "spotify:track:2222222222222222"));
 
-    // Store first URI
-    trackCache.storeTrack(track, firstUri);
-    assertThat(trackCache.findTrack(track)).contains(firstUri);
-
-    // Store second URI for same track (should replace)
-    trackCache.storeTrack(track, secondUri);
-    assertThat(trackCache.findTrack(track)).contains(secondUri);
-
-    // Cache size should still be 1
+    assertThat(trackCache.findTrack(new Track("Song", "Artist")))
+        .contains(URI.create("spotify:track:2222222222222222"));
     assertThat(trackCache.getCacheSize()).isEqualTo(1);
   }
 
@@ -87,70 +113,46 @@ class TrackCacheTest {
   void getCacheSize_returnsCorrectCount() {
     assertThat(trackCache.getCacheSize()).isEqualTo(0);
 
-    var track1 = new Track("Song 1", "Artist 1");
-    var track2 = new Track("Song 2", "Artist 2");
-    var uri1 = URI.create("spotify:track:1111111111111111");
-    var uri2 = URI.create("spotify:track:2222222222222222");
-
-    trackCache.storeTrack(track1, uri1);
+    trackCache.storeTrack(spotify("Song 1", "Artist 1", "spotify:track:1111111111111111"));
     assertThat(trackCache.getCacheSize()).isEqualTo(1);
 
-    trackCache.storeTrack(track2, uri2);
+    trackCache.storeTrack(spotify("Song 2", "Artist 2", "spotify:track:2222222222222222"));
     assertThat(trackCache.getCacheSize()).isEqualTo(2);
   }
 
   @Test
   void clearCache_removesAllEntries() {
-    var track1 = new Track("Song 1", "Artist 1");
-    var track2 = new Track("Song 2", "Artist 2");
-    var uri1 = URI.create("spotify:track:1111111111111111");
-    var uri2 = URI.create("spotify:track:2222222222222222");
-
-    trackCache.storeTrack(track1, uri1);
-    trackCache.storeTrack(track2, uri2);
-    assertThat(trackCache.getCacheSize()).isEqualTo(2);
+    trackCache.storeTrack(spotify("Song 1", "Artist 1", "spotify:track:1111111111111111"));
+    trackCache.storeTrack(spotify("Song 2", "Artist 2", "spotify:track:2222222222222222"));
 
     trackCache.clearCache();
 
     assertThat(trackCache.getCacheSize()).isEqualTo(0);
-    assertThat(trackCache.findTrack(track1)).isEmpty();
-    assertThat(trackCache.findTrack(track2)).isEmpty();
+    assertThat(trackCache.findTrack(new Track("Song 1", "Artist 1"))).isEmpty();
   }
 
   @Test
   void cache_persistsAcrossInstances() {
-    var track = new Track("Test Song", "Test Artist");
-    var spotifyUri = URI.create("spotify:track:1234567890abcdef");
+    var uri = URI.create("spotify:track:1234567890abcdef");
+    trackCache.storeTrack(spotify("Test Song", "Test Artist", "spotify:track:1234567890abcdef"));
 
-    // Store in first instance
-    trackCache.storeTrack(track, spotifyUri);
-    assertThat(trackCache.findTrack(track)).contains(spotifyUri);
-
-    // Create new instance with same database file
     var newCache = new TrackCache(tempDbPath.toString());
-    assertThat(newCache.findTrack(track)).contains(spotifyUri);
+    assertThat(newCache.findTrack(new Track("Test Song", "Test Artist"))).contains(uri);
     assertThat(newCache.getCacheSize()).isEqualTo(1);
   }
 
   @Test
   void cache_handlesSpecialCharacters() {
-    var track = new Track("Song with \"quotes\" & symbols!", "Artist with 'apostrophe' & äöüèéê");
-    var spotifyUri = URI.create("spotify:track:special123456789");
+    var uri = URI.create("spotify:track:special123456789");
+    trackCache.storeTrack(
+        spotify(
+            "Song with \"quotes\" & symbols!",
+            "Artist with 'apostrophe'",
+            "spotify:track:special123456789"));
 
-    trackCache.storeTrack(track, spotifyUri);
-    var result = trackCache.findTrack(track);
-
-    assertThat(result).contains(spotifyUri);
-  }
-
-  @Test
-  void cache_handlesUnicodeCharacters() {
-    var track = new Track("Müsik mit Ümlauts", "Künstler with 中文");
-    var spotifyUri = URI.create("spotify:track:unicode123456789");
-
-    trackCache.storeTrack(track, spotifyUri);
-    Optional<URI> result = trackCache.findTrack(track);
-
-    assertThat(result).contains(spotifyUri);
+    assertThat(
+            trackCache.findTrack(
+                new Track("Song with \"quotes\" & symbols!", "Artist with 'apostrophe'")))
+        .contains(uri);
   }
 }

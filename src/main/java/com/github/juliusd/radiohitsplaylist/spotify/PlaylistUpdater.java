@@ -11,7 +11,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.apache.hc.core5.http.ParseException;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
@@ -109,16 +108,16 @@ public class PlaylistUpdater {
                   .map(
                       spotifyTrack -> {
                         URI trackUri = spotifyTrack.uri();
-                        if (isExactMatch(track, spotifyTrack)) {
-                          trackCache.storeTrack(track, trackUri);
+                        if (isNormalizedMatch(track, spotifyTrack)) {
+                          trackCache.storeTrack(spotifyTrack);
                         }
                         return trackUri;
                       });
             });
   }
 
-  private static boolean isExactMatch(Track track, SpotifyTrack spotifyTrack) {
-    return track.artist().equals(spotifyTrack.artists().stream().collect(Collectors.joining(" & ")))
-        && track.title().equals(spotifyTrack.name());
+  static boolean isNormalizedMatch(Track track, SpotifyTrack spotifyTrack) {
+    return TrackCache.lookupKey(track.artist(), track.title())
+        .equals(TrackCache.lookupKeyFromList(spotifyTrack.artists(), spotifyTrack.name()));
   }
 }
